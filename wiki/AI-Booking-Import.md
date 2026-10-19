@@ -1,6 +1,6 @@
 # AI Booking Import
 
-The **AI Parsing** addon adds a large-language-model fallback to TREK's booking import. When [KDE Itinerary](Reservations-and-Bookings#import-from-booking-confirmation) can't read a confirmation — a plain-text email, an unusual PDF layout, a vendor whose format it doesn't recognise — TREK can hand the document to an AI model and turn it into a reservation you review before saving.
+The **AI Parsing** addon adds a large-language-model fallback to ENSCON Trip's booking import. When [KDE Itinerary](Reservations-and-Bookings#import-from-booking-confirmation) can't read a confirmation — a plain-text email, an unusual PDF layout, a vendor whose format it doesn't recognise — ENSCON Trip can hand the document to an AI model and turn it into a reservation you review before saving.
 
 It is an **opt-in addon, disabled by default**, and it works with a self-hosted local model, so no booking data has to leave your server.
 

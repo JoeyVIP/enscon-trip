@@ -1,6 +1,6 @@
 # Environment Variables
 
-Complete reference for all environment variables TREK reads.
+Complete reference for all environment variables ENSCON Trip reads.
 
 ## How to Set Variables
 

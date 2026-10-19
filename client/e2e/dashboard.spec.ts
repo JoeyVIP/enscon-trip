@@ -6,5 +6,5 @@ test('authenticated session reaches the dashboard', async ({ page }) => {
   await page.goto('/dashboard')
   await expect(page).toHaveURL(/\/dashboard/)
   // The shared Navbar shows the TREK brand once authenticated.
-  await expect(page.getByRole('img', { name: 'TREK' }).first()).toBeVisible()
+  await expect(page.getByRole('img', { name: /ENSCON/ }).first()).toBeVisible()
 })

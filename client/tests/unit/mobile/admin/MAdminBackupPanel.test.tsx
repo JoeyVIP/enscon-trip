@@ -273,7 +273,7 @@ describe('MAdminBackupPanel', () => {
   it('FE-MOB-MBKP-017: a failing upload restore toasts the error and re-enables the upload button', async () => {
     const user = userEvent.setup();
     server.use(http.post('/api/backup/upload-restore', () =>
-      HttpResponse.json({ error: 'Not a TREK archive' }, { status: 400 }),
+      HttpResponse.json({ error: 'Not a ENSCON Trip archive' }, { status: 400 }),
     ));
     withToast();
     await screen.findByText('backup-2025-01-15.zip');
@@ -283,7 +283,7 @@ describe('MAdminBackupPanel', () => {
     });
     await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Yes, restore' }));
 
-    expect(await screen.findByText('Not a TREK archive')).toBeInTheDocument();
+    expect(await screen.findByText('Not a ENSCON Trip archive')).toBeInTheDocument();
     await waitFor(() => expect(screen.getByRole('button', { name: 'Upload Backup' })).toBeEnabled());
   });
 

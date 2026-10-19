@@ -1,6 +1,6 @@
 # In-App Help
 
-Read the whole TREK wiki from inside TREK, without leaving the app or opening GitHub.
+Read the whole ENSCON Trip wiki from inside ENSCON Trip, without leaving the app or opening GitHub.
 
 ![In-App Help](assets/HelpInApp.png)
 

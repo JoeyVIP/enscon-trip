@@ -212,11 +212,11 @@ const journey: TranslationStrings = {
   'journey.public.notFound': 'Tidak Ditemukan',
   'journey.public.notFoundMessage': 'Journey ini tidak ada atau tautan telah kedaluwarsa.',
   'journey.public.readOnly': 'Hanya baca · Journey Publik',
-  'journey.public.tagline': 'Travel Resource & Exploration Kit',
+  'journey.public.tagline': 'Plan trips together',
   'journey.public.sharedVia': 'Dibagikan melalui',
   'journey.public.madeWith': 'Dibuat dengan',
   'journey.pdf.journeyBook': 'Buku Journey',
-  'journey.pdf.madeWith': 'Dibuat dengan TREK',
+  'journey.pdf.madeWith': 'Dibuat dengan ENSCON Trip',
   'journey.pdf.day': 'Hari',
   'journey.pdf.theEnd': 'Tamat',
   'journey.pdf.saveAsPdf': 'Simpan sebagai PDF',
@@ -246,7 +246,7 @@ const journey: TranslationStrings = {
   'journey.editor.externalPhotosUnavailable': 'No connected photo providers are available.', // en-fallback
   'journey.editor.externalPhotosPartialFailed': '{failed} photo groups failed — save again to retry', // en-fallback
   'journey.picker.day': 'This day', // en-fallback
-  'journey.studio.title': 'TREK Studio', // en-fallback
+  'journey.studio.title': 'ENSCON Trip Studio', // en-fallback
   'journey.studio.open': 'Studio', // en-fallback
   'journey.studio.openAria': 'Open the photo book studio', // en-fallback
   'journey.studio.backToJourney': 'Back to the journey', // en-fallback
@@ -288,7 +288,7 @@ const journey: TranslationStrings = {
   'journey.studio.downloadSpreadHint': 'Menyimpan desain halaman ganda ini sebagai berkas, tanpa foto, untuk dibagikan atau dipakai lagi',
   'journey.studio.importSpread': 'Impor',
   'journey.studio.importSpreadHint': 'Menambahkan halaman ganda dari berkas desain yang diunduh',
-  'journey.studio.importSpreadFailed': 'Berkas itu bukan halaman ganda TREK Studio',
+  'journey.studio.importSpreadFailed': 'Berkas itu bukan halaman ganda ENSCON Trip Studio',
   'journey.studio.desktopOnly': 'Studio needs a bigger screen', // en-fallback
   'journey.studio.desktopOnlyHint': 'Menyusun buku butuh ruang kerja, jadi Studio hanya ada di desktop, begitu juga pembuatan PDF. Bagian lain dari perjalananmu tetap berjalan seperti biasa di sini.', // en-fallback
   'journey.studio.formatA5Landscape': 'A5 landscape', // en-fallback

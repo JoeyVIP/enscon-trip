@@ -214,11 +214,11 @@ const journey: TranslationStrings = {
   'journey.public.notFound': 'Niet gevonden',
   'journey.public.notFoundMessage': 'Dit reisverslag bestaat niet of de link is verlopen.',
   'journey.public.readOnly': 'Alleen-lezen · Openbaar reisverslag',
-  'journey.public.tagline': 'Travel Resource & Exploration Kit',
+  'journey.public.tagline': 'Plan trips together',
   'journey.public.sharedVia': 'Gedeeld via',
   'journey.public.madeWith': 'Gemaakt met',
   'journey.pdf.journeyBook': 'Reisboek',
-  'journey.pdf.madeWith': 'Gemaakt met TREK',
+  'journey.pdf.madeWith': 'Gemaakt met ENSCON Trip',
   'journey.pdf.day': 'Dag',
   'journey.pdf.theEnd': 'Einde',
   'journey.pdf.saveAsPdf': 'Opslaan als PDF',
@@ -248,7 +248,7 @@ const journey: TranslationStrings = {
   'journey.editor.externalPhotosUnavailable': 'No connected photo providers are available.', // en-fallback
   'journey.editor.externalPhotosPartialFailed': '{failed} photo groups failed — save again to retry', // en-fallback
   'journey.picker.day': 'This day', // en-fallback
-  'journey.studio.title': 'TREK Studio', // en-fallback
+  'journey.studio.title': 'ENSCON Trip Studio', // en-fallback
   'journey.studio.open': 'Studio', // en-fallback
   'journey.studio.openAria': 'Open the photo book studio', // en-fallback
   'journey.studio.backToJourney': 'Back to the journey', // en-fallback
@@ -290,7 +290,7 @@ const journey: TranslationStrings = {
   'journey.studio.downloadSpreadHint': 'Slaat het ontwerp van deze dubbele pagina op als bestand, zonder de foto\'s, om te delen of opnieuw te gebruiken',
   'journey.studio.importSpread': 'Importeren',
   'journey.studio.importSpreadHint': 'Voegt een dubbele pagina toe uit een gedownload ontwerpbestand',
-  'journey.studio.importSpreadFailed': 'Dat bestand is geen TREK Studio-pagina',
+  'journey.studio.importSpreadFailed': 'Dat bestand is geen ENSCON Trip Studio-pagina',
   'journey.studio.desktopOnly': 'Studio needs a bigger screen', // en-fallback
   'journey.studio.desktopOnlyHint': 'Een boek opmaken vraagt om ruimte, dus Studio is alleen voor de desktop, en de pdf ook. Al het andere van je reis werkt hier gewoon.', // en-fallback
   'journey.studio.formatA5Landscape': 'A5 landscape', // en-fallback

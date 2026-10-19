@@ -1250,7 +1250,8 @@ body {
 }
 
 /* Brand images: no save/copy/drag */
-img[alt="TREK"] {
+img[alt="ENSCON Trip"],
+img[alt="ENSCON 旅程"] {
   pointer-events: none;
   user-select: none;
   -webkit-user-select: none;

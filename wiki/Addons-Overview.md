@@ -1,6 +1,6 @@
 # Addons Overview
 
-Addons are optional features that an admin can enable or disable for the entire TREK instance. When an addon is disabled, its navigation tabs, menu items, and API routes are hidden from all users.
+Addons are optional features that an admin can enable or disable for the entire ENSCON Trip instance. When an addon is disabled, its navigation tabs, menu items, and API routes are hidden from all users.
 
 ![Addon overview](assets/Addons-Overview.png)
 

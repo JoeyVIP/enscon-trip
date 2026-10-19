@@ -1,9 +1,9 @@
 <div align="center">
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/logo-trek-light.svg" />
-  <source media="(prefers-color-scheme: light)" srcset="docs/logo-trek-dark.svg" />
-  <img src="docs/logo-trek-dark.svg" alt="TREK" height="96" />
+  <source media="(prefers-color-scheme: dark)" srcset="docs/logo-enscon-dark.svg" />
+  <source media="(prefers-color-scheme: light)" srcset="docs/logo-enscon-light.svg" />
+  <img src="docs/logo-enscon-light.svg" alt="ENSCON 旅程 / ENSCON Trip" height="96" />
 </picture>
 
 <br />
@@ -43,7 +43,7 @@ A self-hosted, real-time collaborative travel planner — with maps, budgets, pa
 
 <div align="center">
 
-<img src="https://github.com/mauriceboe/trek-media/releases/download/readme-assets/TREK1.webp" alt="TREK, a tour of the app" width="100%" />
+<img src="https://github.com/mauriceboe/trek-media/releases/download/readme-assets/TREK1.webp" alt="ENSCON Trip, a tour of the app" width="100%" />
 
 </div>
 
@@ -126,7 +126,7 @@ Most of what follows is an addon an admin switches on or off. Lists, Costs, Docu
 
 #### 🧩 Plugins
 
-- **Third-party plugins**: install from the TREK registry or sideload a zip, switch on per instance, with their own pages under `/plugins/<id>`
+- **Third-party plugins**: install from the ENSCON Trip registry or sideload a zip, switch on per instance, with their own pages under `/plugins/<id>`
 - **Sandboxed**: one child process per plugin, 63 grantable permissions, an admin-edited outbound host allowlist, memory and RPC caps, and daily caps on AI and notification calls
 - **Trust**: registry downloads are pinned by sha256 and checked against the author's minisign key. A sideloaded zip is marked unverified, and `TREK_PLUGINS_ENABLED=false` turns the whole system off
 - **Extension points**: map markers and layers, place details, day schedules, PDF sections, Atlas layers, journal rows, trip warnings, calendar sources, route profiles and notification channels. Plugin pages run in an opaque-origin iframe
@@ -206,10 +206,10 @@ the details.
 ```bash
 ENCRYPTION_KEY=$(openssl rand -hex 32) docker run -d -p 3000:3000 \
   -e ENCRYPTION_KEY=$ENCRYPTION_KEY \
-  -v ./data:/app/data -v ./uploads:/app/uploads mauriceboe/trek
+  -v ./data:/app/data -v ./uploads:/app/uploads ghcr.io/joeyvip/enscon-trip
 ```
 
-Open `http://localhost:3000`. On first boot TREK seeds an admin account — if you set `ADMIN_EMAIL`/`ADMIN_PASSWORD` those are used, otherwise the credentials are printed to the container log (`docker logs trek`).
+Open `http://localhost:3000`. On first boot ENSCON Trip seeds an admin account — if you set `ADMIN_EMAIL`/`ADMIN_PASSWORD` those are used, otherwise the credentials are printed to the container log (`docker logs trek`).
 
 <div align="center">
 
@@ -267,13 +267,13 @@ See [`charts/README.md`](https://github.com/liketrek/TREK/blob/main/charts/READM
 
 <h2 id="install-as-app-pwa">Install as App (PWA)</h2>
 
-TREK works as a Progressive Web App — no App Store needed.
+ENSCON Trip works as a Progressive Web App — no App Store needed.
 
-1. Open TREK in the browser (HTTPS required)
+1. Open ENSCON Trip in the browser (HTTPS required)
 2. **iOS**: Share ▸ *Add to Home Screen*
 3. **Android**: Menu ▸ *Install app* (or *Add to Home Screen*)
 
-TREK then launches fullscreen with its own icon, just like a native app.
+ENSCON Trip then launches fullscreen with its own icon, just like a native app.
 
 <br />
 
@@ -286,7 +286,7 @@ Docker run, Helm, Portainer, Unraid and Proxmox, plus the encryption-key note.
 
 <h2 id="reverse-proxy">Reverse Proxy</h2>
 
-For production, put TREK behind a TLS-terminating reverse proxy. TREK uses WebSockets for real-time sync, so the proxy **must** support WebSocket upgrades on `/ws`.
+For production, put ENSCON Trip behind a TLS-terminating reverse proxy. ENSCON Trip uses WebSockets for real-time sync, so the proxy **must** support WebSocket upgrades on `/ws`.
 
 If you use the MCP addon, the proxy must also pass the `Mcp-Session-Id` header through in both directions on `/mcp` — Nginx and Caddy do this by default, but a proxy that strips it makes every tool call open a new session instead of reusing one. See the [Reverse Proxy wiki page](https://github.com/liketrek/TREK/wiki/Reverse-Proxy) for details.
 
@@ -374,7 +374,7 @@ writes an explicit currency on insert, so this only matters for rows inserted ou
 ## ENSCON Trip（ENSCON 旅程）— 我們改了什麼 / What we changed
 
 ENSCON 旅程是 [TREK](https://github.com/liketrek/TREK)（AGPL-3.0）的修改版，給台灣使用者用。
-based on TREK, licensed under AGPL-3.0. 原始碼（含我們的修改）：本 repo。
+based on TREK (https://github.com/liketrek/TREK) by Maurice, licensed under AGPL-3.0. 基於 TREK，原作者 Maurice 與開源社群。原始碼（含我們的修改）：本 repo。
 
 已完成（第一版）：
 
@@ -419,4 +419,4 @@ for full third-party attributions.
 
 ## License
 
-TREK is [AGPL v3](LICENSE). Self-host freely for personal or internal company use. If you modify and offer TREK as a network service to third parties, your modifications must be open-sourced under the same licence.
+ENSCON Trip (based on [TREK](https://github.com/liketrek/TREK) by Maurice) is [AGPL v3](LICENSE). Self-host freely for personal or internal company use. If you modify and offer ENSCON Trip as a network service to third parties, your modifications must be open-sourced under the same licence.

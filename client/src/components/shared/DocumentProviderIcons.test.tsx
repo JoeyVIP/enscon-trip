@@ -148,9 +148,9 @@ describe('TrekIcon', () => {
     const { container } = render(<TrekIcon />)
     expect(container.querySelector('svg')!.getAttribute('aria-hidden')).toBe('true')
 
-    const labelled = render(<TrekIcon aria-hidden={false} aria-label="TREK" />)
+    const labelled = render(<TrekIcon aria-hidden={false} aria-label="ENSCON Trip" />)
     const svg = labelled.container.querySelector('svg')!
     expect(svg.getAttribute('aria-hidden')).toBe('false')
-    expect(svg.getAttribute('aria-label')).toBe('TREK')
+    expect(svg.getAttribute('aria-label')).toBe('ENSCON Trip')
   })
 })

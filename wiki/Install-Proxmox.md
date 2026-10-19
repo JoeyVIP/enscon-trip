@@ -1,8 +1,8 @@
 # Install: Proxmox VE (LXC)
 
-Install TREK on Proxmox VE as an LXC container using the [Proxmox VE Community Scripts](https://community-scripts.org/scripts/trek).
+Install ENSCON Trip on Proxmox VE as an LXC container using the [Proxmox VE Community Scripts](https://community-scripts.org/scripts/trek).
 
-> A big thank you to the members of [community-scripts](https://github.com/community-scripts) for adding TREK to their collection and maintaining the install and update scripts.
+> A big thank you to the members of [community-scripts](https://github.com/community-scripts) for adding ENSCON Trip to their collection and maintaining the install and update scripts.
 
 ## Prerequisites
 

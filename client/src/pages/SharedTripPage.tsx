@@ -41,6 +41,7 @@ import { useSharedTrip } from './sharedTrip/useSharedTrip';
 import { SharedPlaceDetails } from './sharedTrip/SharedPlaceDetails';
 import { SharedBookingDetails } from './sharedTrip/SharedBookingDetails';
 import { SharedTripErrorScreen } from './sharedTrip/SharedTripErrorScreen';
+import { useAppName } from '../utils/appName'
 
 const TRANSPORT_ICONS = { flight: Plane, train: Train, bus: Bus, car: Car, cruise: Ship };
 
@@ -96,6 +97,7 @@ function FitBoundsToPlaces({ places, framedOnMount }: { places: any[]; framedOnM
 
 export default function SharedTripPage() {
   const { t, locale } = useTranslation();
+  const appName = useAppName()
   // Page = wiring container: share fetch + view state live in the hook.
   const {
     data,
@@ -252,7 +254,7 @@ export default function SharedTripPage() {
             border: '1px solid rgba(255,255,255,0.1)',
           }}
         >
-          <img src="/icons/icon-white.svg" alt="TREK" width="26" height="26" />
+          <img src="/icons/icon-white.svg" alt={appName} width="26" height="26" />
         </div>
 
         <div
@@ -265,7 +267,7 @@ export default function SharedTripPage() {
             marginBottom: 12,
           }}
         >
-          Travel Resource & Exploration Kit
+          {t('journey.public.tagline')}
         </div>
 
         <h1
@@ -1228,9 +1230,9 @@ export default function SharedTripPage() {
               boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
             }}
           >
-            <img src="/icons/icon.svg" alt="TREK" width="18" height="18" style={{ borderRadius: 4 }} />
+            <img src="/icons/icon.svg" alt={appName} width="18" height="18" style={{ borderRadius: 4 }} />
             <span className="text-[#9ca3af]" style={{ fontSize: 'calc(11px * var(--fs-scale-caption, 1))' }}>
-              {t('shared.sharedVia')} <strong className="text-[#6b7280]">TREK</strong>
+              {t('shared.sharedVia')} <strong className="text-[#6b7280]">{appName}</strong>
             </span>
           </div>
           <div className="text-[#d1d5db]" style={{ marginTop: 8, fontSize: 'calc(10px * var(--fs-scale-caption, 1))' }}>

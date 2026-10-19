@@ -1,6 +1,6 @@
 # Quick Start
 
-Get TREK running in under five minutes with a single Docker command.
+Get ENSCON Trip running in under five minutes with a single Docker command.
 
 ![Login page](assets/Login.png)
 
@@ -21,7 +21,7 @@ docker run -d \
   -v ./data:/app/data \
   -v ./uploads:/app/uploads \
   --restart unless-stopped \
-  mauriceboe/trek:latest
+  ghcr.io/joeyvip/enscon-trip:latest
 ```
 
 **Flag breakdown:**

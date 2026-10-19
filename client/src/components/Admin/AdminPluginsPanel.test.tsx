@@ -1165,7 +1165,7 @@ describe('AdminPluginsPanel — compatible updates only', () => {
     })
     render(<AdminPluginsPanel />)
 
-    expect(await screen.findByText('v2.0.0 available — needs TREK >=4.0.0')).toBeInTheDocument()
+    expect(await screen.findByText('v2.0.0 available — needs ENSCON Trip >=4.0.0')).toBeInTheDocument()
   })
 
   it('FE-COMP-PLUGINS-UPD-004: a legacy entry with only minTrekVersion still gets a hint range', async () => {
@@ -1174,7 +1174,7 @@ describe('AdminPluginsPanel — compatible updates only', () => {
     })
     render(<AdminPluginsPanel />)
 
-    expect(await screen.findByText('v2.0.0 available — needs TREK >=4.0.0')).toBeInTheDocument()
+    expect(await screen.findByText('v2.0.0 available — needs ENSCON Trip >=4.0.0')).toBeInTheDocument()
   })
 
   it('FE-COMP-PLUGINS-UPD-005: no hint when the latest version is the one on offer', async () => {
@@ -1288,7 +1288,7 @@ describe('AdminPluginsPanel — version picker', () => {
     fireEvent.click(tabs[0])
     fireEvent.click(await screen.findByText('Gotify'))
 
-    expect(await screen.findByText(/^needs TREK >=4\.0\.0$/i)).toBeInTheDocument()
+    expect(await screen.findByText(/^needs ENSCON Trip >=4\.0\.0$/i)).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /^install 3\.0\.0$/i })).not.toBeInTheDocument()
   })
 
@@ -1423,7 +1423,7 @@ describe('AdminPluginsPanel — capability and dependency chips', () => {
     panelWith([plugin({ operatorEgress: false, dependencyStatus: 'hostIncompatible' })])
     render(<AdminPluginsPanel />)
 
-    expect(await screen.findByText('Does not say which TREK versions it supports')).toBeInTheDocument()
+    expect(await screen.findByText('Does not say which ENSCON Trip versions it supports')).toBeInTheDocument()
   })
 })
 
@@ -1506,7 +1506,7 @@ describe('AdminPluginsPanel — Discover cards and the detail modal', () => {
     expect(screen.getByText('Instance-wide')).toBeInTheDocument()
     expect(screen.getByText('Required')).toBeInTheDocument()
     expect(screen.getByText('4 KB')).toBeInTheDocument()
-    expect(screen.getByText('TREK >=3.2.0')).toBeInTheDocument()
+    expect(screen.getByText('ENSCON Trip >=3.2.0')).toBeInTheDocument()
     expect(screen.getByText('Store its own data in an isolated database')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /homepage/i })).toHaveAttribute('href', 'https://gotify.example')
     // 999 500 rounds to a whole megabyte on the card, never "1000k"
@@ -1520,7 +1520,7 @@ describe('AdminPluginsPanel — Discover cards and the detail modal', () => {
     fireEvent.click(await screen.findByText('Gotify'))
 
     expect(await screen.findByText('Needs no special access.')).toBeInTheDocument()
-    expect(screen.getByText('TREK 3.2.0+')).toBeInTheDocument()
+    expect(screen.getByText('ENSCON Trip 3.2.0+')).toBeInTheDocument()
     expect(screen.queryByText('Connects to')).not.toBeInTheDocument()
     expect(screen.queryByText('Setup')).not.toBeInTheDocument()
   })

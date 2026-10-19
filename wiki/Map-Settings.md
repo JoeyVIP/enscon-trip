@@ -1,6 +1,6 @@
 # Map Settings
 
-The Map tab controls which map engine and tile source TREK uses in the Trip Planner and Journey maps.
+The Map tab controls which map engine and tile source ENSCON Trip uses in the Trip Planner and Journey maps.
 
 > **Note:** The Atlas view always uses Leaflet regardless of this setting.
 

@@ -1,6 +1,6 @@
 # Reverse Proxy
 
-Putting TREK behind a TLS-terminating reverse proxy is strongly recommended for production.
+Putting ENSCON Trip behind a TLS-terminating reverse proxy is strongly recommended for production.
 
 ## Why HTTPS Matters for TREK
 

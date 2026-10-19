@@ -1,11 +1,11 @@
 import type { TranslationStrings } from '../types';
 
 const system_notice: TranslationStrings = {
-  'system_notice.welcome_v1.title': 'Benvingut/da a TREK',
+  'system_notice.welcome_v1.title': 'Benvingut/da a ENSCON Trip',
   'system_notice.welcome_v1.body':
     'El teu planificador de viatges tot en un. Crea itineraris, comparteix viatges amb amics i mantén-te organitzat, en línia o fora de línia.',
   'system_notice.welcome_v1.cta_label': 'Planifica un viatge',
-  'system_notice.welcome_v1.hero_alt': 'Destí de viatge pintoresc amb la interfície de TREK',
+  'system_notice.welcome_v1.hero_alt': 'Destí de viatge pintoresc amb la interfície de ENSCON Trip',
   'system_notice.welcome_v1.highlight_plan': 'Itineraris dia a dia per a qualsevol viatge',
   'system_notice.welcome_v1.highlight_share': 'Col·labora amb els teus companys de viatge',
   'system_notice.welcome_v1.highlight_offline': 'Funciona sense connexió en mòbil',
@@ -18,7 +18,7 @@ const system_notice: TranslationStrings = {
   'system_notice.pager.position': 'Avís {current} de {total}',
   'system_notice.v3_photos.title': "Les fotos s'han mogut a la versió 3.0",
   'system_notice.v3_photos.body':
-    "Les **Fotos** al Planificador de Viatges han estat eliminades. Les teves fotos estan segures — TREK mai va modificar la teva biblioteca d'Immich o Synology.\n\nLes fotos ara viuen al complement **Journey**. Journey és opcional — si encara no està disponible, demana al teu admin que l'activi a Admin → Complementos.",
+    "Les **Fotos** al Planificador de Viatges han estat eliminades. Les teves fotos estan segures — ENSCON Trip mai va modificar la teva biblioteca d'Immich o Synology.\n\nLes fotos ara viuen al complement **Journey**. Journey és opcional — si encara no està disponible, demana al teu admin que l'activi a Admin → Complementos.",
   'system_notice.v3_journey.title': 'Coneix Journey — diari de viatge',
   'system_notice.v3_journey.body':
     'Documenta els teus viatges com a històries enriquides amb cronologies, galeries de fotos i mapes interactius.',
@@ -47,7 +47,7 @@ const system_notice: TranslationStrings = {
   'system_notice.v3014_whitespace_collision.body':
     "L'actualització 3.0.14 va detectar un o més conflictes de nom d'usuari o correu electrònic causats per espais en blanc al principi o al final dels valors emmagatzemats. Els comptes afectats es van reanomenar automàticament. Revisa els registres del servidor a la recerca de línies que comencin per **[migration] WHITESPACE COLLISION** per identificar quins comptes necessiten revisió.",
 
-  'system_notice.thank_you_support.title': 'Gràcies per utilitzar TREK',
+  'system_notice.thank_you_support.title': 'Gràcies per utilitzar ENSCON Trip',
   'system_notice.thank_you_support.body':
     "Si t'agrada utilitzar TREK, considera donar suport al seu desenvolupament de codi obert.",
   'system_notice.thank_you_support.highlight_opensource': '100% codi obert a GitHub',
@@ -56,16 +56,16 @@ const system_notice: TranslationStrings = {
   'system_notice.thank_you_support.cta_bmc': 'Buy Me a Coffee',
   'system_notice.thank_you_support.cta_kofi': 'Dona suport a Ko-fi',
   'system_notice.release_notes.eyebrow': 'Actualització instal·lada',
-  'system_notice.release_notes.headline': 'Quatre coses que TREK ara fa tot sol.',
+  'system_notice.release_notes.headline': 'Quatre coses que ENSCON Trip ara fa tot sol.',
   'system_notice.release_notes.features_label': 'Els protagonistes',
   'system_notice.release_notes.features_aside': 'I això no és tot',
-  'system_notice.release_notes.feature_places_title': 'TREK Places API',
+  'system_notice.release_notes.feature_places_title': 'ENSCON Trip Places API',
   'system_notice.release_notes.feature_places_body': 'El primer planificador de viatges de codi obert amb API de llocs pròpia. 73,6 milions de llocs, sense clau, sense quota.',
   'system_notice.release_notes.feature_roadtrip_title': 'Complement Roadtrip',
   'system_notice.release_notes.feature_roadtrip_body': 'Planifica el trajecte tot sol: ruta, distància, hores i parades. Desactivat fins que un admin l’activi.',
   'system_notice.release_notes.feature_dawarich_title': 'Integració amb Dawarich',
-  'system_notice.release_notes.feature_dawarich_body': 'L’alternativa autoallotjada a Google Timeline, ara llegible des de TREK. TREK llegeix, i només llegeix.',
-  'system_notice.release_notes.footnote': 'I una llarga llista de canvis més petits a la resta de TREK.',
+  'system_notice.release_notes.feature_dawarich_body': 'L’alternativa autoallotjada a Google Timeline, ara llegible des de ENSCON Trip. ENSCON Trip llegeix, i només llegeix.',
+  'system_notice.release_notes.footnote': 'I una llarga llista de canvis més petits a la resta de ENSCON Trip.',
   'system_notice.release_notes.notes_label': 'Notes de la versió',
   'system_notice.release_notes.note_eyebrow': 'Una nota del mantenidor',
   'system_notice.release_notes.note_title': 'Sou el motiu pel qual continuo construint TREK.',

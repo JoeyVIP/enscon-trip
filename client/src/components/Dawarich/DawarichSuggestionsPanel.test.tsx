@@ -273,10 +273,10 @@ describe('DawarichSuggestionsPanel: the list', () => {
     S = hookState({
       status: 'ready',
       suggestions: [stay({ id: 1, localDate: '2026-09-10' })],
-      lastSyncError: 'Dawarich asked TREK to slow down. Try again shortly.',
+      lastSyncError: 'Dawarich asked ENSCON Trip to slow down. Try again shortly.',
     })
     panel({ trips: TRIPS })
-    expect(screen.getByText('Dawarich asked TREK to slow down. Try again shortly.')).toBeInTheDocument()
+    expect(screen.getByText('Dawarich asked ENSCON Trip to slow down. Try again shortly.')).toBeInTheDocument()
   })
 
   it('FE-DAWARICH-PANEL-012: a row carries the flags worth interrupting for, and gone beats changed', () => {

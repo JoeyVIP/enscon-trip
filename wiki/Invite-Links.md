@@ -1,6 +1,6 @@
 # Invite Links
 
-Invite new users to register on your TREK instance, even when open registration is disabled. Invite links work by embedding a short-lived token in the registration URL.
+Invite new users to register on your ENSCON Trip instance, even when open registration is disabled. Invite links work by embedding a short-lived token in the registration URL.
 
 ![Invite Links](assets/UsersAndInvites.png)
 

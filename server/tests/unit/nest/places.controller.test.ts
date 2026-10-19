@@ -538,7 +538,7 @@ describe('PlacesController (parity with the legacy /api/trips/:tripId/places rou
       const demo = { ...user, email: 'demo@trek.app' } as User;
       try {
         expect(await thrownAsync(() => new PlacesController(svc(), new RuntimeEnvService(), storageStub).uploadImage(demo, '5', '9', file))).toEqual({
-          status: 403, body: { error: 'Uploads are disabled in demo mode. Self-host TREK for full functionality.' },
+          status: 403, body: { error: 'Uploads are disabled in demo mode. Self-host ENSCON Trip for full functionality.' },
         });
       } finally {
         if (prev === undefined) delete process.env.DEMO_MODE;

@@ -1,6 +1,6 @@
 # Offline Mode and PWA
 
-TREK can be installed as a Progressive Web App (PWA) and used without an internet connection for previously synced trips.
+ENSCON Trip can be installed as a Progressive Web App (PWA) and used without an internet connection for previously synced trips.
 
 ## Install as an app (PWA)
 

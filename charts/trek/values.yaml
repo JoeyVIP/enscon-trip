@@ -1,6 +1,6 @@
 
 image:
-  repository: mauriceboe/trek
+  repository: ghcr.io/joeyvip/enscon-trip
   # tag: latest
   pullPolicy: IfNotPresent
 
@@ -55,7 +55,7 @@ env:
   # Set to "true" if Immich or other integrated services are hosted on a private/RFC-1918 network address.
   # Loopback (127.x) and link-local/metadata addresses (169.254.x) are always blocked.
   # ALLOW_LINK_LOCAL_IPS: ""
-  # Comma-separated single link-local addresses TREK may reach after all, e.g. "169.254.1.2" for a host gateway.
+  # Comma-separated single link-local addresses ENSCON Trip may reach after all, e.g. "169.254.1.2" for a host gateway.
   # 169.254.169.x and 169.254.170.x (cloud metadata) cannot be listed; an invalid entry aborts startup.
   # OIDC_ISSUER: ""
   # OpenID Connect provider URL.
@@ -84,7 +84,7 @@ env:
   # NOMINATIM_URL: ""
   # Custom Nominatim base URL for every geocoding call the server makes (place search, reverse lookup, Atlas region
   # fill). When set it REPLACES the public OpenStreetMap service, with no fallback, so the instance behind it needs
-  # the coverage you expect and has to speak the Nominatim API. TREK keeps its ~1 request per second spacing either
+  # the coverage you expect and has to speak the Nominatim API. ENSCON Trip keeps its ~1 request per second spacing either
   # way. Defaults to https://nominatim.openstreetmap.org.
   # OVERPASS_URL: ""
   # Custom Overpass endpoint(s) for the map POI "explore" search, comma-separated. When set, REPLACES the bundled
@@ -128,7 +128,7 @@ secretEnv:
   # OIDC client secret — set together with env.OIDC_ISSUER and env.OIDC_CLIENT_ID.
   OIDC_CLIENT_SECRET: ""
   # Optional Unsplash Access Key for trip-cover and place-image search.
-  # Without one, TREK uses Unsplash's unauthenticated endpoint, which some
+  # Without one, ENSCON Trip uses Unsplash's unauthenticated endpoint, which some
   # datacenter/VPS IPs (including many Kubernetes clusters) are blocked from.
   # Get a free key at https://unsplash.com/developers. Can also be set per-admin
   # in Admin > Settings; this value overrides that. Leave empty to disable.

@@ -187,7 +187,7 @@ describe('PlPlaceSearch', () => {
     const { input } = setup()
     fireEvent.change(input, { target: { value: 'Lou' } })
 
-    expect(await screen.findByText('TREK')).toBeInTheDocument()
+    expect(await screen.findByText('ENSCON Trip')).toBeInTheDocument()
     expect(await screen.findByText('OpenStreetMap')).toBeInTheDocument()
   })
 

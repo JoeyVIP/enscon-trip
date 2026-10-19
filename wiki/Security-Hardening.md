@@ -1,6 +1,6 @@
 # Security Hardening
 
-A production TREK deployment checklist. All items reference actual TREK configuration options.
+A production ENSCON Trip deployment checklist. All items reference actual ENSCON Trip configuration options.
 
 ## Encryption & Secrets
 

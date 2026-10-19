@@ -220,7 +220,7 @@ describe('JourneyPublicPage', () => {
       expect(screen.getByText('Tokyo 2026')).toBeInTheDocument();
     });
     // Footer shows "TREK" brand and "Made with" text
-    expect(screen.getByText('TREK')).toBeInTheDocument();
+    expect(screen.getByText('ENSCON Trip')).toBeInTheDocument();
     expect(screen.getByText(/Made with/)).toBeInTheDocument();
     expect(screen.getByText('GitHub')).toBeInTheDocument();
   });

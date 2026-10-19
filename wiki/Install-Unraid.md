@@ -1,6 +1,6 @@
 # Install: Unraid
 
-Install TREK on Unraid via Community Applications or a direct template import.
+Install ENSCON Trip on Unraid via Community Applications or a direct template import.
 
 <!-- TODO: screenshot: Unraid container template settings -->
 

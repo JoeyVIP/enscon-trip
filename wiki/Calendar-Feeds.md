@@ -1,6 +1,6 @@
 # Calendar Feeds
 
-Subscribe your calendar app to a TREK trip so it stays in sync automatically, instead of importing a snapshot once.
+Subscribe your calendar app to a ENSCON Trip trip so it stays in sync automatically, instead of importing a snapshot once.
 
 > **Not the same as the ICS export.** The **Download .ics** action described in [Day-Plans-and-Notes](Day-Plans-and-Notes) writes a one-off `.ics` file that never changes after you import it. A calendar *feed* is a live URL your calendar re-fetches on its own. Use the export for a frozen copy, a feed for something that keeps up with your edits.
 

@@ -3,7 +3,7 @@ import type { TranslationStrings } from '../types';
 const system_notice: TranslationStrings = {
   'system_notice.v3_photos.title': 'Οι Φωτογραφίες μετακινήθηκαν στην 3.0',
   'system_notice.v3_photos.body':
-    'Οι **Φωτογραφίες** στον Σχεδιαστή Ταξιδιού έχουν αφαιρεθεί. Οι φωτογραφίες σας είναι ασφαλείς — το TREK δεν τροποποίησε ποτέ τη βιβλιοθήκη σας Immich ή Synology.\n\nΟι φωτογραφίες τώρα βρίσκονται στο πρόσθετο **Journey**. Το Journey είναι προαιρετικό — αν δεν είναι ακόμα διαθέσιμο, ζητήστε από τον διαχειριστή σας να το ενεργοποιήσει από το Διαχειριστής → Πρόσθετα.',
+    'Οι **Φωτογραφίες** στον Σχεδιαστή Ταξιδιού έχουν αφαιρεθεί. Οι φωτογραφίες σας είναι ασφαλείς — το ENSCON Trip δεν τροποποίησε ποτέ τη βιβλιοθήκη σας Immich ή Synology.\n\nΟι φωτογραφίες τώρα βρίσκονται στο πρόσθετο **Journey**. Το Journey είναι προαιρετικό — αν δεν είναι ακόμα διαθέσιμο, ζητήστε από τον διαχειριστή σας να το ενεργοποιήσει από το Διαχειριστής → Πρόσθετα.',
   'system_notice.v3_journey.title': 'Γνωρίστε το Journey — ημερολόγιο ταξιδιών',
   'system_notice.v3_journey.body':
     'Καταγράψτε τα ταξίδια σας ως πλούσιες ταξιδιωτικές ιστορίες με χρονολόγια, συλλογές φωτογραφιών και διαδραστικούς χάρτες.',
@@ -32,18 +32,18 @@ const system_notice: TranslationStrings = {
   'system_notice.v3014_whitespace_collision.title': 'Απαιτείται ενέργεια: σύγκρουση λογαριασμού χρήστη',
   'system_notice.v3014_whitespace_collision.body':
     'Η αναβάθμιση 3.0.14 εντόπισε μία ή περισσότερες συγκρούσεις ονομάτων χρήστη ή email που προκλήθηκαν από κενά στην αρχή/τέλος αποθηκευμένων λογαριασμών. Οι επηρεαζόμενοι λογαριασμοί μετονομάστηκαν αυτόματα. Ελέγξτε τα logs του server για γραμμές που ξεκινούν με **[migration] WHITESPACE COLLISION** για να εντοπίσετε ποιοι λογαριασμοί χρειάζονται έλεγχο.',
-  'system_notice.welcome_v1.title': 'Καλώς ήρθατε στο TREK',
+  'system_notice.welcome_v1.title': 'Καλώς ήρθατε στο ENSCON Trip',
   'system_notice.welcome_v1.body':
     'Ο πλήρης ταξιδιωτικός σας σχεδιαστής. Δημιουργήστε δρομολόγια, μοιραστείτε ταξίδια με φίλους και μείνετε οργανωμένοι — συνδεδεμένοι ή εκτός σύνδεσης.',
   'system_notice.welcome_v1.cta_label': 'Σχεδιάστε ένα ταξίδι',
   'system_notice.welcome_v1.hero_alt':
-    'Ένας γραφικός ταξιδιωτικός προορισμός με επικάλυψη περιβάλλοντος σχεδιασμού TREK',
+    'Ένας γραφικός ταξιδιωτικός προορισμός με επικάλυψη περιβάλλοντος σχεδιασμού ENSCON Trip',
   'system_notice.welcome_v1.highlight_plan': 'Δρομολόγια ανά ημέρα για κάθε ταξίδι',
   'system_notice.welcome_v1.highlight_share': 'Συνεργαστείτε με συνταξιδιώτες',
   'system_notice.welcome_v1.highlight_offline': 'Λειτουργεί εκτός σύνδεσης σε κινητά',
   'system_notice.dev_test_modal.title': '[Dev] Δοκιμαστική ειδοποίηση',
   'system_notice.dev_test_modal.body': 'Αυτή είναι μια δοκιμαστική ειδοποίηση μόνο για ανάπτυξη.',
-  'system_notice.thank_you_support.title': 'Ευχαριστώ που χρησιμοποιείτε το TREK',
+  'system_notice.thank_you_support.title': 'Ευχαριστώ που χρησιμοποιείτε το ENSCON Trip',
   'system_notice.thank_you_support.body':
     'Ένα γρήγορο ευχαριστώ που εγκαταστήσατε το TREK — σημαίνει πραγματικά πολλά για μένα.\n\nΕίμαι ένας μόνος προγραμματιστής και φτιάχνω το TREK στον ελεύθερό μου χρόνο. Ξεκίνησε ως ένα μικρό εργαλείο μόνο για τα δικά μου ταξίδια, και ειλικρινά με συγκλονίζει η στήριξη και το ενδιαφέρον της κοινότητας από τότε. Το TREK φτιάχνεται με πολλή αγάπη από τη δική μου πλευρά — αλλά και χάρη στους πολλούς υπέροχους εξωτερικούς συνεισφέροντες που βοήθησαν να το διαμορφώσουν.\n\n**Το TREK είναι ανοιχτού κώδικα και εντελώς δωρεάν — και θα παραμείνει έτσι για πάντα. Καμία έκδοση επί πληρωμή, καμία συνδρομή, καμία παγίδα. Το υπόσχομαι.**\n\nΑν το TREK σάς είναι χρήσιμο και θέλετε να στηρίξετε την ανάπτυξή του, ένας μικρός καφές με βοηθά πραγματικά να συνεχίζω να φτιάχνω — καμία πίεση, αλλά κάθε φλιτζάνι κρατά ζωντανές τις ξενύχτιες.\n\nΣας ευχαριστώ που είστε εδώ.\n\n— Maurice',
   'system_notice.thank_you_support.highlight_opensource': '100% ανοιχτού κώδικα στο GitHub',
@@ -57,17 +57,17 @@ const system_notice: TranslationStrings = {
   'system_notice.pager.goto': 'Μετάβαση στην ειδοποίηση {n}',
   'system_notice.pager.position': 'Ειδοποίηση {current} από {total}',
   'system_notice.release_notes.eyebrow': 'Ενημερώθηκε',
-  'system_notice.release_notes.headline': 'Τέσσερα πράγματα που το TREK κάνει πλέον μόνο του.',
+  'system_notice.release_notes.headline': 'Τέσσερα πράγματα που το ENSCON Trip κάνει πλέον μόνο του.',
   'system_notice.release_notes.intro': 'Δικό του API τοποθεσιών, οδικά ταξίδια σχεδιασμένα από την αρχή ως το τέλος, το ιστορικό τοποθεσίας σας στα χέρια σας, και τα έγγραφά σας σε συγχρονισμό.',
   'system_notice.release_notes.features_label': 'Τα σημαντικότερα',
   'system_notice.release_notes.features_aside': 'Και δεν είναι μόνο αυτά',
-  'system_notice.release_notes.feature_places_title': 'TREK Places API',
+  'system_notice.release_notes.feature_places_title': 'ENSCON Trip Places API',
   'system_notice.release_notes.feature_places_body': 'Ο πρώτος ανοιχτού κώδικα σχεδιαστής ταξιδιών με δικό του API τοποθεσιών. 73,6 εκατ. τοποθεσίες, χωρίς κλειδί, χωρίς όριο.',
   'system_notice.release_notes.feature_roadtrip_title': 'Πρόσθετο «Οδικό ταξίδι»',
   'system_notice.release_notes.feature_roadtrip_body': 'Σχεδιάζει τη διαδρομή μόνο του: δρομολόγιο, απόσταση, ώρες και στάσεις. Ανενεργό μέχρι να το ενεργοποιήσει ένας διαχειριστής.',
   'system_notice.release_notes.feature_dawarich_title': 'Ενσωμάτωση Dawarich',
-  'system_notice.release_notes.feature_dawarich_body': 'Η εναλλακτική του Google Timeline που φιλοξενείτε μόνοι σας, τώρα ορατή μέσα από το TREK. Το TREK διαβάζει, και μόνο διαβάζει.',
-  'system_notice.release_notes.footnote': 'Και ακόμη μια μεγάλη λίστα με μικρότερες αλλαγές σε όλο το υπόλοιπο TREK.',
+  'system_notice.release_notes.feature_dawarich_body': 'Η εναλλακτική του Google Timeline που φιλοξενείτε μόνοι σας, τώρα ορατή μέσα από το ENSCON Trip. Το ENSCON Trip διαβάζει, και μόνο διαβάζει.',
+  'system_notice.release_notes.footnote': 'Και ακόμη μια μεγάλη λίστα με μικρότερες αλλαγές σε όλο το υπόλοιπο ENSCON Trip.',
   'system_notice.release_notes.notes_label': 'Σημειώσεις έκδοσης',
   'system_notice.release_notes.note_eyebrow': 'Μια σημείωση από τον δημιουργό',
   'system_notice.release_notes.note_title': 'Εσείς είστε ο λόγος που συνεχίζω να φτιάχνω το TREK.',

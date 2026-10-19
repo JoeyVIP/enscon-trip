@@ -33,6 +33,7 @@ import { useTranslation } from '../i18n';
 import { formatLocationName } from '../utils/formatters';
 import { posterlessVideo } from './journeyDetail/JourneyDetailPage.helpers';
 import { useJourneyPublic } from './journeyPublic/useJourneyPublic';
+import { useAppName } from '../utils/appName'
 
 const MOOD_CONFIG: Record<string, { icon: typeof Smile; label: string; bg: string; text: string }> = {
   amazing: {
@@ -92,6 +93,7 @@ function formatDate(d: string, locale?: string): { weekday: string; month: strin
 
 export default function JourneyPublicPage() {
   const { t } = useTranslation();
+  const appName = useAppName()
   // Page = wiring container: the share fetch, view state and all timeline/map
   // derivations live in the hook; the render helpers below stay next to the JSX.
   const {
@@ -662,7 +664,7 @@ export default function JourneyPublicPage() {
             position: 'relative',
           }}
         >
-          <img src="/icons/icon-white.svg" alt="TREK" width={26} height={26} />
+          <img src="/icons/icon-white.svg" alt={appName} width={26} height={26} />
         </div>
 
         <div
@@ -890,9 +892,9 @@ export default function JourneyPublicPage() {
             boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
           }}
         >
-          <img src="/icons/icon.svg" alt="TREK" width={18} height={18} style={{ borderRadius: 4 }} />
+          <img src="/icons/icon.svg" alt={appName} width={18} height={18} style={{ borderRadius: 4 }} />
           <span style={{ fontSize: 'calc(11px * var(--fs-scale-caption, 1))', color: '#9ca3af' }}>
-            {t('journey.public.sharedVia')} <strong style={{ color: '#6b7280' }}>TREK</strong>
+            {t('journey.public.sharedVia')} <strong style={{ color: '#6b7280' }}>{appName}</strong>
           </span>
         </div>
         <div style={{ fontSize: 'calc(10px * var(--fs-scale-caption, 1))', color: '#d1d5db' }}>

@@ -1,6 +1,6 @@
 # Admin — GitHub Releases
 
-The **GitHub** tab shows the TREK release history fetched from GitHub and provides links to community resources and support options.
+The **GitHub** tab shows the ENSCON Trip release history fetched from GitHub and provides links to community resources and support options.
 
 ![GitHub tab](assets/GithubReleases.png)
 

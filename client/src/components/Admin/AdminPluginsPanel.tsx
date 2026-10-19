@@ -18,6 +18,7 @@ import { useTranslation } from '../../i18n'
 import { useToast } from '../shared/Toast'
 import ConfirmDialog from '../shared/ConfirmDialog'
 import ToggleSwitch from '../Settings/ToggleSwitch'
+import { useAppName } from '../../utils/appName'
 
 /**
  * Admin → Plugins (#plugins). A full plugin-management surface: a segmented
@@ -402,6 +403,7 @@ function TypeBadge({ type, t }: { type: string; t: T }) {
 
 export default function AdminPluginsPanel() {
   const { t, locale } = useTranslation()
+  const appName = useAppName()
   const toast = useToast()
   const [runtimeOn, setRuntimeOn] = useState(false)
   const [devLink, setDevLink] = useState(false) // dev-link enabled server-side (TREK_PLUGINS_DEV_LINK)
@@ -1854,7 +1856,7 @@ function PluginDetailModal({ item, installed, busy, onInstall, onClose, t, local
               {/* The range, not just its lower bound: "TREK 3.2.0+" reads as "and anything
                   newer", which is exactly the claim a `<4.0.0` upper bound denies. */}
               {(item.trek || item.minTrekVersion) && (
-                <Meta k={t('admin.plugins.metaRequires')} v={item.trek ? `TREK ${item.trek}` : `TREK ${item.minTrekVersion}+`} />
+                <Meta k={t('admin.plugins.metaRequires')} v={item.trek ? `${appName} ${item.trek}` : `${appName} ${item.minTrekVersion}+`} />
               )}
               {item.reviewedAt && <Meta k={t('admin.plugins.metaReviewed')} v={new Date(item.reviewedAt).toLocaleDateString(locale)} />}
               {typeof item.downloadCount === 'number' && item.downloadCount > 0 && (

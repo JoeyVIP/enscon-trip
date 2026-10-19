@@ -1,6 +1,6 @@
 # MCP Prompts
 
-TREK includes built-in MCP prompts — pre-built context loaders that tell your AI client how to summarize or present your trip data in a structured way. Prompts are a standard MCP feature: compatible clients can invoke them by name to get a ready-made starting point for common tasks.
+ENSCON Trip includes built-in MCP prompts — pre-built context loaders that tell your AI client how to summarize or present your trip data in a structured way. Prompts are a standard MCP feature: compatible clients can invoke them by name to get a ready-made starting point for common tasks.
 
 ## Built-in prompts
 

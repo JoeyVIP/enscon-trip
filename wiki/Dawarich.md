@@ -1,10 +1,10 @@
 # Dawarich
 
-[Dawarich](https://dawarich.app) is a self-hosted location history tracker, a Google Timeline replacement you run yourself. It knows where you actually were. TREK knows what you planned and why. This addon lets TREK read your Dawarich instance and offer what it finds.
+[Dawarich](https://dawarich.app) is a self-hosted location history tracker, a Google Timeline replacement you run yourself. It knows where you actually were. ENSCON Trip knows what you planned and why. This addon lets ENSCON Trip read your Dawarich instance and offer what it finds.
 
-The split is deliberate and it does not move: **Dawarich records, TREK plans and interprets.** TREK never starts a tracker of its own, never writes anything into Dawarich, and never keeps a copy of your recorded route. Everything it finds arrives as a **suggestion** that only you can see, and nothing reaches a trip, a journal or your Atlas until you confirm it. A background check must not edit a trip three other people are planning.
+The split is deliberate and it does not move: **Dawarich records, ENSCON Trip plans and interprets.** ENSCON Trip never starts a tracker of its own, never writes anything into Dawarich, and never keeps a copy of your recorded route. Everything it finds arrives as a **suggestion** that only you can see, and nothing reaches a trip, a journal or your Atlas until you confirm it. A background check must not edit a trip three other people are planning.
 
-> **Admin:** Enable the **Dawarich** addon in **Admin → Addons**. It is listed under **Integration** and is off by default. The toggle is the instance-wide switch only: each user connects their own instance in **Settings → Integrations**. A Dawarich on your local network also needs `ALLOW_INTERNAL_NETWORK=true` on the TREK server. See [Admin-Addons](Admin-Addons) and [Internal-Network-Access](Internal-Network-Access).
+> **Admin:** Enable the **Dawarich** addon in **Admin → Addons**. It is listed under **Integration** and is off by default. The toggle is the instance-wide switch only: each user connects their own instance in **Settings → Integrations**. A Dawarich on your local network also needs `ALLOW_INTERNAL_NETWORK=true` on the ENSCON Trip server. See [Admin-Addons](Admin-Addons) and [Internal-Network-Access](Internal-Network-Access).
 
 ## What it does
 

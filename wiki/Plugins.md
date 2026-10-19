@@ -1,13 +1,13 @@
 # Plugins
 
-Plugins let anyone extend a self-hosted TREK instance with new features — a
+Plugins let anyone extend a self-hosted ENSCON Trip instance with new features — a
 dashboard widget, a full page, a photo/calendar integration — **without touching
-TREK's source code**. They are developed by third parties, distributed from a
+ENSCON Trip's source code**. They are developed by third parties, distributed from a
 public registry, and installed at the instance owner's discretion.
 
 > [!IMPORTANT]
 > **Plugins run arbitrary code, isolated but real.** Every plugin runs in its own
-> sandboxed child process with only the permissions you approve. TREK does not
+> sandboxed child process with only the permissions you approve. ENSCON Trip does not
 > maintain, audit, or take responsibility for community plugins. Grant a plugin
 > only the access you'd trust it to have with your data, and prefer plugins
 > marked **Reviewed**.

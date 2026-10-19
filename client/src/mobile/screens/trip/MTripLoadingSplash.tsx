@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from '../../../i18n'
 import MDancingTrek, { type TrekScene } from '../../components/MDancingTrek'
+import { useAppName } from '../../../utils/appName'
 
 /**
  * Trip-open splash — the TREK mascot acts out a little journey while the trip
@@ -24,6 +25,7 @@ const REDUCE_MOTION = '(prefers-reduced-motion: reduce)'
 
 export default function MTripLoadingSplash({ title }: { title: string }) {
   const { t } = useTranslation()
+  const appName = useAppName()
   const [reduceMotion, setReduceMotion] = useState(() => window.matchMedia?.(REDUCE_MOTION)?.matches ?? false)
   // The splash can be up long enough for the OS setting to be flipped under it.
   useEffect(() => {
@@ -54,7 +56,7 @@ export default function MTripLoadingSplash({ title }: { title: string }) {
         </div>
       </div>
 
-      <div className="mb-2 text-[1.25rem] font-bold tracking-[-0.3px]">{title || 'TREK'}</div>
+      <div className="mb-2 text-[1.25rem] font-bold tracking-[-0.3px]">{title || appName}</div>
 
       <div className="mb-8 flex h-4 items-center justify-center">
         <span key={step.key} className="m-fade-in text-[0.75rem] font-medium uppercase tracking-[2px] text-m-faint">

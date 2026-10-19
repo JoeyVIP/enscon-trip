@@ -434,7 +434,7 @@ export class PaperlessDocumentProvider implements DocumentProvider {
         tooLarge: (declared) =>
           new PaperlessError(
             'too_large',
-            'The document is larger than TREK will transfer',
+            'The document is larger than ENSCON Trip will transfer',
             undefined,
             `content_length=${declared}`,
           ),

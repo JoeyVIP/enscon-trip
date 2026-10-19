@@ -1,6 +1,6 @@
 # Audit Log
 
-The audit log records significant actions taken on your TREK instance. Use it to monitor logins, admin changes, and integration configuration.
+The audit log records significant actions taken on your ENSCON Trip instance. Use it to monitor logins, admin changes, and integration configuration.
 
 ## Where to find it
 

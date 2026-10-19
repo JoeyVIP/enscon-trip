@@ -62,7 +62,7 @@ describe('MTripLoadingSplash', () => {
   it('FE-MOB-SPLASH-002: falls back to the TREK wordmark when the trip has no title', () => {
     render(<MTripLoadingSplash title="" />)
 
-    expect(screen.getByText('TREK')).toBeInTheDocument()
+    expect(screen.getByText('ENSCON Trip')).toBeInTheDocument()
   })
 
   it('FE-MOB-SPLASH-003: walks the four beats in order, one every 1400ms', () => {

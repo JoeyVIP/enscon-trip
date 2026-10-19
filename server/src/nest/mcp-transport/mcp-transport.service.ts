@@ -102,7 +102,7 @@ export function setAuthChallenge(res: Response, error = 'invalid_token'): void {
   const base = trimTrailingSlashes(getMcpSafeUrl() || '');
   // RFC 9728 §5: resource with path component /mcp → PRM URL must include the path
   res.set('WWW-Authenticate',
-      `Bearer realm="TREK MCP", resource_metadata="${base}/.well-known/oauth-protected-resource/mcp", error="${error}"`);
+      `Bearer realm="ENSCON Trip MCP", resource_metadata="${base}/.well-known/oauth-protected-resource/mcp", error="${error}"`);
 }
 
 export interface VerifyTokenResult {
@@ -249,7 +249,7 @@ export class McpTransportService {
     // Create a new per-user MCP server and session
     const server = new McpServer(
         {
-          name: 'TREK MCP',
+          name: 'ENSCON Trip MCP',
           version: '1.0.0',
         },
         {
