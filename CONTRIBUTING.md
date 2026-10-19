@@ -4,13 +4,13 @@ Thanks for your interest in contributing! Please read these guidelines before op
 
 ## Ground Rules
 
-1. **Ask in Discord first** — Before writing any code, pitch your idea in the `#github-pr` channel on our [Discord server](https://discord.gg/NhZBDSd4qW). We'll let you know if the PR is wanted and give direction. PRs that show up without prior discussion will be closed
+1. **Open an issue first** — Before writing any code, describe your idea in an [issue](https://github.com/JoeyVIP/enscon-trip/issues/new). We'll let you know if the PR is wanted and give direction. PRs that show up without prior discussion will be closed
 2. **One change per PR** — Keep it focused. Don't bundle unrelated fixes or refactors
 3. **No breaking changes** — Backwards compatibility is non-negotiable
-4. **Target the `dev` branch** — All PRs must be opened against `dev`, not `main`. Exception: PRs that only modify files under `wiki/` may target any branch
+4. **Target the `main` branch** — All PRs are opened against `main` (this fork has no separate `dev` flow). Note: this is a fork of TREK; changes that belong upstream should go to the [upstream project](https://github.com/liketrek/TREK)
 5. **Match the existing style** — No reformatting, no linter config changes, no "while I'm here" cleanups
 6. **Tests** — Your changes must include tests. The project maintains 80%+ coverage; PRs that drop it will be closed
-7. **Branch up to date** — Your branch must be [up to date with `dev`](https://github.com/liketrek/TREK/wiki/Development-environment#3-keep-your-fork-up-to-date) before submitting a PR
+7. **Branch up to date** — Your branch must be up to date with `main` before submitting a PR
 
 ## Pull Requests
 
@@ -22,7 +22,7 @@ Thanks for your interest in contributing! Please read these guidelines before op
 
 ### Your PR will be closed if it:
 
-- Wasn't discussed and approved in `#github-pr` on Discord first
+- Wasn't discussed and approved in an issue first
 - Introduces breaking changes
 - Adds unnecessary complexity or features beyond scope
 - Reformats or refactors unrelated code

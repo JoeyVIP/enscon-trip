@@ -18,8 +18,6 @@
   <Icon>https://raw.githubusercontent.com/JoeyVIP/enscon-trip/main/docs/enscon-trip-icon.png</Icon>
   <ExtraParams/>
   <PostArgs/>
-  <DonateText>Support TREK (upstream) development</DonateText>
-  <DonateLink>https://ko-fi.com/mauriceboe</DonateLink>
   <Requires/>
 
   <!-- Ports & Volumes -->
