@@ -1,5 +1,7 @@
 # ENSCON Trip Wiki
 
+> **這是上游 TREK 的文件（This is the upstream TREK documentation）。** ENSCON 旅程是 [TREK](https://github.com/liketrek/TREK)（作者 Maurice Boe）的分支；功能與設定大多相同，但我們改過的地方（預設繁中／TWD、LINE 登入相關環境變數、改名與 logo）請看 [README](https://github.com/JoeyVIP/enscon-trip#readme) 的「我們改了什麼」。文件裡出現的 TREK 指的是上游專案。
+
 ENSCON Trip is a self-hosted, real-time collaborative travel planner licensed under AGPL-3.0.
 
 ![Dashboard](assets/DashboardWidgets.png)
