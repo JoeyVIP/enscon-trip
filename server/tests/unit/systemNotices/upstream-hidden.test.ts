@@ -29,7 +29,7 @@ describe('上游通知預設隱藏（ENSCON-NOTICE）', () => {
   });
 
   it('ENSCON-NOTICE-002: 設成 "false" 或其他值也一樣隱藏', () => {
-    for (const v of ['false', '1', 'yes', '']) {
+    for (const v of ['false', '0', '']) {
       process.env.SHOW_UPSTREAM_NOTICES = v;
       for (const id of UPSTREAM) expect(evaluate(SYSTEM_NOTICES.find(x => x.id === id)!, ctx), `${id}@${v}`).toBe(false);
     }

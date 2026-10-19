@@ -118,12 +118,12 @@ describe('DOCUMENT_PROVIDER_ICONS', () => {
 })
 
 describe('TrekIcon', () => {
-  it('FE-DOCSYNC-ICONS-011: renders TREK\u2019s app icon in currentColor', () => {
+  it('FE-DOCSYNC-ICONS-011: renders ENSCON Trip\u2019s app icon in currentColor', () => {
     const { container } = render(<TrekIcon />)
     const svg = container.querySelector('svg')
 
     expect(svg).not.toBeNull()
-    expect(svg!.getAttribute('viewBox')).toBe('0 0 512 512')
+    expect(svg!.getAttribute('viewBox')).toBe('0 0 1024 1024')
     expect(svg!.querySelectorAll('path[fill="currentColor"]').length).toBeGreaterThan(0)
   })
 

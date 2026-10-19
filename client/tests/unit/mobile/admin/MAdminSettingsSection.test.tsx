@@ -283,11 +283,11 @@ describe('MAdminSettingsSection', () => {
     // failing. Which of the two is true is app-config's answer: the key fields
     // are empty on a managed install and on a key set by the environment.
     const { unmount } = render(<Harness admin={buildAdminHook({ placesProvider: 'amap', hasAmapKey: false })} />);
-    expect(screen.getByText(/TREK index and OpenStreetMap alone/i)).toBeInTheDocument();
+    expect(screen.getByText(/ENSCON Trip index and OpenStreetMap alone/i)).toBeInTheDocument();
     unmount();
 
     renderSettings({ managed: true, placesProvider: 'google', mapsKey: '', hasMapsKey: true });
-    expect(screen.queryByText(/TREK index and OpenStreetMap alone/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/ENSCON Trip index and OpenStreetMap alone/i)).not.toBeInTheDocument();
   });
 
   it('FE-MOB-ASET-017: the Google Places toggles persist optimistically', async () => {

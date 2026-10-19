@@ -300,7 +300,7 @@ describe('AdminSettingsTab', () => {
     // failing, which is quiet enough to be mistaken for the provider working.
     renderTab({ placesProvider: 'amap', hasAmapKey: false });
     expect(
-      within(card('API Keys')).getByText(/TREK index and OpenStreetMap alone/i),
+      within(card('API Keys')).getByText(/ENSCON Trip index and OpenStreetMap alone/i),
     ).toBeInTheDocument();
   });
 
@@ -459,7 +459,7 @@ describe('AdminSettingsTab', () => {
     expect(hint.textContent).toMatch(/provider/i);
   });
 
-  it('FE-ADMSET-031: the API keys card leads with the TREK index and no weather panel', () => {
+  it('FE-ADMSET-031: the API keys card leads with the ENSCON Trip index and no weather panel', () => {
     renderTab();
 
     const keys = card('API Keys');

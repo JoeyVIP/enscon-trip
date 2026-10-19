@@ -70,7 +70,7 @@ export class DocSyncWebhookController implements OnModuleDestroy {
   }
 
   @Post(':token')
-  @Public('A provider cannot hold a ENSCON Trip session; the per-link token in the URL is the authentication, and the call can only ever trigger a sync run.')
+  @Public('A provider cannot hold an ENSCON Trip session; the per-link token in the URL is the authentication, and the call can only ever trigger a sync run.')
   @HttpCode(200)
   nudge(@Param('token') token: string, @Req() req: Request) {
     const link = this.config.getLinkByToken(token);

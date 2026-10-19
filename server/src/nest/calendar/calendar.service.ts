@@ -8,7 +8,7 @@ import { NotFoundError } from '../common/domain-errors';
 
 /** The VCALENDAR preamble every TREK calendar starts with, single-trip or merged. */
 export const CALENDAR_HEADER =
-  'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//ENSCON Trip//Travel Planner//EN\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\n';
+  'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//TREK//Travel Planner//EN\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\n';
 
 /** One trip's calendar in parts, so callers can merge several without re-parsing text. */
 export interface TripCalendar {

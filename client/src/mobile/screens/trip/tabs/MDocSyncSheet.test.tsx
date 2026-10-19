@@ -202,7 +202,7 @@ describe('MDocSyncSheet: opening and the store list', () => {
     links = [link({ providerName: 'Paperless-ngx' })]
     renderSheet({ canManage: false })
 
-    const row = await screen.findByRole('button', { name: /TREK trip 3/ })
+    const row = await screen.findByRole('button', { name: /ENSCON Trip trip 3/ })
     expect(screen.queryByText('No document providers are available')).not.toBeInTheDocument()
     expect(screen.queryByText('Add another')).not.toBeInTheDocument()
     // The providers route no longer names it, so the name comes off the link,

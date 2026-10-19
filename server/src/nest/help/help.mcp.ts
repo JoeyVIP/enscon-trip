@@ -52,7 +52,7 @@ export class HelpMcp {
   @Tool({
     name: 'get_help_page',
     description:
-      'Read one page of the bundled ENSCON Trip user manual as markdown, addressed by a slug from list_help_topics. Prefer it over answering from memory whenever the user asks how a ENSCON Trip feature behaves: the pages ship with the running version, so they describe this instance rather than some other release. Long pages arrive in chunks, so when the result says truncated, call again with next_offset.',
+      'Read one page of the bundled ENSCON Trip user manual as markdown, addressed by a slug from list_help_topics. Prefer it over answering from memory whenever the user asks how an ENSCON Trip feature behaves: the pages ship with the running version, so they describe this instance rather than some other release. Long pages arrive in chunks, so when the result says truncated, call again with next_offset.',
     inputSchema: {
       slug: z.string().min(1).max(120).describe('Page slug as reported by list_help_topics, e.g. "Quick-Start"'),
       offset: z
