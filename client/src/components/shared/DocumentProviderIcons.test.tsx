@@ -124,7 +124,7 @@ describe('TrekIcon', () => {
 
     expect(svg).not.toBeNull()
     expect(svg!.getAttribute('viewBox')).toBe('0 0 1024 1024')
-    expect(svg!.querySelectorAll('path[fill="currentColor"]').length).toBeGreaterThan(0)
+    expect(svg!.querySelectorAll('ellipse[fill="currentColor"]').length).toBeGreaterThan(0)
   })
 
   it('FE-DOCSYNC-ICONS-012: takes a className, which is the only thing that sizes it', () => {

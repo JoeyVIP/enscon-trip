@@ -2497,7 +2497,7 @@ describe('AdminPluginsPanel — TREK-range bypass (TREK_PLUGINS_IGNORE_TREK_RANG
 
     const dialog = await screen.findByRole('dialog', { name: /outside its supported ENSCON Trip versions/i })
     expect(within(dialog).getByText(/no guarantee/i)).toBeInTheDocument()
-    expect(within(dialog).getByText(/corrupt trek data/i)).toBeInTheDocument()
+    expect(within(dialog).getByText(/corrupt ENSCON Trip data/i)).toBeInTheDocument()
     expect(posted).toBeNull() // nothing sent until the admin accepts the risk
 
     fireEvent.click(within(dialog).getByRole('button', { name: /^install anyway$/i }))
