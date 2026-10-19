@@ -1,12 +1,13 @@
 import type { SystemNotice } from './types.js';
 import { registerPredicate } from './conditions.js';
 import { db } from '../db/database.js';
+import { readEnv } from '../app-config';
 
 // ENSCON：上游（TREK）的「release-notes」「thank-you-support」是作者 Maurice 的第一人稱感謝與募款訊息
 // （「我是獨立開發者，我做了 TREK」＋捐款連結），換成我們的產品名等於冒用他的話，保留原文又會在我們的產品裡
 // 顯示 TREK。所以預設不顯示；要顯示（例如跑上游測試）要明確設 SHOW_UPSTREAM_NOTICES=true。
 // 捐款連結仍在 NOTICE.md 與 README 的「Support TREK (upstream)」保留，對原作者的歸屬沒變。
-registerPredicate('upstream-notices-allowed', () => process.env.SHOW_UPSTREAM_NOTICES === 'true');
+registerPredicate('upstream-notices-allowed', () => readEnv().app.showUpstreamNotices);
 
 registerPredicate('whitespace-collision-detected', () => {
   const row = db.prepare("SELECT value FROM app_settings WHERE key = 'whitespace_migration_collision'").get() as { value: string } | undefined;

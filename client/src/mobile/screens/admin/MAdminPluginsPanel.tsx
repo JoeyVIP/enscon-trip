@@ -1698,6 +1698,7 @@ function PluginDetailSheet({ item, installed, busy, onInstall, onClose, t, local
   item: RegistryItem; installed: boolean; busy: string | null; ignoreTrekRange: boolean
   onInstall: (id: string, version?: string, warn?: RangeWarning) => void; onClose: () => void; t: T; locale: string
 }) {
+  const appName = useAppName()
   const [detail, setDetail] = useState<RegistryDetail | null>(null)
   const [failed, setFailed] = useState(false)
 
