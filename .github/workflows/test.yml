@@ -233,17 +233,21 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-  # ENSCON：fork 沒有上游的 MINIO_LICENSE_KEY。job 層的 if 讀不到 secrets，所以先用一個小 job 判斷有沒有設，
-  # 沒設就整個跳過 S3 contract（而不是紅燈）。
+  # ENSCON：fork 沒有上游的 MINIO_LICENSE_KEY／SONAR_TOKEN。job 層的 if 讀不到 secrets，所以先用一個小 job
+  # 判斷有沒有設，沒設就整個跳過 S3 contract 與 Sonar Scan（而不是紅燈）。
   minio-gate:
     runs-on: ubuntu-latest
     outputs:
       has_key: ${{ steps.check.outputs.has_key }}
+      has_sonar: ${{ steps.check.outputs.has_sonar }}
     steps:
       - id: check
         env:
           KEY: ${{ secrets.MINIO_LICENSE_KEY }}
-        run: if [ -n "$KEY" ]; then echo has_key=true; else echo has_key=false; fi >> "$GITHUB_OUTPUT"
+          SONAR: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          if [ -n "$KEY" ]; then echo has_key=true; else echo has_key=false; fi >> "$GITHUB_OUTPUT"
+          if [ -n "$SONAR" ]; then echo has_sonar=true; else echo has_sonar=false; fi >> "$GITHUB_OUTPUT"
 
   s3-contract:
     name: S3 Driver Contract (MinIO)
@@ -450,12 +454,12 @@ jobs:
     name: Scan
     runs-on: ubuntu-latest
     # Fork PRs don't receive SONAR_TOKEN — skip the scan rather than fail it.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    if: needs.minio-gate.outputs.has_sonar == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
     # Coverage jobs failing must stop the scan: a missing lcov file would make
     # every line of that package report as uncovered, and the dashboard would
     # show a collapse that did not happen. The preflight gates already stop it
     # transitively through these four, so they aren't repeated here.
-    needs: [server-coverage, client-coverage, shared-coverage, plugin-sdk-coverage]
+    needs: [server-coverage, client-coverage, shared-coverage, plugin-sdk-coverage, minio-gate]
 
     steps:
       - uses: actions/checkout@v6
