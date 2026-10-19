@@ -33,13 +33,16 @@ jobs:
 
       - name: 決定 image 名稱與 tag
         id: meta
+        # 輸入值只能經由 env 進 shell，不能直接寫 ${{ }} 在 run 裡（那會被當成 shell 程式碼，等於指令注入）
+        env:
+          INPUT_TAG: ${{ github.event.inputs.tag }}
         run: |
           IMAGE="ghcr.io/$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')"
           SHORT="${GITHUB_SHA::7}"
           if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
             TAG="${GITHUB_REF_NAME}"
-          elif [ -n "${{ github.event.inputs.tag }}" ]; then
-            TAG="${{ github.event.inputs.tag }}"
+          elif [ -n "$INPUT_TAG" ]; then
+            TAG="$INPUT_TAG"
           else
             TAG="$SHORT"
           fi
