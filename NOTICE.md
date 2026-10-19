@@ -1,4 +1,28 @@
-# Third-party data & attributions
+# Notices
+
+## ENSCON Trip（ENSCON 旅程）
+
+ENSCON Trip is a modified version of **TREK** (https://github.com/liketrek/TREK), licensed under the
+GNU Affero General Public License v3.0 (see `LICENSE`). The original copyright notices are kept.
+"TREK" and the TREK logo are trademarks of the TREK project (see `TRADEMARKS.md`); this fork does
+not use them as its own name or logo and is not an official TREK distribution.
+
+Source code of this modified version (AGPL-3.0 section 13): https://github.com/JoeyVIP/enscon-trip
+
+### What we changed
+See the "What we changed" section in `README.md`.
+
+### Additional third-party data used by our changes
+
+- **Natural Earth** — the outline of Taiwan used in the ENSCON Trip logo (`brand/`) was simplified
+  from Natural Earth 1:50m Admin 0 – Countries (https://www.naturalearthdata.com/). Natural Earth is
+  in the public domain.
+- Brand arcs: the four-arc mark is the logo of ENSCON (來電司康). It is a trademark of ENSCON and is
+  not covered by the AGPL license.
+
+---
+
+# Third-party data & attributions (inherited from TREK)
 
 TREK bundles and uses third-party data that requires attribution.
 

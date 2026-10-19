@@ -371,6 +371,33 @@ It also defaults the UI language to 繁體中文 and new trips to TWD.
 Note: the database column default for `trips.currency` is still `EUR` (no migration); the app always
 writes an explicit currency on insert, so this only matters for rows inserted outside the app.
 
+## ENSCON Trip（ENSCON 旅程）— 我們改了什麼 / What we changed
+
+ENSCON 旅程是 [TREK](https://github.com/liketrek/TREK)（AGPL-3.0）的修改版，給台灣使用者用。
+based on TREK, licensed under AGPL-3.0. 原始碼（含我們的修改）：本 repo。
+
+已完成（第一版）：
+
+- 預設介面語言繁體中文（偵測不到瀏覽器語言時）；分享頁的語言切換會被記住
+- 新行程預設幣別 TWD（新台幣）
+- `OIDC_ALLOW_CROSS_BROWSER_CALLBACK`：LINE 登入常在 LINE 內建瀏覽器與系統瀏覽器之間切換，開啟後
+  callback 沒有 cookie 也接受（有 cookie 但不符仍拒絕；state 仍然一次性）
+- `OIDC_HIDE_PASSWORD_FORM`／`OIDC_BUTTON_COLOR`：登入頁只留一顆大的 LINE 登入鈕；網址加 `?pw=1` 還是看得到帳密表單（管理員用）
+- 邀請碼（`?invite=`）會記在 localStorage，SSO 連結一律帶上
+- `EXTRA_LINK_URL`／`EXTRA_LINK_LABEL`：行程頁右下角的額外連結按鈕（例如小遊戲）
+- 每一頁左下角放「原始碼」連結（AGPL-3.0 第 13 條）
+- 資料庫裡 `trips.currency` 欄位的預設值仍是 `EUR`（沒有做 migration）；程式寫入時一定會帶幣別，所以只有在 app 以外直接寫入資料庫時才有差
+
+### 下一版規劃（依「旅途中最常被問的問題」排序，尚未做）
+
+1. 記帳：日幣與台幣並列、自動換匯、用 LINE Pay／街口結算
+2. 伴手禮：誰幫誰買、免稅門檻提示
+3. 天氣與穿衣提醒
+4. 台灣國定假日與農曆、台灣地名中文、一鍵分享到 LINE 群組
+5. 交通卡餘額、租車 ETC 費用、素食與五辛提醒
+
+商標：本 fork 名稱與 logo 為 ENSCON 所有，不使用 TREK 的名稱與 logo。詳見 `NOTICE.md`、`TRADEMARKS.md`。
+
 ## Star History
 
 <a href="https://www.star-history.com/?repos=liketrek%2FTREK&type=date&legend=bottom-right">
