@@ -115,7 +115,11 @@ export class OidcController {
     if (!code || !state) return f('/login?oidc_error=missing_params');
 
     // Require the callback to come from the browser that started the flow.
-    if (!boundState || boundState !== state) return f('/login?oidc_error=invalid_state');
+    // ENSCON：LINE App 內建瀏覽器開始登入、外部瀏覽器收 callback 時，state cookie 不會跟過去。
+    // OIDC_ALLOW_CROSS_BROWSER_CALLBACK 開啟時「沒有 cookie」也放行，但「有 cookie 卻不符」照樣拒絕
+    // （那是攻擊者把自己的流程塞給受害者的典型樣子）；state 仍須在 pendingStates 裡且一次性消耗。
+    const allowMissingCookie = readEnv().oidc.allowCrossBrowserCallback && !boundState;
+    if (!allowMissingCookie && (!boundState || boundState !== state)) return f('/login?oidc_error=invalid_state');
 
     const pending = this.oidc.consumeState(state);
     if (!pending) return f('/login?oidc_error=invalid_state');

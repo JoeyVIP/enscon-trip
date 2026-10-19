@@ -25,7 +25,14 @@ interface AppConfig {
   passkey_login?: boolean
   passkey_configured?: boolean
   env_override_oidc_only: boolean
+  // ENSCON：只藏帳密表單的畫面旗標與 OIDC 主按鈕顏色（見 server auth.service getAppConfig）
+  oidc_hide_password_form?: boolean
+  oidc_button_color?: string
 }
+
+// ENSCON：邀請碼在 localStorage 的 key 與格式檢查（跟 line-only.js 一致，避免存進奇怪的字串）。
+const INVITE_STORAGE_KEY = 'enscon_invite'
+const INVITE_RE = /^[A-Za-z0-9_-]{8,128}$/
 
 /**
  * Login data hook — owns the whole auth surface: login/register/demo, the MFA
@@ -118,6 +125,12 @@ export function useLogin() {
     const invite = params.get('invite')
     const oidcCode = params.get('oidc_code')
     const oidcError = params.get('oidc_error')
+
+    // ENSCON：邀請碼存進 localStorage，使用者從 LINE App 跳到別的瀏覽器／重新整理後，
+    // OIDC 連結還能帶著它（TREK 會把 invite 跟 OIDC state 一起存在伺服器端）。
+    if (invite && INVITE_RE.test(invite)) {
+      try { localStorage.setItem(INVITE_STORAGE_KEY, invite) } catch { /* 私密模式寫不進去就算了 */ }
+    }
 
     if (invite) {
       setInviteToken(invite)
@@ -324,6 +337,21 @@ export function useLogin() {
   // In OIDC-only mode, show a minimal page that redirects directly to the IdP
   const oidcOnly = !appConfig?.password_login && appConfig?.oidc_login && appConfig?.oidc_configured
 
+  // ENSCON：OIDC_HIDE_PASSWORD_FORM —— 只藏畫面（帳密表單、「或」、註冊／忘記密碼），後端密碼登入照常。
+  // 跟 OIDC_ONLY 不同：admin 與自動化仍要用密碼，所以網址加 ?pw=1 就照原樣顯示表單。
+  // 還沒有任何使用者（首次建立 admin）時一定顯示表單。
+  const pwBackdoor = new URLSearchParams(window.location.search).get('pw') === '1'
+  const hidePasswordForm = !oidcOnly && !pwBackdoor && !!(
+    appConfig?.oidc_hide_password_form && appConfig?.oidc_login && appConfig?.oidc_configured && appConfig?.has_users
+  )
+  const oidcButtonColor = appConfig?.oidc_button_color || '#06C755'
+
+  // ENSCON：OIDC 連結要帶的邀請碼 —— 網址上的優先，沒有就用 localStorage 存的。
+  const oidcInviteToken = useMemo(() => {
+    if (inviteToken) return inviteToken
+    try { return localStorage.getItem(INVITE_STORAGE_KEY) || '' } catch { return '' }
+  }, [inviteToken])
+
   return {
     navigate,
     mode, setMode,
@@ -333,6 +361,7 @@ export function useLogin() {
     showTakeoff, mfaStep, setMfaStep, mfaToken, setMfaToken, mfaCode, setMfaCode,
     passwordChangeStep, newPassword, setNewPassword, confirmPassword, setConfirmPassword,
     noRedirect, showRegisterOption, oidcOnly,
+    hidePasswordForm, oidcButtonColor, oidcInviteToken,
     handleDemoLogin, handleSubmit, handlePasskeyLogin,
   }
 }

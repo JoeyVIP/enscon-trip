@@ -326,6 +326,11 @@ export class AuthService {
       places_provider: placesProvider,
       oidc_configured: oidcConfigured,
       oidc_display_name: oidcConfigured ? (oidcDisplayName || 'SSO') : undefined,
+      // ENSCON：只藏登入頁的帳密表單（不像 OIDC_ONLY 會關掉後端密碼登入），?pw=1 仍可顯示。
+      oidc_hide_password_form: oidcConfigured && readEnv().oidc.hidePasswordForm,
+      oidc_button_color: readEnv().oidc.buttonColor,
+      // ENSCON：右下角額外連結浮動按鈕；沒設 URL 就是 null，前端不畫。
+      extra_link: readEnv().extraLink.url ? { url: readEnv().extraLink.url, label: readEnv().extraLink.label } : null,
       require_mfa: requireMfaRow?.value === 'true',
       // The canonical live-read: same query + DEFAULT_ALLOWED_EXTENSIONS
       // fallback the upload filters use, so the client's picker and the

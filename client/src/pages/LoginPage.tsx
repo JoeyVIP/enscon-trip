@@ -79,16 +79,21 @@ export default function LoginPage(): React.ReactElement {
     noRedirect,
     showRegisterOption,
     oidcOnly,
+    hidePasswordForm,
+    oidcButtonColor,
+    oidcInviteToken,
     handleDemoLogin,
     handleSubmit,
     handlePasskeyLogin,
   } = useLogin();
 
-  const oidcButtonShown = !!(appConfig?.oidc_configured && appConfig?.oidc_login && !oidcOnly);
+  const oidcButtonShown = !!(appConfig?.oidc_configured && appConfig?.oidc_login && !oidcOnly && !hidePasswordForm);
   const passkeyAvailable = !!(
     appConfig?.passkey_login &&
     appConfig?.passkey_configured &&
     !oidcOnly &&
+    // ENSCON：只留 OIDC 的畫面連 passkey 也不顯示（?pw=1 時照常）
+    !hidePasswordForm &&
     mode === 'login' &&
     !mfaStep &&
     !passwordChangeStep
@@ -466,7 +471,8 @@ export default function LoginPage(): React.ReactElement {
               boxShadow: '0 2px 16px rgba(0,0,0,0.06)',
             }}
           >
-            {oidcOnly ? (
+            {/* ENSCON：OIDC_HIDE_PASSWORD_FORM 也走這個精簡畫面，只是按鈕改成大的主色按鈕 */}
+            {oidcOnly || hidePasswordForm ? (
               <>
                 <h2
                   style={{
@@ -479,7 +485,7 @@ export default function LoginPage(): React.ReactElement {
                   {t('login.title')}
                 </h2>
                 <p style={{ margin: '0 0 24px', fontSize: 'calc(13.5px * var(--fs-scale-body, 1))', color: '#9ca3af' }}>
-                  {noRedirect ? t('login.oidcLoggedOut') : t('login.oidcOnly')}
+                  {hidePasswordForm ? t('login.subtitle') : noRedirect ? t('login.oidcLoggedOut') : t('login.oidcOnly')}
                 </p>
                 {error && (
                   <div
@@ -500,16 +506,17 @@ export default function LoginPage(): React.ReactElement {
                   onClick={clearSignedOut}
                   // No remember-me switch in OIDC-only mode: the IdP owns the session
                   // policy, so always ask for the remembered lifetime (#1927).
-                  href={`/api/auth/oidc/login${inviteToken ? '?invite=' + encodeURIComponent(inviteToken) + '&' : '?'}remember=1`}
+                  href={`/api/auth/oidc/login${oidcInviteToken ? '?invite=' + encodeURIComponent(oidcInviteToken) + '&' : '?'}remember=1`}
                   style={{
                     width: '100%',
-                    padding: '12px',
-                    background: '#111827',
+                    // ENSCON：只藏表單模式下做成大的主按鈕，顏色由 OIDC_BUTTON_COLOR 決定（預設 LINE 綠）
+                    padding: hidePasswordForm ? '16px' : '12px',
+                    background: hidePasswordForm ? oidcButtonColor : '#111827',
                     color: 'white',
                     border: 'none',
                     borderRadius: 12,
-                    fontSize: 'calc(14px * var(--fs-scale-body, 1))',
-                    fontWeight: 700,
+                    fontSize: hidePasswordForm ? 'calc(17px * var(--fs-scale-body, 1))' : 'calc(14px * var(--fs-scale-body, 1))',
+                    fontWeight: hidePasswordForm ? 800 : 700,
                     cursor: 'pointer',
                     fontFamily: 'inherit',
                     display: 'flex',
@@ -521,10 +528,12 @@ export default function LoginPage(): React.ReactElement {
                     boxSizing: 'border-box',
                   }}
                   onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => {
-                    e.currentTarget.style.background = '#1f2937';
+                    if (hidePasswordForm) e.currentTarget.style.filter = 'brightness(0.94)';
+                    else e.currentTarget.style.background = '#1f2937';
                   }}
                   onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => {
-                    e.currentTarget.style.background = '#111827';
+                    if (hidePasswordForm) e.currentTarget.style.filter = '';
+                    else e.currentTarget.style.background = '#111827';
                   }}
                 >
                   <Shield size={16} />
@@ -1091,7 +1100,7 @@ export default function LoginPage(): React.ReactElement {
           </div>
 
           {/* OIDC / SSO login button (only when OIDC is configured, oidc_login enabled, not in oidc-only mode) */}
-          {appConfig?.oidc_configured && appConfig?.oidc_login && !oidcOnly && (
+          {appConfig?.oidc_configured && appConfig?.oidc_login && !oidcOnly && !hidePasswordForm && (
             <>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16 }}>
                 <div style={{ flex: 1, height: 1, background: '#e5e7eb' }} />
@@ -1103,11 +1112,12 @@ export default function LoginPage(): React.ReactElement {
               <a
                 onClick={clearSignedOut}
                 href={`/api/auth/oidc/login${
-                  inviteToken ? '?invite=' + encodeURIComponent(inviteToken) : ''
+                  // ENSCON：網址沒有 invite 時用 localStorage 存的邀請碼
+                  oidcInviteToken ? '?invite=' + encodeURIComponent(oidcInviteToken) : ''
                 }${
                   // The remember-me toggle only renders in login mode; in
                   // register mode omit the param so the server default applies.
-                  mode === 'login' ? (inviteToken ? '&' : '?') + 'remember=' + (rememberMe ? '1' : '0') : ''
+                  mode === 'login' ? (oidcInviteToken ? '&' : '?') + 'remember=' + (rememberMe ? '1' : '0') : ''
                 }`}
                 style={{
                   marginTop: 12,

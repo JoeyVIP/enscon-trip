@@ -315,6 +315,41 @@ describe('OidcController /callback', () => {
     expect(res.redirectedTo).toBe('https://app/login?oidc_error=invalid_state');
   });
 
+  // ENSCON：OIDC_ALLOW_CROSS_BROWSER_CALLBACK —— LINE App 內建瀏覽器 → 外部瀏覽器時 state cookie 會掉。
+  describe('OIDC_ALLOW_CROSS_BROWSER_CALLBACK', () => {
+    beforeEach(() => { process.env.OIDC_ALLOW_CROSS_BROWSER_CALLBACK = 'true'; });
+    afterEach(() => { delete process.env.OIDC_ALLOW_CROSS_BROWSER_CALLBACK; });
+
+    it('accepts a callback without a state cookie when the state is still pending', async () => {
+      const res = makeRes();
+      const o = svc({
+        exchangeCodeForToken: vi.fn().mockResolvedValue({ _ok: true, access_token: 'at', id_token: 'it' }),
+        verifyIdToken: vi.fn().mockResolvedValue({ ok: true, claims: { sub: 'u1' } }),
+        getUserInfo: vi.fn().mockResolvedValue({ email: 'a@b.c', sub: 'u1' }),
+        findOrCreateUser: vi.fn().mockReturnValue({ user: { id: 7 } }),
+      });
+      const reqNoCookie = { query: {}, headers: {}, cookies: {} } as unknown as Request;
+      await ctl(o).callback('c', 's', undefined, reqNoCookie, res);
+      expect(o.consumeState).toHaveBeenCalledWith('s');
+      expect(res.redirectedTo).toBe('https://app/login?oidc_code=ac');
+    });
+
+    it('still rejects a state cookie that does not match the query state', async () => {
+      const res = makeRes();
+      const o = svc();
+      await ctl(o).callback('c', 's', undefined, reqCb('attacker-state'), res);
+      expect(res.redirectedTo).toBe('https://app/login?oidc_error=invalid_state');
+      expect(o.consumeState).not.toHaveBeenCalled();
+    });
+
+    it('still rejects a cookie-less callback whose state is not pending (single-use)', async () => {
+      const res = makeRes();
+      const reqNoCookie = { query: {}, headers: {}, cookies: {} } as unknown as Request;
+      await ctl(svc({ consumeState: vi.fn().mockReturnValue(null) })).callback('c', 's', undefined, reqNoCookie, res);
+      expect(res.redirectedTo).toBe('https://app/login?oidc_error=invalid_state');
+    });
+  });
+
   it('tolerates a request with no cookies object', async () => {
     const res = makeRes();
     const reqNoCookies = { query: {}, headers: {} } as unknown as Request;

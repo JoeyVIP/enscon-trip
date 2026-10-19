@@ -55,7 +55,7 @@ export default function MNewTripSheet({ open, trip, onClose, onSave, onCoverUpda
   const { t } = useTranslation()
   const toast = useToast()
   const can = useCanDo()
-  const defaultCurrency = useSettingsStore(s => s.settings.default_currency) || 'EUR'
+  const defaultCurrency = useSettingsStore(s => s.settings.default_currency) || 'TWD' // ENSCON：新行程預設新台幣（上游 EUR）
   const fileRef = useRef<HTMLInputElement>(null)
   const coverSearchSeq = useRef(0)
   const canEditTrip = !isEditing || can('trip_edit', trip)
@@ -65,7 +65,7 @@ export default function MNewTripSheet({ open, trip, onClose, onSave, onCoverUpda
   const [description, setDescription] = useState('')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
-  const [currency, setCurrency] = useState('EUR')
+  const [currency, setCurrency] = useState('TWD')
   const [error, setError] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [coverPreview, setCoverPreview] = useState<string | null>(null)

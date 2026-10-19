@@ -386,7 +386,7 @@ describe('TripFormModal', () => {
     expect(screen.getByText(/^RUB/)).toBeInTheDocument();
   });
 
-  it('FE-COMP-TRIPFORM-033: defaults a new trip to EUR and sends the currency on save', async () => {
+  it('FE-COMP-TRIPFORM-033: defaults a new trip to TWD and sends the currency on save', async () => {
     const user = userEvent.setup();
     const onSave = vi.fn().mockResolvedValue({ trip: buildTrip({ id: 99 }) });
     render(<TripFormModal {...defaultProps} onSave={onSave} />);
@@ -396,7 +396,7 @@ describe('TripFormModal', () => {
     await user.click(submitBtn.closest('button')!);
 
     await waitFor(() => expect(onSave).toHaveBeenCalled());
-    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ currency: 'EUR' }));
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ currency: 'TWD' })); // ENSCON：預設新台幣
   });
 
   it('FE-COMP-TRIPFORM-033b: a new trip defaults to the user\'s default_currency (#1784)', async () => {

@@ -187,6 +187,16 @@ For setup instructions, see [OIDC-SSO](OIDC-SSO).
 | `OIDC_ADMIN_VALUE`   | Value of the OIDC claim that grants admin role (e.g. `app-trek-admins`)                                                                                                                | —                      |
 | `OIDC_SCOPE`         | Space-separated OIDC scopes to request. **Fully replaces** the default — always include `openid email profile` plus any extra scopes (e.g. add `groups` when using `OIDC_ADMIN_CLAIM`) | `openid email profile` |
 | `OIDC_DISCOVERY_URL` | Override the auto-constructed OIDC discovery endpoint. Required for providers with a non-standard path (e.g. Authentik)                                                                | —                      |
+| `OIDC_ALLOW_CROSS_BROWSER_CALLBACK` | (ENSCON fork) Accept an OIDC callback that arrives **without** the state cookie, e.g. a login started in the LINE in-app browser and finished in the system browser. A cookie that is present but does not match the state is still rejected, and the state must still be pending server-side (single use). | `false` |
+| `OIDC_HIDE_PASSWORD_FORM` | (ENSCON fork) Hide the password form, the "or" divider, passkey, register and forgot-password links on the login page and show only one large SSO button. Password login keeps working on the server (unlike `OIDC_ONLY`); open `/login?pw=1` to get the form back. Ignored until the first user exists. | `false` |
+| `OIDC_BUTTON_COLOR` | (ENSCON fork) Background colour of that large SSO button. | `#06C755` (LINE green) |
+
+### Extra link button (ENSCON fork)
+
+| Variable | Description | Default |
+|---|---|---|
+| `EXTRA_LINK_URL` | When set, a floating button in the bottom-right corner of the trip, dashboard and share pages opens this URL in a new tab (above the mobile bottom bar). Not shown on login/register. Empty = no button. | – |
+| `EXTRA_LINK_LABEL` | Text of that button, e.g. `🎮 小遊戲`. | `🔗` |
 
 ---
 

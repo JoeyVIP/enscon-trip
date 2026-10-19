@@ -11,6 +11,7 @@ export {
   deriveDemo,
   deriveAdminBootstrap,
   deriveOidc,
+  deriveExtraLink,
   deriveSmtp,
   deriveMcp,
   derivePlugins,

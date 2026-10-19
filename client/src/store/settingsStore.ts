@@ -77,10 +77,11 @@ export const DEFAULT_SETTINGS: Settings = {
   // Empty = no personal display currency, so Costs falls back to the trip's own.
   default_currency: '',
   // Explicit in-app choice first, then the mirror of the account's server-side
-  // language (written by loadSettings below), then English. Without the mirror
+  // language (written by loadSettings below), then 繁體中文（ENSCON fork：使用者
+  // 都在台灣，分享頁訪客沒登入也該先看到中文；上游是 English）. Without the mirror
   // an offline cold start boots in English: the account's language lives on the
   // server, and the fetch that would apply it cannot happen.
-  language: localStorage.getItem('app_language') || localStorage.getItem(SERVER_LANGUAGE_KEY) || 'en',
+  language: localStorage.getItem('app_language') || localStorage.getItem(SERVER_LANGUAGE_KEY) || 'zh-TW',
   temperature_unit: 'celsius',
   distance_unit: 'metric',
   time_format: '24h',
