@@ -22,6 +22,8 @@ import { setGeoThrottleInterval } from '../src/nest/geo/nominatim.client';
 process.env.ENCRYPTION_KEY = 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6a7b8c9d0e1f2a3b4c5d6a7b8c9d0e1f2';
 process.env.NODE_ENV = 'test';
 process.env.COOKIE_SECURE = 'false';
+// ENSCON：上游通知（release-notes、thank-you-support）預設隱藏；既有測試是針對它們寫的，所以測試環境打開
+process.env.SHOW_UPSTREAM_NOTICES = 'true';
 process.env.LOG_LEVEL = 'error'; // suppress info/debug logs in test output
 
 // Several services fire notification sends as unawaited dynamic-import chains
