@@ -645,8 +645,8 @@ function CurrencyTool(): React.ReactElement {
   const { t } = useTranslation()
   const isLoaded = useSettingsStore(s => s.isLoaded)
   const updateSetting = useSettingsStore(s => s.updateSetting)
-  const from = useSettingsStore(s => s.settings.dashboard_fx_from) || 'EUR'
-  const to = useSettingsStore(s => s.settings.dashboard_fx_to) || 'USD'
+  const from = useSettingsStore(s => s.settings.dashboard_fx_from) || 'TWD'
+  const to = useSettingsStore(s => s.settings.dashboard_fx_to) || 'JPY'
   const setFrom = (v: string) => { updateSetting('dashboard_fx_from', v).catch(() => {}) }
   const setTo = (v: string) => { updateSetting('dashboard_fx_to', v).catch(() => {}) }
   const [amount, setAmount] = useState('100')
@@ -718,7 +718,7 @@ function CurrencyTool(): React.ReactElement {
 }
 
 // ── Timezone tool ────────────────────────────────────────────────────────────
-const DEFAULT_ZONES = ['Europe/London', 'Asia/Tokyo']
+const DEFAULT_ZONES = ['Asia/Taipei', 'Asia/Tokyo']
 
 // Fallback for the rare browser without Intl.supportedValuesOf.
 const FALLBACK_ZONES = [
@@ -741,7 +741,7 @@ function TimezoneTool({ locale }: { locale: string }): React.ReactElement {
   const updateSetting = useSettingsStore(s => s.updateSetting)
   const stored = useSettingsStore(s => s.settings.dashboard_timezones)
   // Unset (never chosen) falls back to home + defaults; an explicit list is honoured.
-  const zones = stored ?? [home, ...DEFAULT_ZONES]
+  const zones = stored ?? Array.from(new Set(['Asia/Taipei', home, 'Asia/Tokyo']))
   const setZones = (next: string[]) => { updateSetting('dashboard_timezones', next).catch(() => {}) }
   const [adding, setAdding] = useState(false)
 

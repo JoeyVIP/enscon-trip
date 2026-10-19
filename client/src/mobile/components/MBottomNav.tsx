@@ -3,10 +3,11 @@ import { useNavigate, useLocation, useMatch } from 'react-router'
 import { useSettingsStore } from '../../store/settingsStore'
 import { useTranslation } from '../../i18n'
 import { useJourneyStore } from '../../store/journeyStore'
-import { ChevronRight, MoreHorizontal, Plus, Search, Upload } from 'lucide-react'
+import { ChevronRight, Code, MoreHorizontal, Plus, Search, Upload } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { normalizeAppearance } from '@trek/shared'
 import { useNavItems, splitMobileNav } from '../../components/Layout/navItems'
+import { SOURCE_URL } from '../../components/Layout/SourceLink'
 import MFab from './MFab'
 
 interface NavItem { to: string; label: string; icon: LucideIcon }
@@ -113,7 +114,7 @@ export default function MBottomNav() {
 
   // Split so the raised centre slot sits dead centre; the More slot always
   // closes the right group.
-  const slotCount = dockItems.length + (moreItems.length > 0 ? 1 : 0)
+  const slotCount = dockItems.length + 1
   const splitAt = Math.ceil(slotCount / 2)
   const left = dockItems.slice(0, splitAt)
   const right = dockItems.slice(splitAt)
@@ -152,6 +153,20 @@ export default function MBottomNav() {
             role="presentation"
             onClick={e => e.stopPropagation()}
           >
+            {/* ENSCON：AGPL-3.0 第 13 條的原始碼連結，手機版固定放在「更多」第一格 */}
+            <a
+              href={SOURCE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setMoreOpen(false)}
+              className="flex items-center gap-[13px] rounded-[18px] bg-[color:var(--m-ic)] px-4 py-[14px] text-left"
+            >
+              <span className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-[color:var(--m-ic)] text-m-ink">
+                <Code size={20} strokeWidth={2} />
+              </span>
+              <span className="block min-w-0 flex-1 truncate text-[0.9375rem] font-extrabold text-m-ink">{t('settings.about.sourceCodeLink')} (AGPL-3.0)</span>
+              <ChevronRight size={17} strokeWidth={2} className="flex-none text-m-faint" />
+            </a>
             {moreItems.map(({ to, label, icon: Icon }) => (
               <button
                 key={to}
@@ -194,18 +209,16 @@ export default function MBottomNav() {
 
         <div className="flex min-w-0 flex-1 items-center justify-around">
           {right.map(renderItem)}
-          {moreItems.length > 0 && (
-            <button
-              type="button"
-              onClick={() => setMoreOpen(v => !v)}
-              aria-label={t('mobileNav.more')}
-              aria-expanded={moreOpen}
-              aria-current={moreActive ? 'page' : undefined}
-              className={circleCls(moreActive)}
-            >
-              <MoreHorizontal size={21} strokeWidth={1.9} />
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => setMoreOpen(v => !v)}
+            aria-label={t('mobileNav.more')}
+            aria-expanded={moreOpen}
+            aria-current={moreActive ? 'page' : undefined}
+            className={circleCls(moreActive)}
+          >
+            <MoreHorizontal size={21} strokeWidth={1.9} />
+          </button>
         </div>
       </nav>
     </>

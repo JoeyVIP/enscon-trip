@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { useLocation } from 'react-router';
 import { render, screen, fireEvent } from '../../helpers/render';
 import MBottomNav from '../../../src/mobile/components/MBottomNav';
+import { SOURCE_URL } from '../../../src/components/Layout/SourceLink';
 import { useAddonStore } from '../../../src/store/addonStore';
 import { usePluginStore } from '../../../src/store/pluginStore';
 import { useSettingsStore } from '../../../src/store/settingsStore';
@@ -115,10 +116,24 @@ describe('MBottomNav', () => {
     expect(screen.getByRole('button', { name: 'Atlas' })).toBeInTheDocument();
   });
 
-  it('FE-MOB-NAV-007: no More slot without popover entries', () => {
+  it('FE-MOB-NAV-007: the More slot always exists — it carries the AGPL source link', () => {
     seedAddons(['vacay', 'atlas']);
     render(<MBottomNav />, { initialEntries: ['/dashboard'] });
-    expect(screen.queryByRole('button', { expanded: false })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'More' })).toBeInTheDocument();
+  });
+
+  it('FE-MOB-NAV-007b: the first More entry is the source link (AGPL-3.0 §13)', () => {
+    seedAddons(['vacay', 'atlas', 'journey', 'collections']);
+    const { container } = render(<MBottomNav />, { initialEntries: ['/dashboard'] });
+
+    fireEvent.click(screen.getByRole('button', { name: 'More' }));
+    const popover = container.querySelector('.fixed.inset-0 > div') as HTMLElement;
+    const first = popover.firstElementChild as HTMLAnchorElement;
+    expect(first.tagName).toBe('A');
+    expect(first).toHaveTextContent('Source code (AGPL-3.0)');
+    expect(first).toHaveAttribute('href', SOURCE_URL);
+    expect(first).toHaveAttribute('target', '_blank');
+    expect(first.getAttribute('rel')).toBe('noopener noreferrer');
   });
 
   it('FE-MOB-NAV-008: the centre button opens the country search on the atlas', () => {
