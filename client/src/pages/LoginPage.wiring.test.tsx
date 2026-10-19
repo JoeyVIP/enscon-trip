@@ -110,7 +110,7 @@ describe('LoginPage — takeoff', () => {
 
     expect(document.querySelector('.takeoff-overlay')).toBeInTheDocument();
     expect(screen.getByTestId('login-world')).toHaveAttribute('data-variant', 'takeoff');
-    expect(screen.getByAltText('TREK')).toHaveAttribute('src', '/logo-light.svg');
+    expect(screen.getByAltText('ENSCON Trip')).toHaveAttribute('src', '/logo-light.svg');
     expect(screen.queryByPlaceholderText(EMAIL_PLACEHOLDER)).toBeNull();
   });
 });
@@ -308,7 +308,7 @@ describe('LoginPage — password form', () => {
     expect(screen.getByText("Login won't stick over HTTP")).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /troubleshooting/i })).toHaveAttribute(
       'href',
-      'https://github.com/liketrek/TREK/wiki/Troubleshooting',
+      'https://github.com/JoeyVIP/enscon-trip/tree/main/wiki',
     );
   });
 });

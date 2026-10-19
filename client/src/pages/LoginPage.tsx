@@ -17,6 +17,7 @@ import { SUPPORTED_LANGUAGES, useTranslation } from '../i18n';
 import { useLogin } from './login/useLogin';
 import LoginWorld from './login/LoginWorld';
 import { clearSignedOut } from '../utils/signedOut'
+import { useAppName } from '../utils/appName'
 
 /** Fixed so the sky does not reshuffle on every render. */
 const STARFIELD = [
@@ -40,6 +41,7 @@ const STARFIELD = [
 
 export default function LoginPage(): React.ReactElement {
   const { t, language } = useTranslation();
+  const appName = useAppName()
   // Page = wiring container: the whole auth surface lives in the useLogin hook.
   const {
     navigate,
@@ -133,7 +135,7 @@ export default function LoginPage(): React.ReactElement {
         <div className="takeoff-aurora takeoff-aurora-b" />
 
         <div className="takeoff-mark">
-          <img src="/logo-light.svg" alt="TREK" style={{ height: 'clamp(58px, 5.2vw, 84px)' }} />
+          <img src="/logo-light.svg" alt={appName} style={{ height: 'clamp(58px, 5.2vw, 84px)' }} />
           <p
             style={{
               margin: '12px 0 0',
@@ -389,7 +391,7 @@ export default function LoginPage(): React.ReactElement {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
             <img
               src="/logo-light.svg"
-              alt="TREK"
+              alt={appName}
               style={{
                 height: 'clamp(58px, 5.2vw, 84px)',
                 filter: 'drop-shadow(0 2px 10px rgba(4,8,20,0.55)) drop-shadow(0 0 34px rgba(4,8,20,0.45))',
@@ -449,7 +451,7 @@ export default function LoginPage(): React.ReactElement {
             className="mobile-logo"
           >
             <style>{`@media(min-width:1024px){.mobile-logo{display:none!important}}`}</style>
-            <img src="/logo-dark.svg" alt="TREK" style={{ height: 48 }} />
+            <img src="/logo-dark.svg" alt={appName} style={{ height: 48 }} />
             <p
               style={{
                 margin: 0,
@@ -604,7 +606,7 @@ export default function LoginPage(): React.ReactElement {
                       <div style={{ fontWeight: 700, marginBottom: 4 }}>{t('login.insecureCookie.title')}</div>
                       <div style={{ lineHeight: 1.55 }}>{t('login.insecureCookie.body')}</div>
                       <a
-                        href="https://github.com/liketrek/TREK/wiki/Troubleshooting"
+                        href="https://github.com/JoeyVIP/enscon-trip/tree/main/wiki"
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{

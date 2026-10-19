@@ -1,6 +1,6 @@
 # Currencies
 
-TREK has **three** currency settings, and they answer three different questions. Most confusion about the Costs tab comes from mixing them up, so this page is the one place they are defined together.
+ENSCON Trip has **three** currency settings, and they answer three different questions. Most confusion about the Costs tab comes from mixing them up, so this page is the one place they are defined together.
 
 | Setting | Where | Question it answers | Affects |
 |---|---|---|---|

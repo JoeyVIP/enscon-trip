@@ -2,6 +2,7 @@ import React from 'react'
 import { Check, ChevronRight, Globe2, KeyRound, Library, ShieldOff, WifiOff, X } from 'lucide-react'
 import TrekMark from '../../components/shared/TrekMark'
 import type { TranslationFn } from '../../types'
+import { useAppName } from '../../utils/appName'
 
 interface TrekApiCardProps {
   t: TranslationFn
@@ -27,6 +28,7 @@ interface TrekApiCardProps {
 const SOURCES = ['Overture Maps Foundation', 'OpenStreetMap', 'Wikivoyage', 'Wikimedia']
 
 export default function TrekApiCard({ t }: TrekApiCardProps): React.ReactElement {
+  const appName = useAppName()
   // Reuses the words TREK already has for these fields wherever it has them,
   // so the chip row costs two new strings instead of ten.
   const fields = [
@@ -70,7 +72,7 @@ export default function TrekApiCard({ t }: TrekApiCardProps): React.ReactElement
       <div className="overflow-hidden rounded-xl border border-accent/40 bg-surface-secondary/50 shadow-sm">
       <div className="px-5 pt-6 pb-4">
         <div className="flex items-start justify-between gap-4">
-          <TrekMark className="h-8 w-auto text-content" aria-label="TREK Places API" />
+          <TrekMark className="h-8 w-auto text-content" aria-label={`${appName} Places API`} />
         </div>
 
         <p className="mt-3 text-sm leading-relaxed text-content-secondary">

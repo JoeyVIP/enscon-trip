@@ -1,6 +1,13 @@
 import type { SystemNotice } from './types.js';
 import { registerPredicate } from './conditions.js';
 import { db } from '../db/database.js';
+import { readEnv } from '../app-config';
+
+// ENSCON：上游（TREK）的「release-notes」「thank-you-support」是作者 Maurice 的第一人稱感謝與募款訊息
+// （「我是獨立開發者，我做了 TREK」＋捐款連結），換成我們的產品名等於冒用他的話，保留原文又會在我們的產品裡
+// 顯示 TREK。所以預設不顯示；要顯示（例如跑上游測試）要明確設 SHOW_UPSTREAM_NOTICES=true。
+// 捐款連結仍在 NOTICE.md 與 README 的「Support TREK (upstream)」保留，對原作者的歸屬沒變。
+registerPredicate('upstream-notices-allowed', () => readEnv().app.showUpstreamNotices);
 
 registerPredicate('whitespace-collision-detected', () => {
   const row = db.prepare("SELECT value FROM app_settings WHERE key = 'whitespace_migration_collision'").get() as { value: string } | undefined;
@@ -115,7 +122,7 @@ export const SYSTEM_NOTICES: SystemNotice[] = [
     desktopOnly: true,
     // It asks the reader to fund the project, and on a managed install they already
     // pay whoever runs it.
-    conditions: [{ kind: 'managed', is: false }],
+    conditions: [{ kind: 'managed', is: false }, { kind: 'custom', id: 'upstream-notices-allowed' }],
     publishedAt: '2026-09-15T00:00:00Z',
     priority: 110,
     // Where the thank-you notice below hands over; nothing on 3.x ships this copy.
@@ -153,7 +160,7 @@ export const SYSTEM_NOTICES: SystemNotice[] = [
     // installing TREK and asks them to fund it, and there the reader installed
     // nothing and already pays whoever runs it. Gated rather than reworded: the
     // text is right for everyone it was written for.
-    conditions: [{ kind: 'managed', is: false }],
+    conditions: [{ kind: 'managed', is: false }, { kind: 'custom', id: 'upstream-notices-allowed' }],
     publishedAt: '2026-06-27T00:00:00Z',
     priority: 100,
     recurring: 'per-version',

@@ -36,7 +36,7 @@ function registryEntry(over: Row = {}): Row {
     id: 'trek-gotify',
     name: 'Gotify',
     author: 'Acme',
-    description: 'Push notifications for TREK',
+    description: 'Push notifications for ENSCON Trip',
     repo: 'acme/gotify',
     type: 'integration',
     latest: '2.0.0',
@@ -195,7 +195,7 @@ describe('MAdminPluginsPanel — the installed row', () => {
     })]);
     render(<MAdminPluginsPanel />);
 
-    expect(await screen.findByText('Needs TREK >=3.2.0 <4.0.0 — this server runs 4.0.0')).toBeInTheDocument();
+    expect(await screen.findByText('Needs ENSCON Trip >=3.2.0 <4.0.0 — this server runs 4.0.0')).toBeInTheDocument();
     expect(screen.getByText('Requires budget')).toBeInTheDocument();
     expect(screen.getByText('Needs trek-base ^1.0.0')).toBeInTheDocument();
   });
@@ -204,7 +204,7 @@ describe('MAdminPluginsPanel — the installed row', () => {
     mockPanel([plugin({ dependencyStatus: 'hostIncompatible', trekRange: null })]);
     render(<MAdminPluginsPanel />);
 
-    expect(await screen.findByText('Does not say which TREK versions it supports')).toBeInTheDocument();
+    expect(await screen.findByText('Does not say which ENSCON Trip versions it supports')).toBeInTheDocument();
   });
 
   it('FE-MOB-PLUGP-010: the source badge wins over the trust badge', async () => {
@@ -352,7 +352,7 @@ describe('MAdminPluginsPanel — Discover', () => {
 
     const btn = await screen.findByRole('button', { name: 'Incompatible' });
     expect(btn).toBeDisabled();
-    expect(btn).toHaveAttribute('title', 'Needs TREK >=4.0.0 — this server runs 3.3.0');
+    expect(btn).toHaveAttribute('title', 'Needs ENSCON Trip >=4.0.0 — this server runs 3.3.0');
   });
 
   it('FE-MOB-PLUGP-019: when only an older release fits, that version is offered and installed', async () => {
@@ -496,7 +496,7 @@ describe('MAdminPluginsPanel — the registry detail sheet', () => {
     expect(screen.getByText('Instance-wide')).toBeInTheDocument();
     expect(screen.getByText('Required')).toBeInTheDocument();
     expect(screen.getByText('4 KB')).toBeInTheDocument();
-    expect(screen.getByText('TREK >=3.2.0 <4.0.0')).toBeInTheDocument();
+    expect(screen.getByText('ENSCON Trip >=3.2.0 <4.0.0')).toBeInTheDocument();
     expect(screen.getByText('4,200')).toBeInTheDocument();
   });
 
@@ -508,7 +508,7 @@ describe('MAdminPluginsPanel — the registry detail sheet', () => {
     );
 
     expect(await screen.findByText('Needs no special access.')).toBeInTheDocument();
-    expect(screen.getByText('TREK 3.0.0+')).toBeInTheDocument();
+    expect(screen.getByText('ENSCON Trip 3.0.0+')).toBeInTheDocument();
     expect(screen.queryByText('Connects to')).not.toBeInTheDocument();
   });
 
@@ -542,7 +542,7 @@ describe('MAdminPluginsPanel — the registry detail sheet', () => {
     const entry = registryEntry({ trek: '>=4.0.0', hostVersion: '3.3.0', compatible: false, latestCompatible: null });
     await openDetail({ ...entry, size: null, publishedAt: null, manifest: null }, entry);
 
-    expect(await screen.findAllByText('Needs TREK >=4.0.0 — this server runs 3.3.0')).toHaveLength(1);
+    expect(await screen.findAllByText('Needs ENSCON Trip >=4.0.0 — this server runs 3.3.0')).toHaveLength(1);
   });
 
   it('FE-MOB-PLUGP-032: a distinct homepage gets its own link, and the sheet closes again', async () => {
@@ -785,7 +785,7 @@ describe('MAdminPluginsPanel — updates and consent', () => {
     );
     render(<MAdminPluginsPanel />);
 
-    expect(await screen.findByText('v2.0.0 available — needs TREK >=4.0.0')).toBeInTheDocument();
+    expect(await screen.findByText('v2.0.0 available — needs ENSCON Trip >=4.0.0')).toBeInTheDocument();
   });
 
   it('FE-MOB-PLUGP-046f: a held plugin leaves the banner and offers Resume updates instead', async () => {
@@ -832,7 +832,7 @@ describe('MAdminPluginsPanel — updates and consent', () => {
     fireEvent.click(await screen.findByText('Acme'));
 
     // The incompatible latest is explained, never offered.
-    expect(await screen.findByText(/^needs TREK >=4\.0\.0$/i)).toBeInTheDocument();
+    expect(await screen.findByText(/^needs ENSCON Trip >=4\.0\.0$/i)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /^install 3\.0\.0$/i })).not.toBeInTheDocument();
 
     fireEvent.click(await screen.findByRole('button', { name: /^install 1\.5\.0$/i }));
@@ -1753,7 +1753,7 @@ describe('MAdminPluginsPanel — TREK-range bypass (TREK_PLUGINS_IGNORE_TREK_RAN
     expect(btn).toBeEnabled();
     fireEvent.click(btn);
 
-    const sheet = await screen.findByRole('dialog', { name: 'Outside its supported TREK versions' });
+    const sheet = await screen.findByRole('dialog', { name: 'Outside its supported ENSCON Trip versions' });
     expect(within(sheet).getByText(/no guarantee/i)).toBeInTheDocument();
     expect(body).toBeNull();
 
@@ -1769,9 +1769,9 @@ describe('MAdminPluginsPanel — TREK-range bypass (TREK_PLUGINS_IGNORE_TREK_RAN
     fireEvent.click(await screen.findByRole('tab', { name: /Discover/ }));
     fireEvent.click(await screen.findByRole('button', { name: 'Install anyway' }));
 
-    const sheet = await screen.findByRole('dialog', { name: 'Outside its supported TREK versions' });
+    const sheet = await screen.findByRole('dialog', { name: 'Outside its supported ENSCON Trip versions' });
     fireEvent.click(within(sheet).getByRole('button', { name: 'Cancel' }));
-    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Outside its supported TREK versions' })).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Outside its supported ENSCON Trip versions' })).not.toBeInTheDocument());
     expect(posted).toBe(false);
   });
 
@@ -1785,7 +1785,7 @@ describe('MAdminPluginsPanel — TREK-range bypass (TREK_PLUGINS_IGNORE_TREK_RAN
     const input = container.querySelector('input[type="file"]') as HTMLInputElement;
     fireEvent.change(input, { target: { files: [new File(['zip'], 'plugin.zip', { type: 'application/zip' })] } });
 
-    const sheet = await screen.findByRole('dialog', { name: 'Installed outside its supported TREK versions' });
+    const sheet = await screen.findByRole('dialog', { name: 'Installed outside its supported ENSCON Trip versions' });
     expect(within(sheet).getByText(/no guarantee/i)).toBeInTheDocument();
     expect(within(sheet).getByText(/trek-new/)).toBeInTheDocument();
   });
@@ -1796,6 +1796,6 @@ describe('MAdminPluginsPanel — TREK-range bypass (TREK_PLUGINS_IGNORE_TREK_RAN
       trekRangeBypassed: { trekRange: '>=3.2.0 <4.0.0', hostVersion: '4.0.0' },
     })], [], { ignoreTrekRange: true });
     render(<MAdminPluginsPanel />);
-    expect(await screen.findByText('Outside its TREK range (>=3.2.0 <4.0.0) — version checks off')).toBeInTheDocument();
+    expect(await screen.findByText('Outside its ENSCON Trip range (>=3.2.0 <4.0.0) — version checks off')).toBeInTheDocument();
   });
 });

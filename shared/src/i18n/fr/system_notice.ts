@@ -1,17 +1,17 @@
 import type { TranslationStrings } from '../types';
 
 const system_notice: TranslationStrings = {
-  'system_notice.welcome_v1.title': 'Bienvenue sur TREK',
+  'system_notice.welcome_v1.title': 'Bienvenue sur ENSCON Trip',
   'system_notice.welcome_v1.body':
     'Votre planificateur de voyage tout-en-un. Créez des itinéraires, partagez vos voyages et restez organisé — en ligne ou hors ligne.',
   'system_notice.welcome_v1.cta_label': 'Planifier un voyage',
-  'system_notice.welcome_v1.hero_alt': "Destination de voyage pittoresque avec l'interface TREK",
+  'system_notice.welcome_v1.hero_alt': "Destination de voyage pittoresque avec l'interface ENSCON Trip",
   'system_notice.welcome_v1.highlight_plan': 'Itinéraires jour par jour',
   'system_notice.welcome_v1.highlight_share': 'Collaborez avec vos partenaires',
   'system_notice.welcome_v1.highlight_offline': 'Fonctionne hors ligne sur mobile',
   'system_notice.dev_test_modal.title': '[Dev] Test notice',
   'system_notice.dev_test_modal.body': 'This is a dev-only test notice.',
-  'system_notice.thank_you_support.title': "Merci d'utiliser TREK",
+  'system_notice.thank_you_support.title': "Merci d'utiliser ENSCON Trip",
   'system_notice.thank_you_support.body':
     "Un petit mot pour te remercier d'avoir installé TREK — ça compte vraiment beaucoup pour moi.\n\nJe suis développeur en solo et je construis TREK sur mon temps libre. Au départ, c'était juste un petit outil pour mes propres voyages, et je suis honnêtement bluffé par le soutien et l'intérêt de la communauté depuis. TREK est fait avec beaucoup de cœur de mon côté — mais aussi grâce aux nombreux et formidables contributeurs externes qui ont aidé à lui donner forme.\n\n**TREK est open source et entièrement gratuit — et le restera pour toujours. Pas de formules payantes, pas d'abonnements, aucun piège. Promis.**\n\nSi TREK t'est utile et que tu souhaites soutenir son développement, un petit café m'aide sincèrement à continuer — sans aucune pression, mais chaque tasse fait avancer les nuits blanches.\n\nMerci d'être là.\n\n— Maurice",
   'system_notice.thank_you_support.highlight_opensource': '100 % open source sur GitHub',
@@ -26,7 +26,7 @@ const system_notice: TranslationStrings = {
   'system_notice.pager.position': 'Avis {current} sur {total}',
   'system_notice.v3_photos.title': 'Les photos ont bougé dans 3.0',
   'system_notice.v3_photos.body':
-    "**Photos** dans le planificateur ont été supprimées. Tes photos sont en sécurité — TREK n'a jamais modifié ta bibliothèque Immich ou Synology.\n\nLes photos vivent désormais dans l'addon **Journey**. Journey est optionnel — s'il n'est pas encore disponible, demande à ton admin de l'activer dans Admin → Modules.",
+    "**Photos** dans le planificateur ont été supprimées. Tes photos sont en sécurité — ENSCON Trip n'a jamais modifié ta bibliothèque Immich ou Synology.\n\nLes photos vivent désormais dans l'addon **Journey**. Journey est optionnel — s'il n'est pas encore disponible, demande à ton admin de l'activer dans Admin → Modules.",
   'system_notice.v3_journey.title': 'Découvrez Journey — journal de voyage',
   'system_notice.v3_journey.body':
     'Documente tes voyages sous forme de récits enrichis avec chronologies, galeries photos et cartes interactives.',
@@ -55,17 +55,17 @@ const system_notice: TranslationStrings = {
   'system_notice.v3014_whitespace_collision.body':
     "La mise à niveau 3.0.14 a détecté un ou plusieurs conflits de nom d'utilisateur ou d'adresse e-mail causés par des espaces en début ou en fin de valeur dans les comptes enregistrés. Les comptes concernés ont été renommés automatiquement. Consultez les journaux du serveur pour les lignes commençant par **[migration] WHITESPACE COLLISION** afin d'identifier les comptes nécessitant une vérification.",
   'system_notice.release_notes.eyebrow': 'Mise à jour installée',
-  'system_notice.release_notes.headline': 'Quatre choses que TREK fait désormais tout seul.',
+  'system_notice.release_notes.headline': 'Quatre choses que ENSCON Trip fait désormais tout seul.',
   'system_notice.release_notes.intro': 'Sa propre API de lieux, des road trips planifiés de bout en bout, votre historique de position entre vos mains, et vos documents synchronisés.',
   'system_notice.release_notes.features_label': "Les têtes d'affiche",
   'system_notice.release_notes.features_aside': "Et ce n'est pas tout",
-  'system_notice.release_notes.feature_places_title': 'API TREK Places',
+  'system_notice.release_notes.feature_places_title': 'API ENSCON Trip Places',
   'system_notice.release_notes.feature_places_body': 'Le premier planificateur de voyage open source avec sa propre API de lieux. 73,6 millions de lieux, sans clé, sans quota.',
   'system_notice.release_notes.feature_roadtrip_title': 'Addon Roadtrip',
   'system_notice.release_notes.feature_roadtrip_body': 'Planifie le trajet lui-même : itinéraire, distance, heures et arrêts. Désactivé tant qu’un admin ne l’active pas.',
   'system_notice.release_notes.feature_dawarich_title': 'Intégration Dawarich',
-  'system_notice.release_notes.feature_dawarich_body': 'L’alternative auto-hébergée à Google Timeline, désormais lisible depuis TREK. TREK lit, et ne fait que lire.',
-  'system_notice.release_notes.footnote': 'Et une longue liste de changements plus discrets dans le reste de TREK.',
+  'system_notice.release_notes.feature_dawarich_body': 'L’alternative auto-hébergée à Google Timeline, désormais lisible depuis ENSCON Trip. ENSCON Trip lit, et ne fait que lire.',
+  'system_notice.release_notes.footnote': 'Et une longue liste de changements plus discrets dans le reste de ENSCON Trip.',
   'system_notice.release_notes.notes_label': 'Notes de version',
   'system_notice.release_notes.note_eyebrow': 'Un mot du mainteneur',
   'system_notice.release_notes.note_title': "C'est pour vous que je continue à construire TREK.",
@@ -81,7 +81,7 @@ const system_notice: TranslationStrings = {
   'system_notice.release_notes.support_lead':
     'TREK est gratuit et le restera toujours, mais les serveurs, les noms de domaine et toutes ces nuits blanches, eux, ne le sont pas.',
   'system_notice.release_notes.support_text':
-    "Si TREK s'est fait une place dans tes voyages, offre-moi un café et aide la prochaine version à voir le jour.",
+    "Si ENSCON Trip s'est fait une place dans tes voyages, offre-moi un café et aide la prochaine version à voir le jour.",
   'system_notice.release_notes.cta_bmc': 'Buy me a coffee',
   'system_notice.release_notes.cta_kofi': 'Soutenir sur Ko-fi',
   'system_notice.release_notes.feature_docsync_title': 'Synchronisation de documents',

@@ -13,6 +13,7 @@ import AirTrailIcon from '../../../components/shared/AirTrailIcon'
 import { DOCUMENT_PROVIDER_ICONS } from '../../../components/shared/DocumentProviderIcons'
 import MToggle from '../../components/MToggle'
 import { MAdminButton, MAdminCard, MAdminField, MAdminInput, MAdminSecretInput } from './MAdminUi'
+import { useAppName } from '../../../utils/appName'
 
 const ICON_MAP = {
   ListChecks, Wallet, FileText, CalendarDays, Puzzle, Globe, Briefcase, Image, Terminal, Link2, Compass, BookOpen, Plane, Bookmark,
@@ -88,6 +89,7 @@ const COLLAB_SUB_FEATURES = [
 
 export default function MAdminAddonManager({ bagTrackingEnabled, onToggleBagTracking, collabFeatures, onToggleCollabFeature }: { bagTrackingEnabled?: boolean; onToggleBagTracking?: () => void; collabFeatures?: CollabFeatures; onToggleCollabFeature?: (key: string) => void }) {
   const { t } = useTranslation()
+  const appName = useAppName()
   const dm = useSettingsStore(s => s.settings.dark_mode)
   const dark = dm === true || dm === 'dark' || (dm === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)
   const toast = useToast()
@@ -192,7 +194,7 @@ export default function MAdminAddonManager({ bagTrackingEnabled, onToggleBagTrac
         <div className="text-[0.875rem] font-extrabold text-m-ink">{t('admin.addons.title')}</div>
         <p className="mt-[2px] flex flex-wrap items-center gap-1 font-geist text-[0.625rem] leading-relaxed text-m-muted">
           {t('admin.addons.subtitleBefore')}
-          <img src={dark ? '/text-light.svg' : '/text-dark.svg'} alt="TREK" style={{ height: 11, display: 'inline', verticalAlign: 'middle', opacity: 0.7 }} />
+          <img src={dark ? '/text-light.svg' : '/text-dark.svg'} alt={appName} style={{ height: 11, display: 'inline', verticalAlign: 'middle', opacity: 0.7 }} />
           {t('admin.addons.subtitleAfter')}
         </p>
       </MAdminCard>

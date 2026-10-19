@@ -292,11 +292,11 @@ describe('MDawarichConnectionSection', () => {
     // only explanation the reader ever gets.
     show({
       connected: false,
-      probeMessage: 'TREK could not reach that address. (ENOTFOUND)',
+      probeMessage: 'ENSCON Trip could not reach that address. (ENOTFOUND)',
       lastSyncError: 'Dawarich rejected the API key.',
     })
     expect(screen.getByText('Not connected')).toBeInTheDocument()
-    expect(screen.getByText('TREK could not reach that address. (ENOTFOUND)')).toBeInTheDocument()
+    expect(screen.getByText('ENSCON Trip could not reach that address. (ENOTFOUND)')).toBeInTheDocument()
     expect(screen.getByText('Dawarich rejected the API key.')).toBeInTheDocument()
   })
 

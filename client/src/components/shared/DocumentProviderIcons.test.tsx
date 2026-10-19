@@ -118,13 +118,13 @@ describe('DOCUMENT_PROVIDER_ICONS', () => {
 })
 
 describe('TrekIcon', () => {
-  it('FE-DOCSYNC-ICONS-011: renders TREK\u2019s app icon in currentColor', () => {
+  it('FE-DOCSYNC-ICONS-011: renders ENSCON Trip\u2019s app icon in currentColor', () => {
     const { container } = render(<TrekIcon />)
     const svg = container.querySelector('svg')
 
     expect(svg).not.toBeNull()
-    expect(svg!.getAttribute('viewBox')).toBe('0 0 512 512')
-    expect(svg!.querySelectorAll('path[fill="currentColor"]').length).toBeGreaterThan(0)
+    expect(svg!.getAttribute('viewBox')).toBe('0 0 1024 1024')
+    expect(svg!.querySelectorAll('ellipse[fill="currentColor"]').length).toBeGreaterThan(0)
   })
 
   it('FE-DOCSYNC-ICONS-012: takes a className, which is the only thing that sizes it', () => {
@@ -148,9 +148,9 @@ describe('TrekIcon', () => {
     const { container } = render(<TrekIcon />)
     expect(container.querySelector('svg')!.getAttribute('aria-hidden')).toBe('true')
 
-    const labelled = render(<TrekIcon aria-hidden={false} aria-label="TREK" />)
+    const labelled = render(<TrekIcon aria-hidden={false} aria-label="ENSCON Trip" />)
     const svg = labelled.container.querySelector('svg')!
     expect(svg.getAttribute('aria-hidden')).toBe('false')
-    expect(svg.getAttribute('aria-label')).toBe('TREK')
+    expect(svg.getAttribute('aria-label')).toBe('ENSCON Trip')
   })
 })

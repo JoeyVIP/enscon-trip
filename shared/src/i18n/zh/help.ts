@@ -6,7 +6,7 @@ const help: TranslationStrings = {
   'help.contents': '目录',
   'help.noResults': '没有匹配的页面。',
   'help.errorTitle': '无法加载此页面',
-  'help.errorBody': '帮助内容来自 TREK wiki，请检查连接后重试。',
+  'help.errorBody': '帮助内容来自 ENSCON 旅程 wiki，请检查连接后重试。',
 };
 
 export default help;

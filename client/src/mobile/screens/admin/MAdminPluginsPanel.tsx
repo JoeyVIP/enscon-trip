@@ -19,6 +19,7 @@ import MSheet from '../../components/MSheet'
 import MSegmented from '../../components/MSegmented'
 import MConfirmSheet from '../settings/MConfirmSheet'
 import { MAdminButton, MAdminSheetFrame } from './MAdminUi'
+import { useAppName } from '../../../utils/appName'
 
 /**
  * Admin → Plugins, mobile skin. A drop-in replacement for the desktop
@@ -408,6 +409,7 @@ function TypeBadge({ type, t }: { type: string; t: T }) {
 
 export default function MAdminPluginsPanel() {
   const { t, locale } = useTranslation()
+  const appName = useAppName()
   const toast = useToast()
   const [runtimeOn, setRuntimeOn] = useState(false)
   const [devLink, setDevLink] = useState(false) // dev-link enabled server-side (TREK_PLUGINS_DEV_LINK)
@@ -1696,6 +1698,7 @@ function PluginDetailSheet({ item, installed, busy, onInstall, onClose, t, local
   item: RegistryItem; installed: boolean; busy: string | null; ignoreTrekRange: boolean
   onInstall: (id: string, version?: string, warn?: RangeWarning) => void; onClose: () => void; t: T; locale: string
 }) {
+  const appName = useAppName()
   const [detail, setDetail] = useState<RegistryDetail | null>(null)
   const [failed, setFailed] = useState(false)
 
@@ -1851,7 +1854,7 @@ function PluginDetailSheet({ item, installed, busy, onInstall, onClose, t, local
               {/* The range, not just its lower bound: "TREK 3.2.0+" reads as "and anything
                   newer", which is exactly the claim a `<4.0.0` upper bound denies. */}
               {(item.trek || item.minTrekVersion) && (
-                <Meta k={t('admin.plugins.metaRequires')} v={item.trek ? `TREK ${item.trek}` : `TREK ${item.minTrekVersion}+`} />
+                <Meta k={t('admin.plugins.metaRequires')} v={item.trek ? `${appName} ${item.trek}` : `${appName} ${item.minTrekVersion}+`} />
               )}
               {item.reviewedAt && <Meta k={t('admin.plugins.metaReviewed')} v={new Date(item.reviewedAt).toLocaleDateString(locale)} />}
               {typeof item.downloadCount === 'number' && item.downloadCount > 0 && (

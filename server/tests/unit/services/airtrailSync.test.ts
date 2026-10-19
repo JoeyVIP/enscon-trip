@@ -128,7 +128,7 @@ describe('airtrailSync.buildSavePayload', () => {
     const payload = buildSavePayload(
       reservation({
         reservation_time: '2021-09-01T20:30',
-        notes: 'changed in TREK',
+        notes: 'changed in ENSCON Trip',
         metadata: JSON.stringify({ airline: 'BAW', flight_number: 'BA999', seat: '3C' }),
       }),
       existingFlight(),
@@ -142,7 +142,7 @@ describe('airtrailSync.buildSavePayload', () => {
       departureScheduled: '2021-09-01T00:00:00.000Z',
       departureScheduledTime: '20:30',
       flightNumber: 'BA999',
-      note: 'changed in TREK',
+      note: 'changed in ENSCON Trip',
     });
     // The user's seat number is pushed onto their own AirTrail seat.
     expect(payload?.seats[0].seatNumber).toBe('3C');

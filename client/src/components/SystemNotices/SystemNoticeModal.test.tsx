@@ -289,13 +289,13 @@ describe('ModalRenderer', () => {
   it('FE-SN-MODAL-007: body params are interpolated before rendering', async () => {
     const notice = makeNotice({
       bodyKey: 'Hello {name}, welcome to {app}',
-      bodyParams: { name: 'Alice', app: 'TREK' },
+      bodyParams: { name: 'Alice', app: 'ENSCON Trip' },
     });
     render(<ModalRenderer notices={[notice]} />);
 
     await flushGraceDelay();
 
-    expect(screen.getByText('Hello Alice, welcome to TREK')).toBeTruthy();
+    expect(screen.getByText('Hello Alice, welcome to ENSCON Trip')).toBeTruthy();
   });
 
   it('FE-SN-MODAL-057: a body param is inserted literally, not as a replacement pattern', async () => {

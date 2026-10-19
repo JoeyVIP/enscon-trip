@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Check, ChevronRight, Globe2, KeyRound, Library, ShieldOff, WifiOff, X } from 'lucide-react'
 import TrekMark from '../../../components/shared/TrekMark'
 import { useTranslation } from '../../../i18n'
+import { useAppName } from '../../../utils/appName'
 
 /**
  * The API-keys card's two building blocks, in the phone's own material.
@@ -63,6 +64,7 @@ function ChipGroup({
 /** The TREK Places API, above the paid keys because it is the alternative to them. */
 export function MTrekApiBlock() {
   const { t } = useTranslation()
+  const appName = useAppName()
   const [open, setOpen] = useState(false)
 
   const facts = [
@@ -96,7 +98,7 @@ export function MTrekApiBlock() {
 
       <div className="overflow-hidden rounded-[16px] border border-[color:var(--m-act)] bg-[color:var(--m-ic)]">
         <div className="px-[14px] pt-[18px] pb-[13px]">
-          <TrekMark className="h-6 w-auto text-m-ink" aria-label="TREK Places API" />
+          <TrekMark className="h-6 w-auto text-m-ink" aria-label={`${appName} Places API`} />
           <p className="mt-[9px] text-[0.8125rem] leading-relaxed text-m-muted">{t('admin.trekApi.tagline')}</p>
           <ul className="mt-3 grid grid-cols-1 gap-[7px]">
             {facts.map(({ Icon, text }) => (

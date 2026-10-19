@@ -168,9 +168,9 @@ const collection: TranslationStrings = {
   'collections.file.doneSkipped': '{count} platser importerade, {skipped} överhoppade',
   'collections.file.errorTooLarge': 'Filen är för stor för att vara en lista.',
   'collections.file.errorUnreadable': 'Filen gick inte att läsa.',
-  'collections.file.errorNotACollection': 'Det här är ingen TREK-listfil.',
-  'collections.file.formatTrek': 'TREK-lista',
-  'collections.file.formatTrekHint': 'För en annan TREK, med etiketter och status',
+  'collections.file.errorNotACollection': 'Det här är ingen ENSCON Trip-listfil.',
+  'collections.file.formatTrek': 'ENSCON Trip-lista',
+  'collections.file.formatTrekHint': 'För en annan ENSCON Trip, med etiketter och status',
   'collections.file.formatGpxHint': 'Vägpunkter för OsmAnd, Organic Maps, Garmin och andra kartappar',
   'collections.file.gpxOmitted': '{count} platser utan koordinater kom inte med i GPX-filen',
   'collections.file.gpxNothing':

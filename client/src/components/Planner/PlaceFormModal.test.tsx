@@ -613,7 +613,7 @@ describe('PlaceFormModal', () => {
     render(<PlaceFormModal {...defaultProps} />);
     await user.type(screen.getByPlaceholderText('Search places...'), 'Eiffel');
 
-    expect(await screen.findByText('TREK')).toBeInTheDocument();
+    expect(await screen.findByText('ENSCON Trip')).toBeInTheDocument();
   });
 
   it('FE-PLANNER-PLACEFORM-022d: the typed-ahead list marks the OpenStreetMap rows as such', async () => {
@@ -637,7 +637,7 @@ describe('PlaceFormModal', () => {
     render(<PlaceFormModal {...defaultProps} />);
     await user.type(screen.getByPlaceholderText('Search places...'), 'Tokyo Station');
 
-    expect(await screen.findByText('TREK')).toBeInTheDocument();
+    expect(await screen.findByText('ENSCON Trip')).toBeInTheDocument();
     expect(await screen.findByText('OpenStreetMap')).toBeInTheDocument();
   });
 
@@ -662,7 +662,7 @@ describe('PlaceFormModal', () => {
     await user.type(screen.getByPlaceholderText('Search places...'), 'Eiffel');
     await user.keyboard('{Enter}');
 
-    expect(await screen.findByText('TREK')).toBeInTheDocument();
+    expect(await screen.findByText('ENSCON Trip')).toBeInTheDocument();
     expect(await screen.findByText('OpenStreetMap')).toBeInTheDocument();
   });
 

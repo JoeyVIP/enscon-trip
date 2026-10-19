@@ -1,9 +1,9 @@
 <div align="center">
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/logo-trek-light.svg" />
-  <source media="(prefers-color-scheme: light)" srcset="docs/logo-trek-dark.svg" />
-  <img src="docs/logo-trek-dark.svg" alt="TREK" height="96" />
+  <source media="(prefers-color-scheme: dark)" srcset="docs/logo-enscon-dark.svg" />
+  <source media="(prefers-color-scheme: light)" srcset="docs/logo-enscon-light.svg" />
+  <img src="docs/logo-enscon-light.svg" alt="ENSCON 旅程 / ENSCON Trip" height="96" />
 </picture>
 
 <br />
@@ -13,41 +13,23 @@
   <img src="docs/subtitle-dark.png" alt="your trip. your plan." height="28" />
 </picture>
 
+ENSCON 旅程（ENSCON Trip）是 [TREK](https://github.com/liketrek/TREK)（作者 Maurice Boe，[github.com/mauriceboe/TREK](https://github.com/mauriceboe/TREK)）的分支，依 AGPL-3.0 釋出；我們的修改都在本 repo。
+<br />
+ENSCON Trip is a fork of [TREK](https://github.com/liketrek/TREK) by Maurice Boe, released under AGPL-3.0; all our changes are in this repository.
+
 A self-hosted, real-time collaborative travel planner — with maps, budgets, packing lists, a journal, and AI built in.
 
 <br />
 
-<a href="https://demo.liketrek.com"><img alt="Demo" src="https://img.shields.io/badge/Demo-try-111827?style=for-the-badge" /></a>
+<a href="https://github.com/JoeyVIP/enscon-trip/actions/workflows/test.yml"><img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/JoeyVIP/enscon-trip/test.yml?branch=main&style=for-the-badge" /></a>
 &nbsp;
-<a href="https://hub.docker.com/r/mauriceboe/trek"><img alt="Docker" src="https://img.shields.io/badge/Docker-ready-2496ED?style=for-the-badge" /></a>
-&nbsp;
-<a href="https://sonarcloud.io/project/overview?id=liketrek_TREK"><img alt="Sonar Quality Gate" src="https://img.shields.io/sonar/quality_gate/liketrek_TREK?server=https%3A%2F%2Fsonarcloud.io&style=for-the-badge" /></a>
-&nbsp;
-<img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/liketrek/TREK/test.yml?branch=main&style=for-the-badge">
-&nbsp;
-<a href="https://discord.gg/NhZBDSd4qW"><img alt="Discord" src="https://img.shields.io/badge/Discord-join-5865F2?style=for-the-badge" /></a>
-&nbsp;
-<a href="https://kanban.pakulat.org/shared/I4wxF6inOOMB0C6hH6kQm3efyNxFjwyI"><img alt="Roadmap" src="https://img.shields.io/badge/Roadmap-view-0EA5E9?style=for-the-badge" /></a>
-&nbsp;
-<a href="https://ko-fi.com/mauriceboe"><img alt="Ko-fi" src="https://img.shields.io/badge/Ko--fi-support-FF5E5B?style=for-the-badge" /></a>
-&nbsp;
-<a href="https://www.buymeacoffee.com/mauriceboe"><img alt="BMAC" src="https://img.shields.io/badge/BMAC-support-FFDD00?style=for-the-badge" /></a>
+<a href="https://github.com/JoeyVIP/enscon-trip/pkgs/container/enscon-trip"><img alt="Container image" src="https://img.shields.io/badge/ghcr.io-joeyvip%2Fenscon--trip-2496ED?style=for-the-badge" /></a>
 <br />
 <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-AGPL_v3-6B7280?style=flat-square" /></a>
-<a href="https://github.com/liketrek/TREK/releases"><img alt="Latest Release" src="https://img.shields.io/github/v/release/liketrek/trek?include_prereleases&style=flat-square&color=6B7280" /></a>
-<a href="https://hub.docker.com/r/mauriceboe/trek"><img alt="Docker Pulls" src="https://img.shields.io/docker/pulls/mauriceboe/trek?style=flat-square&color=6B7280" /></a>
-<a href="https://github.com/liketrek/TREK"><img alt="Stars" src="https://img.shields.io/github/stars/liketrek/trek?style=flat-square&color=6B7280" /></a>
 </div>
 
 ---
 
-<div align="center">
-
-<img src="https://github.com/mauriceboe/trek-media/releases/download/readme-assets/TREK1.webp" alt="TREK, a tour of the app" width="100%" />
-
-</div>
-
-<br />
 
 ## What you get
 
@@ -126,7 +108,7 @@ Most of what follows is an addon an admin switches on or off. Lists, Costs, Docu
 
 #### 🧩 Plugins
 
-- **Third-party plugins**: install from the TREK registry or sideload a zip, switch on per instance, with their own pages under `/plugins/<id>`
+- **Third-party plugins**: install from the ENSCON Trip registry or sideload a zip, switch on per instance, with their own pages under `/plugins/<id>`
 - **Sandboxed**: one child process per plugin, 63 grantable permissions, an admin-edited outbound host allowlist, memory and RPC caps, and daily caps on AI and notification calls
 - **Trust**: registry downloads are pinned by sha256 and checked against the author's minisign key. A sideloaded zip is marked unverified, and `TREK_PLUGINS_ENABLED=false` turns the whole system off
 - **Extension points**: map markers and layers, place details, day schedules, PDF sections, Atlas layers, journal rows, trip warnings, calendar sources, route profiles and notification channels. Plugin pages run in an opaque-origin iframe
@@ -181,13 +163,6 @@ Most of what follows is an addon an admin switches on or off. Lists, Costs, Docu
 
 <br />
 
-<div align="center">
-  <a href="docs/screenshots/showcase-desktop-1.webp"><img src="docs/screenshots/showcase-desktop-1.webp" alt="Atlas · dashboard · trip planner" width="100%" /></a>
-  <a href="docs/screenshots/showcase-mobile.webp"><img src="docs/screenshots/showcase-mobile.webp" alt="Mobile PWA · dashboard, day plan, map, costs" width="100%" /></a>
-  <a href="docs/screenshots/showcase-desktop-2.webp"><img src="docs/screenshots/showcase-desktop-2.webp" alt="Collections · journey journal · costs" width="100%" /></a>
-</div>
-
-<br />
 
 ## AI usage
 
@@ -206,10 +181,10 @@ the details.
 ```bash
 ENCRYPTION_KEY=$(openssl rand -hex 32) docker run -d -p 3000:3000 \
   -e ENCRYPTION_KEY=$ENCRYPTION_KEY \
-  -v ./data:/app/data -v ./uploads:/app/uploads mauriceboe/trek
+  -v ./data:/app/data -v ./uploads:/app/uploads ghcr.io/joeyvip/enscon-trip
 ```
 
-Open `http://localhost:3000`. On first boot TREK seeds an admin account — if you set `ADMIN_EMAIL`/`ADMIN_PASSWORD` those are used, otherwise the credentials are printed to the container log (`docker logs trek`).
+Open `http://localhost:3000`. On first boot ENSCON Trip seeds an admin account — if you set `ADMIN_EMAIL`/`ADMIN_PASSWORD` those are used, otherwise the credentials are printed to the container log (`docker logs trek`).
 
 <div align="center">
 
@@ -248,12 +223,15 @@ with secure defaults and every option documented inline. Download it, then:
 docker compose up -d
 ```
 
-See [Install with Docker Compose](https://github.com/liketrek/TREK/wiki/Install-Docker-Compose)
+See [Install with Docker Compose — 上游 TREK 文件 (upstream docs)](https://github.com/liketrek/TREK/wiki/Install-Docker-Compose)
 for the full walkthrough.
 
 <br />
 
 <h2 id="helm-kubernetes">Helm (Kubernetes)</h2>
+
+> Helm chart 目前沿用上游 TREK 的，尚未提供我們自己的。
+> The Helm chart is currently upstream TREK's; we do not publish our own yet.
 
 ```bash
 helm repo add trek https://chart.liketrek.com
@@ -267,26 +245,26 @@ See [`charts/README.md`](https://github.com/liketrek/TREK/blob/main/charts/READM
 
 <h2 id="install-as-app-pwa">Install as App (PWA)</h2>
 
-TREK works as a Progressive Web App — no App Store needed.
+ENSCON Trip works as a Progressive Web App — no App Store needed.
 
-1. Open TREK in the browser (HTTPS required)
+1. Open ENSCON Trip in the browser (HTTPS required)
 2. **iOS**: Share ▸ *Add to Home Screen*
 3. **Android**: Menu ▸ *Install app* (or *Add to Home Screen*)
 
-TREK then launches fullscreen with its own icon, just like a native app.
+ENSCON Trip then launches fullscreen with its own icon, just like a native app.
 
 <br />
 
 ## Updating
 
-See [Updating](https://github.com/liketrek/TREK/wiki/Updating) — Docker Compose,
+See [Updating — 上游 TREK 文件 (upstream docs)](https://github.com/liketrek/TREK/wiki/Updating) — Docker Compose,
 Docker run, Helm, Portainer, Unraid and Proxmox, plus the encryption-key note.
 
 <br />
 
 <h2 id="reverse-proxy">Reverse Proxy</h2>
 
-For production, put TREK behind a TLS-terminating reverse proxy. TREK uses WebSockets for real-time sync, so the proxy **must** support WebSocket upgrades on `/ws`.
+For production, put ENSCON Trip behind a TLS-terminating reverse proxy. ENSCON Trip uses WebSockets for real-time sync, so the proxy **must** support WebSocket upgrades on `/ws`.
 
 If you use the MCP addon, the proxy must also pass the `Mcp-Session-Id` header through in both directions on `/mcp` — Nginx and Caddy do this by default, but a proxy that strips it makes every tool call open a new session instead of reusing one. See the [Reverse Proxy wiki page](https://github.com/liketrek/TREK/wiki/Reverse-Proxy) for details.
 
@@ -363,7 +341,7 @@ Caddy handles TLS and WebSockets automatically.
 ## Environment variables
 
 Every variable, its default and what it does: see
-[Environment Variables](https://github.com/liketrek/TREK/wiki/Environment-Variables).
+[Environment Variables — 上游 TREK 文件 (upstream docs)](https://github.com/liketrek/TREK/wiki/Environment-Variables).
 
 This fork (ENSCON) adds `OIDC_ALLOW_CROSS_BROWSER_CALLBACK`, `OIDC_HIDE_PASSWORD_FORM`,
 `OIDC_BUTTON_COLOR`, `EXTRA_LINK_URL` and `EXTRA_LINK_LABEL`; see `wiki/Environment-Variables.md`.
@@ -374,7 +352,7 @@ writes an explicit currency on insert, so this only matters for rows inserted ou
 ## ENSCON Trip（ENSCON 旅程）— 我們改了什麼 / What we changed
 
 ENSCON 旅程是 [TREK](https://github.com/liketrek/TREK)（AGPL-3.0）的修改版，給台灣使用者用。
-based on TREK, licensed under AGPL-3.0. 原始碼（含我們的修改）：本 repo。
+based on TREK (https://github.com/liketrek/TREK) by Maurice, licensed under AGPL-3.0. 基於 TREK，原作者 Maurice 與開源社群。原始碼（含我們的修改）：本 repo。
 
 已完成（第一版）：
 
@@ -398,16 +376,6 @@ based on TREK, licensed under AGPL-3.0. 原始碼（含我們的修改）：本 
 
 商標：本 fork 名稱與 logo 為 ENSCON 所有，不使用 TREK 的名稱與 logo。詳見 `NOTICE.md`、`TRADEMARKS.md`。
 
-## Star History
-
-<a href="https://www.star-history.com/?repos=liketrek%2FTREK&type=date&legend=bottom-right">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=liketrek/TREK&type=date&theme=dark&legend=bottom-right&sealed_token=tW9agibKugOyPk0yPURgSdnizM7K72zbJENGD9iyk24ZcwYHtCUn-hk9jh1gdacO0O7xJ3Io7LaNrwYD3mChzcpzZIqDC8_HevYG1qnT0XNTmN6Ez4UZrQ" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=liketrek/TREK&type=date&legend=bottom-right&sealed_token=tW9agibKugOyPk0yPURgSdnizM7K72zbJENGD9iyk24ZcwYHtCUn-hk9jh1gdacO0O7xJ3Io7LaNrwYD3mChzcpzZIqDC8_HevYG1qnT0XNTmN6Ez4UZrQ" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=liketrek/TREK&type=date&legend=bottom-right&sealed_token=tW9agibKugOyPk0yPURgSdnizM7K72zbJENGD9iyk24ZcwYHtCUn-hk9jh1gdacO0O7xJ3Io7LaNrwYD3mChzcpzZIqDC8_HevYG1qnT0XNTmN6Ez4UZrQ" />
- </picture>
-</a>
-
 ## Data sources
 
 The Atlas map's country and sub-national (province/county) boundaries come from
@@ -419,4 +387,4 @@ for full third-party attributions.
 
 ## License
 
-TREK is [AGPL v3](LICENSE). Self-host freely for personal or internal company use. If you modify and offer TREK as a network service to third parties, your modifications must be open-sourced under the same licence.
+ENSCON Trip (based on [TREK](https://github.com/liketrek/TREK) by Maurice) is [AGPL v3](LICENSE). Self-host freely for personal or internal company use. If you modify and offer ENSCON Trip as a network service to third parties, your modifications must be open-sourced under the same licence.

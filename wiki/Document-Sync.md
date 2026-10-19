@@ -1,14 +1,14 @@
 # Document Sync
 
-A trip can keep its documents in step with a self-hosted document store: **Paperless-ngx**, **Papra**, **Nextcloud**, **OpenCloud** or a **Synology** NAS. What someone uploads in TREK appears in the store, and what someone files in the store appears in TREK.
+A trip can keep its documents in step with a self-hosted document store: **Paperless-ngx**, **Papra**, **Nextcloud**, **OpenCloud** or a **Synology** NAS. What someone uploads in ENSCON Trip appears in the store, and what someone files in the store appears in ENSCON Trip.
 
 Three rules shape everything else on this page:
 
-- **The connection belongs to the trip, not to a person.** The trip owner connects the store once, TREK talks to it under that one account, and TREK's own membership decides who sees what. Every member sees the same documents, and the store never learns who is on the trip.
-- **TREK keeps its own copy of every document.** A synced document is an ordinary file in the trip's [Documents-and-Files](Documents-and-Files) manager, so preview, download, trash, offline use, [PDF-Export](PDF-Export) and [Backups](Backups) work as before, and a store that is down does not empty a trip that starts tomorrow.
-- **Nothing is deleted on the other side on its own.** A document removed in the store is flagged in TREK and waits for a person. A document deleted in TREK is removed in the store only when the binding is set to move it to the store's recycle bin.
+- **The connection belongs to the trip, not to a person.** The trip owner connects the store once, ENSCON Trip talks to it under that one account, and ENSCON Trip's own membership decides who sees what. Every member sees the same documents, and the store never learns who is on the trip.
+- **ENSCON Trip keeps its own copy of every document.** A synced document is an ordinary file in the trip's [Documents-and-Files](Documents-and-Files) manager, so preview, download, trash, offline use, [PDF-Export](PDF-Export) and [Backups](Backups) work as before, and a store that is down does not empty a trip that starts tomorrow.
+- **Nothing is deleted on the other side on its own.** A document removed in the store is flagged in ENSCON Trip and waits for a person. A document deleted in ENSCON Trip is removed in the store only when the binding is set to move it to the store's recycle bin.
 
-> **Admin:** Each store is switched on separately under the **Documents** addon in **Admin → Addons**. They ship switched off. A store on your local network also needs `ALLOW_INTERNAL_NETWORK=true` on the TREK server. See [Admin-Addons](Admin-Addons) and [Internal-Network-Access](Internal-Network-Access).
+> **Admin:** Each store is switched on separately under the **Documents** addon in **Admin → Addons**. They ship switched off. A store on your local network also needs `ALLOW_INTERNAL_NETWORK=true` on the ENSCON Trip server. See [Admin-Addons](Admin-Addons) and [Internal-Network-Access](Internal-Network-Access).
 
 ## What each store syncs
 

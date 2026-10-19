@@ -490,7 +490,7 @@ describe('AdminPluginsPanel — TREK-version compatibility', () => {
       dependencyStatus: 'hostIncompatible', trekRange: '>=3.2.0 <4.0.0', hostVersion: '4.0.0', enabled: 0, status: 'inactive',
     }))
     render(<AdminPluginsPanel />)
-    expect(await screen.findByText(/needs trek >=3\.2\.0 <4\.0\.0/i)).toBeInTheDocument()
+    expect(await screen.findByText(/needs ENSCON Trip >=3\.2\.0 <4\.0\.0/i)).toBeInTheDocument()
   })
 })
 
@@ -1165,7 +1165,7 @@ describe('AdminPluginsPanel — compatible updates only', () => {
     })
     render(<AdminPluginsPanel />)
 
-    expect(await screen.findByText('v2.0.0 available — needs TREK >=4.0.0')).toBeInTheDocument()
+    expect(await screen.findByText('v2.0.0 available — needs ENSCON Trip >=4.0.0')).toBeInTheDocument()
   })
 
   it('FE-COMP-PLUGINS-UPD-004: a legacy entry with only minTrekVersion still gets a hint range', async () => {
@@ -1174,7 +1174,7 @@ describe('AdminPluginsPanel — compatible updates only', () => {
     })
     render(<AdminPluginsPanel />)
 
-    expect(await screen.findByText('v2.0.0 available — needs TREK >=4.0.0')).toBeInTheDocument()
+    expect(await screen.findByText('v2.0.0 available — needs ENSCON Trip >=4.0.0')).toBeInTheDocument()
   })
 
   it('FE-COMP-PLUGINS-UPD-005: no hint when the latest version is the one on offer', async () => {
@@ -1182,7 +1182,7 @@ describe('AdminPluginsPanel — compatible updates only', () => {
     render(<AdminPluginsPanel />)
 
     expect(await screen.findByRole('button', { name: /update → v2\.0\.0/i })).toBeInTheDocument()
-    expect(screen.queryByText(/needs TREK/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/needs ENSCON Trip/i)).not.toBeInTheDocument()
   })
 })
 
@@ -1288,7 +1288,7 @@ describe('AdminPluginsPanel — version picker', () => {
     fireEvent.click(tabs[0])
     fireEvent.click(await screen.findByText('Gotify'))
 
-    expect(await screen.findByText(/^needs TREK >=4\.0\.0$/i)).toBeInTheDocument()
+    expect(await screen.findByText(/^needs ENSCON Trip >=4\.0\.0$/i)).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /^install 3\.0\.0$/i })).not.toBeInTheDocument()
   })
 
@@ -1423,7 +1423,7 @@ describe('AdminPluginsPanel — capability and dependency chips', () => {
     panelWith([plugin({ operatorEgress: false, dependencyStatus: 'hostIncompatible' })])
     render(<AdminPluginsPanel />)
 
-    expect(await screen.findByText('Does not say which TREK versions it supports')).toBeInTheDocument()
+    expect(await screen.findByText('Does not say which ENSCON Trip versions it supports')).toBeInTheDocument()
   })
 })
 
@@ -1506,7 +1506,7 @@ describe('AdminPluginsPanel — Discover cards and the detail modal', () => {
     expect(screen.getByText('Instance-wide')).toBeInTheDocument()
     expect(screen.getByText('Required')).toBeInTheDocument()
     expect(screen.getByText('4 KB')).toBeInTheDocument()
-    expect(screen.getByText('TREK >=3.2.0')).toBeInTheDocument()
+    expect(screen.getByText('ENSCON Trip >=3.2.0')).toBeInTheDocument()
     expect(screen.getByText('Store its own data in an isolated database')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /homepage/i })).toHaveAttribute('href', 'https://gotify.example')
     // 999 500 rounds to a whole megabyte on the card, never "1000k"
@@ -1520,7 +1520,7 @@ describe('AdminPluginsPanel — Discover cards and the detail modal', () => {
     fireEvent.click(await screen.findByText('Gotify'))
 
     expect(await screen.findByText('Needs no special access.')).toBeInTheDocument()
-    expect(screen.getByText('TREK 3.2.0+')).toBeInTheDocument()
+    expect(screen.getByText('ENSCON Trip 3.2.0+')).toBeInTheDocument()
     expect(screen.queryByText('Connects to')).not.toBeInTheDocument()
     expect(screen.queryByText('Setup')).not.toBeInTheDocument()
   })
@@ -1546,7 +1546,7 @@ describe('AdminPluginsPanel — Discover cards and the detail modal', () => {
     await clickDiscover()
     fireEvent.click(await screen.findByText('Gotify'))
 
-    const explanations = await screen.findAllByText(/needs trek >=4\.0\.0 — this server runs 3\.3\.0/i)
+    const explanations = await screen.findAllByText(/needs ENSCON Trip >=4\.0\.0 — this server runs 3\.3\.0/i)
     expect(explanations.length).toBeGreaterThan(0)
   })
 
@@ -2028,7 +2028,7 @@ describe('AdminPluginsPanel registry cards and dependency chips', () => {
     render(<AdminPluginsPanel />)
 
     await screen.findByText('Alpha Widget')
-    expect(screen.getByText(/does not say which trek/i)).toBeInTheDocument()
+    expect(screen.getByText(/does not say which ENSCON Trip/i)).toBeInTheDocument()
   })
 
   it('FE-W5PLG-023: a registry-sourced row links to its repository and issue tracker', async () => {
@@ -2495,9 +2495,9 @@ describe('AdminPluginsPanel — TREK-range bypass (TREK_PLUGINS_IGNORE_TREK_RANG
     expect(btn).toBeEnabled()
     fireEvent.click(btn)
 
-    const dialog = await screen.findByRole('dialog', { name: /outside its supported trek versions/i })
+    const dialog = await screen.findByRole('dialog', { name: /outside its supported ENSCON Trip versions/i })
     expect(within(dialog).getByText(/no guarantee/i)).toBeInTheDocument()
-    expect(within(dialog).getByText(/corrupt trek data/i)).toBeInTheDocument()
+    expect(within(dialog).getByText(/corrupt ENSCON Trip data/i)).toBeInTheDocument()
     expect(posted).toBeNull() // nothing sent until the admin accepts the risk
 
     fireEvent.click(within(dialog).getByRole('button', { name: /^install anyway$/i }))
@@ -2512,9 +2512,9 @@ describe('AdminPluginsPanel — TREK-range bypass (TREK_PLUGINS_IGNORE_TREK_RANG
     fireEvent.click(await screen.findByText('Discover'))
     fireEvent.click(await screen.findByRole('button', { name: /^install anyway$/i }))
 
-    const dialog = await screen.findByRole('dialog', { name: /outside its supported trek versions/i })
+    const dialog = await screen.findByRole('dialog', { name: /outside its supported ENSCON Trip versions/i })
     fireEvent.click(within(dialog).getByRole('button', { name: /cancel/i }))
-    await waitFor(() => expect(screen.queryByRole('dialog', { name: /outside its supported trek versions/i })).not.toBeInTheDocument())
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: /outside its supported ENSCON Trip versions/i })).not.toBeInTheDocument())
     expect(posted).toBe(false)
   })
 
@@ -2527,7 +2527,7 @@ describe('AdminPluginsPanel — TREK-range bypass (TREK_PLUGINS_IGNORE_TREK_RANG
 
     await userEvent.upload(container.querySelector('input[type="file"]') as HTMLInputElement, new File(['zip'], 'plugin.zip', { type: 'application/zip' }))
 
-    const dialog = await screen.findByRole('dialog', { name: /installed outside its supported trek versions/i })
+    const dialog = await screen.findByRole('dialog', { name: /installed outside its supported ENSCON Trip versions/i })
     expect(within(dialog).getByText(/no guarantee/i)).toBeInTheDocument()
     expect(within(dialog).getByText(/trek-new/)).toBeInTheDocument()
   })
@@ -2538,6 +2538,6 @@ describe('AdminPluginsPanel — TREK-range bypass (TREK_PLUGINS_IGNORE_TREK_RANG
       trekRangeBypassed: { trekRange: '>=3.2.0 <4.0.0', hostVersion: '4.0.0' },
     })], null)
     render(<AdminPluginsPanel />)
-    expect(await screen.findByText(/outside its trek range \(>=3\.2\.0 <4\.0\.0\)/i)).toBeInTheDocument()
+    expect(await screen.findByText(/outside its ENSCON Trip range \(>=3\.2\.0 <4\.0\.0\)/i)).toBeInTheDocument()
   })
 })

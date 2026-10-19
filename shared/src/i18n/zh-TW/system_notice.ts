@@ -1,17 +1,17 @@
 import type { TranslationStrings } from '../types';
 
 const system_notice: TranslationStrings = {
-  'system_notice.welcome_v1.title': '歡迎使用 TREK',
+  'system_notice.welcome_v1.title': '歡迎使用 ENSCON 旅程',
   'system_notice.welcome_v1.body':
     '您的全方位旅遊規劃器。建立行程、與朋友分享旅遊，隨時保持條理分明——無論線上或離線皆可。',
   'system_notice.welcome_v1.cta_label': '規劃行程',
-  'system_notice.welcome_v1.hero_alt': '風景優美的旅遊目的地與 TREK 介面',
+  'system_notice.welcome_v1.hero_alt': '風景優美的旅遊目的地與 ENSCON 旅程 介面',
   'system_notice.welcome_v1.highlight_plan': '逐日行程規劃',
   'system_notice.welcome_v1.highlight_share': '與旅伴協作規劃',
   'system_notice.welcome_v1.highlight_offline': '行動裝置支援離線使用',
   'system_notice.dev_test_modal.title': '[Dev] Test notice',
   'system_notice.dev_test_modal.body': 'This is a dev-only test notice.',
-  'system_notice.thank_you_support.title': '感謝你使用 TREK',
+  'system_notice.thank_you_support.title': '感謝你使用 ENSCON 旅程',
   'system_notice.thank_you_support.body':
     '想簡單地對你說聲謝謝——謝謝你安裝了 TREK，這對我來說真的意義重大。\n\n我是一名獨立開發者，利用業餘時間打造 TREK。它最初只是我為自己的旅行做的一個小工具，而自那以後社群給予的支持與關注，老實說讓我感到無比驚喜。TREK 是我傾注了許多心血做出來的——但也要感謝許多了不起的外部貢獻者，是他們一起塑造了它。\n\n**TREK 是開源且完全免費的——而且永遠都會如此。沒有付費方案，沒有訂閱，沒有任何附加條件。我保證。**\n\n如果 TREK 對你有幫助，而你願意支持它的開發，一杯小小的咖啡真的能幫助我繼續做下去——完全不必有任何壓力，但每一杯都讓那些熬夜的時光更有動力。\n\n謝謝你來到這裡。\n\n— Maurice',
   'system_notice.thank_you_support.highlight_opensource': '在 GitHub 上 100% 開源',
@@ -26,7 +26,7 @@ const system_notice: TranslationStrings = {
   'system_notice.pager.position': '通知 {current}/{total}',
   'system_notice.v3_photos.title': '3.0 版相片已移至',
   'system_notice.v3_photos.body':
-    '行程規劃器中的​**相片**標籤已被移除。您的相片安全— TREK 從未修改您的 Immich 或 Synology 相簿。\n\n相片現在位於 **Journey** 附加元件中。Journey 為選用 — 若尚未啟用，請聯絡管理員於 Admin → 附加元件 中開啟。',
+    '行程規劃器中的​**相片**標籤已被移除。您的相片安全— ENSCON 旅程 從未修改您的 Immich 或 Synology 相簿。\n\n相片現在位於 **Journey** 附加元件中。Journey 為選用 — 若尚未啟用，請聯絡管理員於 Admin → 附加元件 中開啟。',
   'system_notice.v3_journey.title': '認識 Journey — 旅行日記',
   'system_notice.v3_journey.body': '將您的旅程記錄為具有時間軸、相片畫庫與互動地圖的豐富旅行故事。',
   'system_notice.v3_journey.cta_label': '開啟 Journey',
@@ -55,17 +55,17 @@ const system_notice: TranslationStrings = {
     '3.0.14 版本升級偵測到一個或多個由儲存帳戶中前後空白字元引發的使用者名稱或電子郵件衝突。受影響的帳戶已自動重新命名。請檢查伺服器日誌中以 **[migration] WHITESPACE COLLISION** 開頭的行，以確認哪些帳戶需要審查。',
   // The release modal. One stable set of keys: each big release swaps the copy in place.
   'system_notice.release_notes.eyebrow': '更新已安裝',
-  'system_notice.release_notes.headline': 'TREK 現在能自己完成的四件事。',
+  'system_notice.release_notes.headline': 'ENSCON 旅程 現在能自己完成的四件事。',
   'system_notice.release_notes.intro': '自有的地點 API、從頭到尾規劃的公路旅行、掌握在你手中的位置記錄，以及保持同步的文件。',
   'system_notice.release_notes.features_label': '本次重頭戲',
   'system_notice.release_notes.features_aside': '遠不止這些',
-  'system_notice.release_notes.feature_places_title': 'TREK Places API',
+  'system_notice.release_notes.feature_places_title': 'ENSCON 旅程 Places API',
   'system_notice.release_notes.feature_places_body': '首個擁有自有地點 API 的開源旅行規劃器。7360 萬個地點，無需金鑰，沒有配額。',
   'system_notice.release_notes.feature_roadtrip_title': '公路旅行擴充套件',
   'system_notice.release_notes.feature_roadtrip_body': '自動規劃行車：路線、距離、時長和停靠點。管理員開啟前預設關閉。',
   'system_notice.release_notes.feature_dawarich_title': 'Dawarich 整合',
-  'system_notice.release_notes.feature_dawarich_body': 'Google Timeline 的自架替代方案，現在可以直接在 TREK 裡檢視。TREK 只讀取，也僅止於讀取。',
-  'system_notice.release_notes.footnote': '除此之外，TREK 的其他部分還有一長串小改動。',
+  'system_notice.release_notes.feature_dawarich_body': 'Google Timeline 的自架替代方案，現在可以直接在 ENSCON 旅程 裡檢視。ENSCON 旅程 只讀取，也僅止於讀取。',
+  'system_notice.release_notes.footnote': '除此之外，ENSCON 旅程 的其他部分還有一長串小改動。',
   'system_notice.release_notes.notes_label': '版本說明',
   'system_notice.release_notes.note_eyebrow': '來自維護者的話',
   'system_notice.release_notes.note_title': '是你們讓我一直堅持做 TREK。',

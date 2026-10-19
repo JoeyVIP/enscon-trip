@@ -658,7 +658,7 @@ describe('exportICS', () => {
 
     const { ics, filename } = svc.exportICS(trip.id);
 
-    expect(ics).toContain('X-WR-CALNAME:TREK Trip');
+    expect(ics).toContain('X-WR-CALNAME:ENSCON Trip');
     expect(ics).toContain('SUMMARY:Trip');
     expect(filename).toBe('trek-trip.ics');
   });

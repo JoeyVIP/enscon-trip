@@ -3,7 +3,7 @@ import type { TranslationStrings } from '../types';
 const system_notice: TranslationStrings = {
   'system_notice.v3_photos.title': 'Ảnh đã chuyển sang 3.0',
   'system_notice.v3_photos.body':
-    '**Ảnh** trong Công cụ lập kế hoạch chuyến đi đã bị xóa. Ảnh của bạn được an toàn — TREK chưa bao giờ sửa đổi thư viện Immich hoặc Synology của bạn.\n\nẢnh hiện có trong tiện ích bổ sung **Journey**. Hành trình là tùy chọn — nếu nó chưa có sẵn, hãy yêu cầu quản trị viên của bạn kích hoạt nó trong Quản trị → Tiện ích bổ sung.',
+    '**Ảnh** trong Công cụ lập kế hoạch chuyến đi đã bị xóa. Ảnh của bạn được an toàn — ENSCON Trip chưa bao giờ sửa đổi thư viện Immich hoặc Synology của bạn.\n\nẢnh hiện có trong tiện ích bổ sung **Journey**. Hành trình là tùy chọn — nếu nó chưa có sẵn, hãy yêu cầu quản trị viên của bạn kích hoạt nó trong Quản trị → Tiện ích bổ sung.',
   'system_notice.v3_journey.title': 'Hành Trình Gặp Gỡ - tạp chí du lịch',
   'system_notice.v3_journey.body':
     'Ghi lại chuyến đi của bạn dưới dạng những câu chuyện du lịch phong phú với dòng thời gian, thư viện ảnh và bản đồ tương tác.',
@@ -31,18 +31,18 @@ const system_notice: TranslationStrings = {
   'system_notice.v3014_whitespace_collision.title': 'Hành động bắt buộc: xung đột tài khoản người dùng',
   'system_notice.v3014_whitespace_collision.body':
     'Bản nâng cấp 3.0.14 đã phát hiện một hoặc nhiều xung đột tên người dùng hoặc email do khoảng trắng ở đầu/cuối trong tài khoản được lưu trữ. Các tài khoản bị ảnh hưởng đã được đổi tên tự động. Kiểm tra nhật ký máy chủ để tìm các dòng bắt đầu bằng **[migration] WHITESPACE COLLISION** để xác định tài khoản nào cần xem xét.',
-  'system_notice.welcome_v1.title': 'Chào mừng đến với TREK',
+  'system_notice.welcome_v1.title': 'Chào mừng đến với ENSCON Trip',
   'system_notice.welcome_v1.body':
     'Công cụ lập kế hoạch du lịch tất cả trong một của bạn. Xây dựng hành trình, chia sẻ chuyến đi với bạn bè và luôn ngăn nắp — trực tuyến hoặc ngoại tuyến.',
   'system_notice.welcome_v1.cta_label': 'Lên kế hoạch cho một chuyến đi',
-  'system_notice.welcome_v1.hero_alt': 'Một điểm đến du lịch tuyệt đẹp với lớp phủ TREK quy hoạch UI',
+  'system_notice.welcome_v1.hero_alt': 'Một điểm đến du lịch tuyệt đẹp với lớp phủ ENSCON Trip quy hoạch UI',
   'system_notice.welcome_v1.highlight_plan': 'Lịch trình hàng ngày cho bất kỳ chuyến đi nào',
   'system_notice.welcome_v1.highlight_share': 'Hợp tác với các đối tác du lịch',
   'system_notice.welcome_v1.highlight_offline': 'Hoạt động ngoại tuyến trên thiết bị di động',
   'system_notice.dev_test_modal.title': '[Dev] Thông báo kiểm tra',
   'system_notice.dev_test_modal.body': 'Đây là thông báo kiểm tra chỉ dành cho nhà phát triển.',
   // Thank-you + support the project (shown once per install and once per upgrade)
-  'system_notice.thank_you_support.title': 'Cảm ơn bạn đã sử dụng TREK',
+  'system_notice.thank_you_support.title': 'Cảm ơn bạn đã sử dụng ENSCON Trip',
   'system_notice.thank_you_support.body':
     'Xin gửi lời cảm ơn nhanh chóng đến bạn vì đã cài đặt TREK — nó thực sự có ý nghĩa rất lớn.\n\nTôi là nhà phát triển một mình và tôi xây dựng TREK trong thời gian rảnh rỗi. Nó bắt đầu như một công cụ nhỏ dành riêng cho những chuyến đi của tôi và tôi thực sự rất ngạc nhiên trước sự hỗ trợ và quan tâm từ cộng đồng kể từ đó. TREK được tạo ra bằng cả trái tim của tôi — nhưng cũng nhờ có nhiều cộng tác viên bên ngoài tuyệt vời đã giúp định hình nó.\n\n**TREK là mã nguồn mở và hoàn toàn miễn phí — và nó sẽ mãi mãi như vậy. Không có tầng trả phí, không đăng ký, không bắt được. Tôi hứa.**\n\nNếu TREK hữu ích cho bạn và bạn muốn hỗ trợ sự phát triển của nó, thì một tách cà phê nhỏ thực sự giúp tôi tiếp tục xây dựng — không có chút áp lực nào, nhưng mỗi tách cà phê sẽ giúp bạn tiếp tục những đêm khuya.\n\nCảm ơn bạn đã ở đây.\n\n— Maurice',
   'system_notice.thank_you_support.highlight_opensource': 'Nguồn mở 100% trên GitHub',
@@ -57,18 +57,18 @@ const system_notice: TranslationStrings = {
   'system_notice.pager.position': 'Thông báo {current} của {total}',
   // The release modal. One stable set of keys: each big release swaps the copy in place.
   'system_notice.release_notes.eyebrow': 'Đã cập nhật',
-  'system_notice.release_notes.headline': 'Bốn điều TREK giờ tự làm được.',
+  'system_notice.release_notes.headline': 'Bốn điều ENSCON Trip giờ tự làm được.',
   'system_notice.release_notes.intro': 'API địa điểm riêng, chuyến đi đường bộ được lên kế hoạch từ đầu đến cuối, lịch sử vị trí trong tay bạn, và tài liệu được đồng bộ.',
   'system_notice.release_notes.features_label': 'Những điểm nhấn',
   'system_notice.release_notes.features_aside': 'Chưa phải tất cả',
-  'system_notice.release_notes.feature_places_title': 'TREK Places API',
+  'system_notice.release_notes.feature_places_title': 'ENSCON Trip Places API',
   'system_notice.release_notes.feature_places_body': 'Trình lập kế hoạch du lịch mã nguồn mở đầu tiên có API địa điểm riêng. 73,6 triệu địa điểm, không cần khóa, không giới hạn.',
   'system_notice.release_notes.feature_roadtrip_title': 'Tiện ích Chuyến đi đường bộ',
   'system_notice.release_notes.feature_roadtrip_body': 'Tự lên kế hoạch chuyến lái: tuyến đường, quãng đường, số giờ và điểm dừng. Tắt cho đến khi quản trị viên bật.',
   'system_notice.release_notes.feature_dawarich_title': 'Tích hợp Dawarich',
-  'system_notice.release_notes.feature_dawarich_body': 'Lựa chọn tự lưu trữ thay cho Google Timeline, giờ đã đọc được ngay trong TREK. TREK chỉ đọc, và chỉ đọc mà thôi.',
+  'system_notice.release_notes.feature_dawarich_body': 'Lựa chọn tự lưu trữ thay cho Google Timeline, giờ đã đọc được ngay trong ENSCON Trip. ENSCON Trip chỉ đọc, và chỉ đọc mà thôi.',
   'system_notice.release_notes.footnote':
-    'Và còn cả một danh sách dài những thay đổi nhỏ hơn ở khắp phần còn lại của TREK.',
+    'Và còn cả một danh sách dài những thay đổi nhỏ hơn ở khắp phần còn lại của ENSCON Trip.',
   'system_notice.release_notes.notes_label': 'Ghi chú phát hành',
   'system_notice.release_notes.note_eyebrow': 'Lời nhắn từ người bảo trì',
   'system_notice.release_notes.note_title': 'Bạn là lý do tôi tiếp tục xây dựng TREK.',
@@ -84,7 +84,7 @@ const system_notice: TranslationStrings = {
   'system_notice.release_notes.support_lead':
     'TREK miễn phí và sẽ luôn như vậy, nhưng máy chủ, tên miền và rất nhiều đêm thức khuya thì không.',
   'system_notice.release_notes.support_text':
-    'Nếu TREK đã có một chỗ trong những chuyến đi của bạn, hãy mời tôi một ly cà phê để bản phát hành tiếp theo tiếp tục ra đời.',
+    'Nếu ENSCON Trip đã có một chỗ trong những chuyến đi của bạn, hãy mời tôi một ly cà phê để bản phát hành tiếp theo tiếp tục ra đời.',
   'system_notice.release_notes.cta_bmc': 'Buy me a coffee',
   'system_notice.release_notes.cta_kofi': 'Hỗ trợ trên Ko-fi',
   'system_notice.release_notes.feature_docsync_title': 'Đồng bộ tài liệu',

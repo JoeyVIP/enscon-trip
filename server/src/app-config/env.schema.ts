@@ -94,6 +94,8 @@ export const envSchema = z.object({
   // ENSCON：登入頁只藏帳密表單（後端密碼登入照常可用；跟 OIDC_ONLY 不同）。
   OIDC_HIDE_PASSWORD_FORM: boolStr,
   OIDC_BUTTON_COLOR: anyString,
+  // ENSCON：true 才顯示上游（TREK）作者的第一人稱／募款通知（release-notes、thank-you-support）；預設隱藏。
+  SHOW_UPSTREAM_NOTICES: boolStr,
   // ENSCON：右下角額外連結浮動按鈕（例如小遊戲），兩個都空就不顯示。
   EXTRA_LINK_URL: anyString,
   EXTRA_LINK_LABEL: anyString,

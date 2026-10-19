@@ -1,17 +1,17 @@
 import type { TranslationStrings } from '../types';
 
 const system_notice: TranslationStrings = {
-  'system_notice.welcome_v1.title': 'Selamat datang di TREK',
+  'system_notice.welcome_v1.title': 'Selamat datang di ENSCON Trip',
   'system_notice.welcome_v1.body':
     'Perencana perjalanan lengkap Anda. Buat itinerari, bagikan perjalanan dengan teman, dan tetap terorganisir — online maupun offline.',
   'system_notice.welcome_v1.cta_label': 'Rencanakan perjalanan',
-  'system_notice.welcome_v1.hero_alt': 'Destinasi wisata indah dengan antarmuka TREK',
+  'system_notice.welcome_v1.hero_alt': 'Destinasi wisata indah dengan antarmuka ENSCON Trip',
   'system_notice.welcome_v1.highlight_plan': 'Itinerari harian untuk setiap perjalanan',
   'system_notice.welcome_v1.highlight_share': 'Berkolaborasi dengan teman perjalanan',
   'system_notice.welcome_v1.highlight_offline': 'Bekerja offline di ponsel',
   'system_notice.dev_test_modal.title': '[Dev] Test notice',
   'system_notice.dev_test_modal.body': 'This is a dev-only test notice.',
-  'system_notice.thank_you_support.title': 'Terima kasih telah memakai TREK',
+  'system_notice.thank_you_support.title': 'Terima kasih telah memakai ENSCON Trip',
   'system_notice.thank_you_support.body':
     'Sekadar ucapan terima kasih singkat karena telah memasang TREK — ini benar-benar berarti banyak bagi saya.\n\nSaya seorang developer solo dan membangun TREK di waktu luang. Awalnya hanya alat kecil untuk perjalanan saya sendiri, dan sejujurnya saya terharu dengan dukungan serta minat dari komunitas sejak saat itu. TREK dibuat dengan sepenuh hati dari saya — tetapi juga berkat banyak kontributor eksternal hebat yang telah membantu membentuknya.\n\n**TREK bersifat open source dan sepenuhnya gratis — dan akan selalu begitu, selamanya. Tanpa paket berbayar, tanpa langganan, tanpa syarat tersembunyi. Saya janji.**\n\nJika TREK bermanfaat bagimu dan kamu ingin mendukung pengembangannya, secangkir kopi kecil sungguh membantu saya untuk terus membangun — sama sekali tanpa paksaan, tapi setiap cangkir membuat malam-malam panjang ini tetap berjalan.\n\nTerima kasih telah berada di sini.\n\n— Maurice',
   'system_notice.thank_you_support.highlight_opensource': '100% open source di GitHub',
@@ -26,7 +26,7 @@ const system_notice: TranslationStrings = {
   'system_notice.pager.position': 'Pemberitahuan {current} dari {total}',
   'system_notice.v3_photos.title': 'Foto dipindahkan di 3.0',
   'system_notice.v3_photos.body':
-    '**Foto** di Perencana Perjalanan telah dihapus. Foto Anda aman — TREK tidak pernah mengubah perpustakaan Immich atau Synology Anda.\n\nFoto kini ada di addon **Journey**. Journey bersifat opsional — jika belum tersedia, minta admin untuk mengaktifkannya di Admin → Addon.',
+    '**Foto** di Perencana Perjalanan telah dihapus. Foto Anda aman — ENSCON Trip tidak pernah mengubah perpustakaan Immich atau Synology Anda.\n\nFoto kini ada di addon **Journey**. Journey bersifat opsional — jika belum tersedia, minta admin untuk mengaktifkannya di Admin → Addon.',
   'system_notice.v3_journey.title': 'Kenali Journey — jurnal perjalanan',
   'system_notice.v3_journey.body':
     'Dokumentasikan perjalanan Anda sebagai cerita hidup dengan linimasa, galeri foto, dan peta interaktif.',
@@ -55,17 +55,17 @@ const system_notice: TranslationStrings = {
   'system_notice.v3014_whitespace_collision.body':
     'Pembaruan 3.0.14 mendeteksi satu atau lebih konflik nama pengguna atau email yang disebabkan oleh spasi di awal atau akhir nilai yang tersimpan. Akun yang terpengaruh telah diganti nama secara otomatis. Periksa log server untuk baris yang dimulai dengan **[migration] WHITESPACE COLLISION** guna mengidentifikasi akun mana yang perlu ditinjau.',
   'system_notice.release_notes.eyebrow': 'Pembaruan terpasang',
-  'system_notice.release_notes.headline': 'Empat hal yang kini dilakukan TREK sendiri.',
+  'system_notice.release_notes.headline': 'Empat hal yang kini dilakukan ENSCON Trip sendiri.',
   'system_notice.release_notes.intro': 'API tempat sendiri, perjalanan darat yang direncanakan dari awal sampai akhir, riwayat lokasi di tangan Anda, dan dokumen Anda tersinkron.',
   'system_notice.release_notes.features_label': 'Sorotan utama',
   'system_notice.release_notes.features_aside': 'Masih banyak lagi',
-  'system_notice.release_notes.feature_places_title': 'TREK Places API',
+  'system_notice.release_notes.feature_places_title': 'ENSCON Trip Places API',
   'system_notice.release_notes.feature_places_body': 'Perencana perjalanan open source pertama dengan API tempat sendiri. 73,6 juta tempat, tanpa kunci, tanpa kuota.',
   'system_notice.release_notes.feature_roadtrip_title': 'Addon Perjalanan Darat',
   'system_notice.release_notes.feature_roadtrip_body': 'Merencanakan perjalanan sendiri: rute, jarak, jam, dan perhentian. Nonaktif sampai admin mengaktifkannya.',
   'system_notice.release_notes.feature_dawarich_title': 'Integrasi Dawarich',
-  'system_notice.release_notes.feature_dawarich_body': 'Alternatif self-hosted untuk Google Timeline, kini bisa dibaca langsung di TREK. TREK hanya membaca, tidak lebih.',
-  'system_notice.release_notes.footnote': 'Ditambah deretan panjang perubahan kecil di bagian TREK lainnya.',
+  'system_notice.release_notes.feature_dawarich_body': 'Alternatif self-hosted untuk Google Timeline, kini bisa dibaca langsung di ENSCON Trip. ENSCON Trip hanya membaca, tidak lebih.',
+  'system_notice.release_notes.footnote': 'Ditambah deretan panjang perubahan kecil di bagian ENSCON Trip lainnya.',
   'system_notice.release_notes.notes_label': 'Catatan rilis',
   'system_notice.release_notes.note_eyebrow': 'Catatan dari maintainer',
   'system_notice.release_notes.note_title': 'Kalianlah alasan saya terus membangun TREK.',
@@ -81,7 +81,7 @@ const system_notice: TranslationStrings = {
   'system_notice.release_notes.support_lead':
     'TREK gratis dan akan selalu begitu, tetapi server, domain, dan begitu banyak malam larut tidaklah gratis.',
   'system_notice.release_notes.support_text':
-    'Jika TREK sudah mendapat tempat dalam perjalananmu, traktir saya secangkir kopi dan bantu rilis berikutnya terus hadir.',
+    'Jika ENSCON Trip sudah mendapat tempat dalam perjalananmu, traktir saya secangkir kopi dan bantu rilis berikutnya terus hadir.',
   'system_notice.release_notes.cta_bmc': 'Buy me a coffee',
   'system_notice.release_notes.cta_kofi': 'Dukung di Ko-fi',
   'system_notice.release_notes.feature_docsync_title': 'Sinkronisasi Dokumen',

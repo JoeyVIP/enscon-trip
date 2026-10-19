@@ -1141,7 +1141,7 @@ describe('custom place image reclaim', () => {
 // Three tracks plus a plain waypoint — the shared fixture only has waypoints,
 // and the whole point here is what happens to geometry.
 const GPX_WITH_TRACKS = `<?xml version="1.0" encoding="UTF-8"?>
-<gpx version="1.1" creator="TREK Tests" xmlns="http://www.topografix.com/GPX/1/1">
+<gpx version="1.1" creator="ENSCON Trip Tests" xmlns="http://www.topografix.com/GPX/1/1">
   <wpt lat="48.8566" lon="2.3522"><name>Trailhead</name></wpt>
   <trk><name>Morning walk</name><trkseg>
     <trkpt lat="48.10" lon="2.10"/><trkpt lat="48.11" lon="2.11"/>

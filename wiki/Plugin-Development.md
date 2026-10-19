@@ -2,7 +2,7 @@
 
 Build a plugin with the `trek-plugin-sdk` package. A plugin is a directory with a
 manifest (`trek-plugin.json`), a built server entry, and — for page/widget
-plugins — a static client bundle. TREK runs your server code in an **isolated
+plugins — a static client bundle. ENSCON Trip runs your server code in an **isolated
 child process** and reaches it only over RPC; the browser part runs in a
 **sandboxed, opaque-origin iframe**. There is no other way in or out.
 

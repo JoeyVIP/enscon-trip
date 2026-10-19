@@ -738,7 +738,7 @@ export class CalendarService {
     // Node's header validation refuses, so they 500'd the export (#2165).
     const safeFilename = (trip.title || 'trek-trip').replace(/["\r\n]/g, '').replace(/[^\w \t.-]/g, '_');
     return {
-      calName: esc(trip.title || 'TREK Trip'),
+      calName: esc(trip.title || 'ENSCON Trip'),
       filename: `${safeFilename}.ics`,
       timezones,
       events,

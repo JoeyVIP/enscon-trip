@@ -1,6 +1,6 @@
 # Admin: Addons
 
-The **Addons** tab lets you enable or disable optional features for the entire TREK instance. Toggling an addon affects all users immediately: disabling one hides its UI elements and blocks its API routes instance-wide.
+The **Addons** tab lets you enable or disable optional features for the entire ENSCON Trip instance. Toggling an addon affects all users immediately: disabling one hides its UI elements and blocks its API routes instance-wide.
 
 ![Addon overview](assets/Addons-Overview.png)
 

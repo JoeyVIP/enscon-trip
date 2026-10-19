@@ -1,6 +1,6 @@
 # Install: Portainer
 
-Install TREK on Portainer using a Stack (Docker Compose).
+Install ENSCON Trip on Portainer using a Stack (Docker Compose).
 
 ## Prerequisite
 
@@ -46,9 +46,9 @@ Three tag strategies are available:
 
 | Tag | Example | Behavior |
 |---|---|---|
-| `latest` | `mauriceboe/trek:latest` | Always the newest release across all major versions |
-| Major version | `mauriceboe/trek:4` | Latest release pinned to that major version |
-| Full version | `mauriceboe/trek:4.0.0` | Exact release; never changes |
+| `latest` | `ghcr.io/joeyvip/enscon-trip:latest` | Always the newest release across all major versions |
+| Major version | `ghcr.io/joeyvip/enscon-trip:4` | Latest release pinned to that major version |
+| Full version | `ghcr.io/joeyvip/enscon-trip:4.0.0` | Exact release; never changes |
 
 Use `latest` or a major-version tag (e.g. `4`) if you want automatic updates on redeploy. Use a full version tag (e.g. `4.0.0`) if you want explicit control over which release runs.
 

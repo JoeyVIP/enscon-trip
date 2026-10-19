@@ -1,6 +1,6 @@
 # Route Optimization
 
-TREK calculates walking and driving times between your places and can reorder them to minimize total travel distance.
+ENSCON Trip calculates walking and driving times between your places and can reorder them to minimize total travel distance.
 
 ![Route Optimization](assets/OptimizeRoute.png)
 

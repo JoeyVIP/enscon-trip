@@ -72,15 +72,15 @@ Three tag strategies are available:
 
 | Tag | Example                  | Behavior |
 |---|--------------------------|---|
-| `latest` | `mauriceboe/trek:latest` | Always the newest release across all major versions |
-| Major version | `mauriceboe/trek:4`      | Latest release pinned to that major version |
-| Full version | `mauriceboe/trek:4.0.0`  | Exact release; never changes |
+| `latest` | `ghcr.io/joeyvip/enscon-trip:latest` | Always the newest release across all major versions |
+| Major version | `ghcr.io/joeyvip/enscon-trip:4`      | Latest release pinned to that major version |
+| Full version | `ghcr.io/joeyvip/enscon-trip:4.0.0`  | Exact release; never changes |
 
 The compose file above uses `latest`. To pin, change the `image:` line:
 
 ```yaml
-image: mauriceboe/trek:4        # track major version 4
-image: mauriceboe/trek:4.0.0   # pin to exact release
+image: ghcr.io/joeyvip/enscon-trip:4        # track major version 4
+image: ghcr.io/joeyvip/enscon-trip:4.0.0   # pin to exact release
 ```
 
 ## Start TREK

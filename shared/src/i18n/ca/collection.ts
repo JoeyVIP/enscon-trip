@@ -160,9 +160,9 @@ const collection: TranslationStrings = {
   'collections.file.doneSkipped': '{count} llocs importats, {skipped} omesos',
   'collections.file.errorTooLarge': 'Aquest fitxer és massa gran per ser una llista.',
   'collections.file.errorUnreadable': 'No s’ha pogut llegir aquest fitxer.',
-  'collections.file.errorNotACollection': 'Això no és un fitxer de llista del TREK.',
-  'collections.file.formatTrek': 'Llista del TREK',
-  'collections.file.formatTrekHint': 'Per a un altre TREK, amb etiquetes i estat',
+  'collections.file.errorNotACollection': 'Això no és un fitxer de llista del ENSCON Trip.',
+  'collections.file.formatTrek': 'Llista del ENSCON Trip',
+  'collections.file.formatTrekHint': 'Per a un altre ENSCON Trip, amb etiquetes i estat',
   'collections.file.formatGpxHint': 'Punts de pas per a OsmAnd, Organic Maps, Garmin i altres aplicacions de mapes',
   'collections.file.gpxOmitted': '{count} llocs no tenen coordenades i han quedat fora del fitxer GPX',
   'collections.file.gpxNothing':

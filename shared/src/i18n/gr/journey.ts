@@ -220,11 +220,11 @@ const journey: TranslationStrings = {
   'journey.public.notFound': 'Δεν Βρέθηκε',
   'journey.public.notFoundMessage': 'Αυτό το ταξίδι δεν υπάρχει ή ο σύνδεσμος έχει λήξει.',
   'journey.public.readOnly': 'Μόνο ανάγνωση · Δημόσιο Ταξίδι',
-  'journey.public.tagline': 'Travel Resource & Exploration Kit',
+  'journey.public.tagline': 'Plan trips together',
   'journey.public.sharedVia': 'Κοινοποιήθηκε μέσω',
   'journey.public.madeWith': 'Φτιαγμένο με',
   'journey.pdf.journeyBook': 'Βιβλίο Ταξιδιού',
-  'journey.pdf.madeWith': 'Φτιαγμένο με TREK',
+  'journey.pdf.madeWith': 'Φτιαγμένο με ENSCON Trip',
   'journey.pdf.day': 'Ημέρα',
   'journey.pdf.theEnd': 'Τέλος',
   'journey.pdf.saveAsPdf': 'Αποθήκευση ως PDF',
@@ -249,7 +249,7 @@ const journey: TranslationStrings = {
   'journey.editor.externalPhotosUnavailable': 'No connected photo providers are available.', // en-fallback
   'journey.editor.externalPhotosPartialFailed': '{failed} photo groups failed — save again to retry', // en-fallback
   'journey.picker.day': 'This day', // en-fallback
-  'journey.studio.title': 'TREK Studio', // en-fallback
+  'journey.studio.title': 'ENSCON Trip Studio', // en-fallback
   'journey.studio.open': 'Studio', // en-fallback
   'journey.studio.openAria': 'Open the photo book studio', // en-fallback
   'journey.studio.backToJourney': 'Back to the journey', // en-fallback
@@ -291,7 +291,7 @@ const journey: TranslationStrings = {
   'journey.studio.downloadSpreadHint': 'Αποθηκεύει τη σχεδίαση του δισέλιδου ως αρχείο, χωρίς τις φωτογραφίες, για κοινή χρήση ή επαναχρησιμοποίηση',
   'journey.studio.importSpread': 'Εισαγωγή',
   'journey.studio.importSpreadHint': 'Προσθέτει ένα δισέλιδο από αρχείο σχεδίασης που έχετε κατεβάσει',
-  'journey.studio.importSpreadFailed': 'Αυτό το αρχείο δεν είναι δισέλιδο του TREK Studio',
+  'journey.studio.importSpreadFailed': 'Αυτό το αρχείο δεν είναι δισέλιδο του ENSCON Trip Studio',
   'journey.studio.desktopOnly': 'Studio needs a bigger screen', // en-fallback
   'journey.studio.desktopOnlyHint': 'Η σχεδίαση βιβλίου θέλει χώρο, γι\' αυτό το Studio υπάρχει μόνο στον υπολογιστή, όπως και η δημιουργία του PDF. Όλα τα άλλα του ταξιδιού σου δουλεύουν εδώ κανονικά.', // en-fallback
   'journey.studio.formatA5Landscape': 'A5 landscape', // en-fallback

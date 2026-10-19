@@ -28,7 +28,7 @@
     "concurrently": "^10.0.4",
     "unrun": "^0.3.1"
   },
-  "comment:scarfSettings": "swagger-ui-dist ships @scarf/scarf install-time analytics; TREK sends no telemetry, so it stays off.",
+  "comment:scarfSettings": "swagger-ui-dist ships @scarf/scarf install-time analytics; ENSCON Trip sends no telemetry, so it stays off.",
   "scarfSettings": {
     "enabled": false
   },

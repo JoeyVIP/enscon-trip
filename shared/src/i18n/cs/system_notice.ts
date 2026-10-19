@@ -1,17 +1,17 @@
 import type { TranslationStrings } from '../types';
 
 const system_notice: TranslationStrings = {
-  'system_notice.welcome_v1.title': 'Vítejte v TREK',
+  'system_notice.welcome_v1.title': 'Vítejte v ENSCON Trip',
   'system_notice.welcome_v1.body':
     'Váš kompletní plánovač cest. Vytvářejte itineráře, sdílejte výlety s přáteli a zůstaňte organizovaní — online i offline.',
   'system_notice.welcome_v1.cta_label': 'Naplánovat cestu',
-  'system_notice.welcome_v1.hero_alt': 'Malebné cestovní místo s rozhraním TREK',
+  'system_notice.welcome_v1.hero_alt': 'Malebné cestovní místo s rozhraním ENSCON Trip',
   'system_notice.welcome_v1.highlight_plan': 'Denní itineráře pro každou cestu',
   'system_notice.welcome_v1.highlight_share': 'Spolupráce s cestovními partnery',
   'system_notice.welcome_v1.highlight_offline': 'Funguje offline na mobilu',
   'system_notice.dev_test_modal.title': '[Dev] Test notice',
   'system_notice.dev_test_modal.body': 'This is a dev-only test notice.',
-  'system_notice.thank_you_support.title': 'Děkuji, že používáte TREK',
+  'system_notice.thank_you_support.title': 'Děkuji, že používáte ENSCON Trip',
   'system_notice.thank_you_support.body':
     'Rychlé poděkování za to, že jste si nainstalovali TREK — upřímně, znamená to pro mě hodně.\n\nJsem jediný vývojář a TREK tvořím ve svém volném čase. Začalo to jako malý nástroj jen pro mé vlastní cesty a od té doby mě podpora a zájem komunity naprosto dostávají. TREK dělám s velkým srdcem — ale také díky mnoha úžasným externím přispěvatelům, kteří ho pomohli utvářet.\n\n**TREK je open source a zcela zdarma — a tak to navždy zůstane. Žádné placené verze, žádná předplatná, žádné háčky. Slibuji.**\n\nPokud je pro vás TREK užitečný a chtěli byste podpořit jeho vývoj, malá káva mi opravdu pomáhá pokračovat ve tvoření — žádný tlak, ale každý šálek mi pomáhá přečkat pozdní noci.\n\nDěkuji, že jste tady.\n\n— Maurice',
   'system_notice.thank_you_support.highlight_opensource': '100% open source na GitHubu',
@@ -26,7 +26,7 @@ const system_notice: TranslationStrings = {
   'system_notice.pager.position': 'Oznámení {current} z {total}',
   'system_notice.v3_photos.title': 'Fotografie přesunuty ve verzi 3.0',
   'system_notice.v3_photos.body':
-    '**Fotografie** v Plánovacím nástroji byly odebrány. Vaše fotografie jsou v bezpečí — TREK nikdy neupravoval vaši knihovnu Immich nebo Synology.\n\nFotografie jsou nyní dostupné v doplňku **Journey**. Journey je volitelný — pokud ještě není k dispozici, požádejte svého správce, aby ho aktivoval v Admin → Doplňky.',
+    '**Fotografie** v Plánovacím nástroji byly odebrány. Vaše fotografie jsou v bezpečí — ENSCON Trip nikdy neupravoval vaši knihovnu Immich nebo Synology.\n\nFotografie jsou nyní dostupné v doplňku **Journey**. Journey je volitelný — pokud ještě není k dispozici, požádejte svého správce, aby ho aktivoval v Admin → Doplňky.',
   'system_notice.v3_journey.title': 'Poznejte Journey — cest. denník',
   'system_notice.v3_journey.body':
     'Dokumentujte své cesty jako bohaté příběhy s časovnicemi, galeriemi fotek a interaktivními mapami.',
@@ -56,17 +56,17 @@ const system_notice: TranslationStrings = {
     'Aktualizace 3.0.14 zjistila jeden nebo více konfliktů uživatelského jména nebo e-mailu způsobených mezerami na začátku nebo konci uložených hodnot. Dotčené účty byly automaticky přejmenovány. Zkontrolujte protokoly serveru na řádky začínající **[migration] WHITESPACE COLLISION** a zjistěte, které účty vyžadují kontrolu.',
   // The release modal. One stable set of keys: each big release swaps the copy in place.
   'system_notice.release_notes.eyebrow': 'Aktualizace nainstalována',
-  'system_notice.release_notes.headline': 'Čtyři věci, které TREK nyní zvládne sám.',
+  'system_notice.release_notes.headline': 'Čtyři věci, které ENSCON Trip nyní zvládne sám.',
   'system_notice.release_notes.intro': 'Vlastní API míst, road tripy naplánované od začátku do konce, historie polohy ve vašich rukou, a dokumenty v synchronizaci.',
   'system_notice.release_notes.features_label': 'Hlavní novinky',
   'system_notice.release_notes.features_aside': 'Zdaleka ne všechno',
-  'system_notice.release_notes.feature_places_title': 'TREK Places API',
+  'system_notice.release_notes.feature_places_title': 'ENSCON Trip Places API',
   'system_notice.release_notes.feature_places_body': 'První open source plánovač cest s vlastním API míst. 73,6 milionu míst, bez klíče, bez limitu.',
   'system_notice.release_notes.feature_roadtrip_title': 'Doplněk Cesta autem',
   'system_notice.release_notes.feature_roadtrip_body': 'Naplánuje jízdu sám: trasu, vzdálenost, hodiny a zastávky. Vypnuto, dokud to admin nezapne.',
   'system_notice.release_notes.feature_dawarich_title': 'Integrace Dawarich',
-  'system_notice.release_notes.feature_dawarich_body': 'Self-hosted odpověď na Google Timeline, teď čitelná přímo v TREK. TREK čte, a jen čte.',
-  'system_notice.release_notes.footnote': 'A k tomu dlouhý seznam menších změn napříč zbytkem TREK.',
+  'system_notice.release_notes.feature_dawarich_body': 'Self-hosted odpověď na Google Timeline, teď čitelná přímo v ENSCON Trip. ENSCON Trip čte, a jen čte.',
+  'system_notice.release_notes.footnote': 'A k tomu dlouhý seznam menších změn napříč zbytkem ENSCON Trip.',
   'system_notice.release_notes.notes_label': 'Poznámky k vydání',
   'system_notice.release_notes.note_eyebrow': 'Slovo od autora',
   'system_notice.release_notes.note_title': 'Vy jste důvod, proč na TREK pořád pracuji.',
@@ -82,7 +82,7 @@ const system_notice: TranslationStrings = {
   'system_notice.release_notes.support_lead':
     'TREK je a vždycky bude zdarma, ale servery, domény a spousta pozdních nocí zdarma nejsou.',
   'system_notice.release_notes.support_text':
-    'Pokud si TREK získal místo na vašich cestách, kupte mi kávu a pomozte, aby přišlo i další vydání.',
+    'Pokud si ENSCON Trip získal místo na vašich cestách, kupte mi kávu a pomozte, aby přišlo i další vydání.',
   'system_notice.release_notes.cta_bmc': 'Buy me a coffee',
   'system_notice.release_notes.cta_kofi': 'Podpořit na Ko-fi',
   'system_notice.release_notes.feature_docsync_title': 'Synchronizace dokumentů',

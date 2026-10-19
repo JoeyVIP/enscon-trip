@@ -1,6 +1,6 @@
 # Install: Helm
 
-Deploy TREK on Kubernetes using the official Helm chart.
+Deploy ENSCON Trip on Kubernetes using the official Helm chart.
 
 ## Add the Chart Repository
 
@@ -84,7 +84,7 @@ helm install trek trek/trek \
 
 ```yaml
 image:
-  repository: mauriceboe/trek
+  repository: ghcr.io/joeyvip/enscon-trip
   # tag: latest        # defaults to the chart's appVersion
   pullPolicy: IfNotPresent
 

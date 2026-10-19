@@ -66,7 +66,7 @@ const link = (over: Partial<DocSyncLink> = {}): DocSyncLink => ({
   connectionId: 5,
   providerId: 'paperless',
   scopeKey: 'tag:trek-3',
-  remoteLabel: 'TREK trip 3',
+  remoteLabel: 'ENSCON Trip trip 3',
   remoteRootPath: null,
   direction: 'both',
   deletePolicy: 'unlink',
@@ -178,7 +178,7 @@ describe('MDocSyncSheet: opening and the store list', () => {
     renderSheet()
 
     const bound = await screen.findByRole('button', { name: /Paperless/ })
-    expect(bound).toHaveAccessibleName(expect.stringContaining('TREK trip 3'))
+    expect(bound).toHaveAccessibleName(expect.stringContaining('ENSCON Trip trip 3'))
     expect(screen.getByText('This trip')).toBeInTheDocument()
     expect(screen.getByText('Add another')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Nextcloud/ })).toBeInTheDocument()
@@ -202,7 +202,7 @@ describe('MDocSyncSheet: opening and the store list', () => {
     links = [link({ providerName: 'Paperless-ngx' })]
     renderSheet({ canManage: false })
 
-    const row = await screen.findByRole('button', { name: /TREK trip 3/ })
+    const row = await screen.findByRole('button', { name: /ENSCON Trip trip 3/ })
     expect(screen.queryByText('No document providers are available')).not.toBeInTheDocument()
     expect(screen.queryByText('Add another')).not.toBeInTheDocument()
     // The providers route no longer names it, so the name comes off the link,
@@ -225,7 +225,7 @@ describe('MDocSyncSheet: moving between the views', () => {
 
     expect(await screen.findByRole('button', { name: 'Sync now' })).toBeInTheDocument()
     expect(screen.getByText('Folder')).toBeInTheDocument()
-    expect(screen.getByText('TREK trip 3')).toBeInTheDocument()
+    expect(screen.getByText('ENSCON Trip trip 3')).toBeInTheDocument()
     expect(screen.getByText('not run yet')).toBeInTheDocument()
     // The list is gone, not merely scrolled past.
     expect(screen.queryByText('Add another')).not.toBeInTheDocument()
@@ -398,13 +398,13 @@ describe('MDocSyncSheet: what the owner may do', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: /Resolve/ }))
-    fireEvent.click(await screen.findByRole('button', { name: 'Keep the TREK version' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Keep the ENSCON Trip version' }))
 
     await waitFor(() => expect(docsyncApi.resolve).toHaveBeenCalledWith(TRIP_ID, 40, 'trek'))
     expect(await screen.findByRole('alert')).toHaveTextContent('The document changed on both sides.')
     // The list is read back rather than trimmed by hand, so the row is still
     // there, ready for another try.
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Keep the TREK version' })).toBeEnabled())
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Keep the ENSCON Trip version' })).toBeEnabled())
     expect(screen.getByText('boarding-pass.pdf')).toBeInTheDocument()
     expect(docsyncApi.items).toHaveBeenCalledTimes(2)
   })
@@ -504,7 +504,7 @@ describe('MDocSyncSheet: what a member may do', () => {
     expect(screen.getByText('Changed in both places. Pick which one to keep.')).toBeInTheDocument()
     expect(screen.getByText('3')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Resolve/ })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Keep the TREK version' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Keep the ENSCON Trip version' })).not.toBeInTheDocument()
     expect(docsyncApi.items).not.toHaveBeenCalled()
   })
 
@@ -522,7 +522,7 @@ describe('MDocSyncSheet: what a member may do', () => {
     renderSheet({ canManage: false })
 
     expect(await screen.findByText('Nothing connected yet')).toBeInTheDocument()
-    expect(screen.getByText('The trip owner sets this up. Documents stay in TREK either way.')).toBeInTheDocument()
+    expect(screen.getByText('The trip owner sets this up. Documents stay in ENSCON Trip either way.')).toBeInTheDocument()
     expect(screen.queryByText('Connect a provider')).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Nextcloud/ })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Papra/ })).not.toBeInTheDocument()

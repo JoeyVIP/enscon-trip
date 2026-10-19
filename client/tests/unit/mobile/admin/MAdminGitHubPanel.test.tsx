@@ -55,22 +55,24 @@ async function renderPanel(props: { isPrerelease?: boolean } = {}) {
 }
 
 describe('MAdminGitHubPanel', () => {
-  it('FE-MOB-AGH-001: renders the six support cards with their external hrefs', async () => {
+  it('FE-MOB-AGH-001: renders the three link cards with their external hrefs', async () => {
     await renderPanel();
 
-    expect(screen.getByText('Ko-fi').closest('a')).toHaveAttribute('href', 'https://ko-fi.com/mauriceboe');
-    expect(screen.getByText('Buy Me a Coffee').closest('a')).toHaveAttribute(
+    expect(screen.queryByText('Ko-fi')).not.toBeInTheDocument();
+    expect(screen.queryByText('Buy Me a Coffee')).not.toBeInTheDocument();
+    expect(screen.queryByText('Discord')).not.toBeInTheDocument();
+    expect(screen.getByText('Report a Bug').closest('a')).toHaveAttribute(
       'href',
-      'https://buymeacoffee.com/mauriceboe',
+      'https://github.com/JoeyVIP/enscon-trip/issues/new',
     );
-    const discord = screen.getByText('Discord').closest('a')!;
-    expect(discord).toHaveAttribute('href', 'https://discord.gg/NhZBDSd4qW');
-    expect(discord).toHaveAttribute('target', '_blank');
-    expect(discord).toHaveAttribute('rel', 'noopener noreferrer');
-    expect(screen.getByText('Report a Bug')).toBeInTheDocument();
-    expect(screen.getByText('Feature Request')).toBeInTheDocument();
-    expect(screen.getByText('Wiki').closest('a')).toHaveAttribute('href', 'https://github.com/mauriceboe/TREK/wiki');
-    expect(screen.getAllByText('Helps me keep building TREK')).toHaveLength(2);
+    expect(screen.getByText('Feature Request').closest('a')).toHaveAttribute(
+      'href',
+      'https://github.com/JoeyVIP/enscon-trip/issues/new?labels=enhancement',
+    );
+    const wiki = screen.getByText('Wiki').closest('a')!;
+    expect(wiki).toHaveAttribute('href', 'https://github.com/JoeyVIP/enscon-trip/tree/main/wiki');
+    expect(wiki).toHaveAttribute('target', '_blank');
+    expect(wiki).toHaveAttribute('rel', 'noopener noreferrer');
   });
 
   it('FE-MOB-AGH-002: shows a spinner while the releases request is in flight', () => {
@@ -102,10 +104,10 @@ describe('MAdminGitHubPanel', () => {
     await renderPanel();
 
     expect(screen.getByText('Release History')).toBeInTheDocument();
-    expect(screen.getByText('Latest updates from mauriceboe/TREK')).toBeInTheDocument();
+    expect(screen.getByText('Latest updates from JoeyVIP/enscon-trip')).toBeInTheDocument();
     expect(screen.getByText('GitHub').closest('a')).toHaveAttribute(
       'href',
-      'https://github.com/mauriceboe/TREK/releases',
+      'https://github.com/JoeyVIP/enscon-trip/releases',
     );
   });
 

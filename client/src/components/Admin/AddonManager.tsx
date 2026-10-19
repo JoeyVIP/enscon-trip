@@ -12,6 +12,7 @@ import AirTrailIcon from '../shared/AirTrailIcon'
 import { DOCUMENT_PROVIDER_ICONS } from '../shared/DocumentProviderIcons'
 import AddonTile from './AddonTile'
 import AddonSubRow from './AddonSubRow'
+import { useAppName } from '../../utils/appName'
 
 // Keys are the `icon` column from the addons table (see server seeds.ts); anything
 // unknown falls back to Puzzle. Users/Sparkles cover collab and llm_parsing, which
@@ -106,6 +107,7 @@ const COLLAB_SUB_FEATURES = [
 
 export default function AddonManager({ bagTrackingEnabled, onToggleBagTracking, collabFeatures, onToggleCollabFeature }: { bagTrackingEnabled?: boolean; onToggleBagTracking?: () => void; collabFeatures?: CollabFeatures; onToggleCollabFeature?: (key: string) => void }) {
   const { t } = useTranslation()
+  const appName = useAppName()
   const dark = useIsDark()
   const toast = useToast()
   const refreshGlobalAddons = useAddonStore(s => s.loadAddons)
@@ -295,7 +297,7 @@ export default function AddonManager({ bagTrackingEnabled, onToggleBagTracking, 
           <h2 className="text-subtitle font-semibold tracking-tight text-content">{t('admin.addons.title')}</h2>
           <p className="mt-1 flex flex-wrap items-center gap-1 text-caption text-content-muted">
             {t('admin.addons.subtitleBefore')}
-            <img src={dark ? '/text-light.svg' : '/text-dark.svg'} alt="TREK" style={{ height: 11, verticalAlign: 'middle', opacity: 0.7 }} />
+            <img src={dark ? '/text-light.svg' : '/text-dark.svg'} alt={appName} style={{ height: 11, verticalAlign: 'middle', opacity: 0.7 }} />
             {t('admin.addons.subtitleAfter')}
           </p>
         </div>

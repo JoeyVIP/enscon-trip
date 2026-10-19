@@ -1,6 +1,6 @@
 # Public Share Links
 
-Share a read-only view of your trip with people who do not have a TREK account. The viewer opens in a browser without logging in.
+Share a read-only view of your trip with people who do not have a ENSCON Trip account. The viewer opens in a browser without logging in.
 
 ![Public share link](assets/Share.png)
 

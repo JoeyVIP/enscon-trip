@@ -56,7 +56,7 @@ vi.mock('../components/Layout/Navbar', () => ({ default: stub('navbar', 'navbar'
 vi.mock('../components/shared/SlidingTabs', () => ({ default: stub('tabs', 'sliding-tabs') }))
 vi.mock('../components/shared/TripLoadingSplash', () => ({
   default: ({ title }: { title?: string }) =>
-    React.createElement('div', { 'data-testid': 'splash', role: 'status' }, title ?? 'TREK'),
+    React.createElement('div', { 'data-testid': 'splash', role: 'status' }, title ?? 'ENSCON Trip'),
 }))
 const confirmDialogs: Props[] = []
 vi.mock('../components/shared/ConfirmDialog', () => ({

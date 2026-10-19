@@ -48,6 +48,8 @@ export function deriveApp(raw: RawEnv) {
     /** Raw APP_URL — trailing-slash stripping differs per site (feeds strips one, notifications strips all). */
     appUrl: raw.APP_URL,
     tz: raw.TZ,
+    /** ENSCON：true 才顯示上游（TREK）作者的第一人稱／募款通知；預設隱藏。 */
+    showUpstreamNotices: parseBool(raw.SHOW_UPSTREAM_NOTICES) === true,
     logLevel: raw.LOG_LEVEL,
     /** Resolved: lowercased, validated against the supported set, falls back to 'en' (src/config.ts semantics). */
     defaultLanguage: resolveDefaultLanguage(raw.DEFAULT_LANGUAGE),

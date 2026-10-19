@@ -1,6 +1,6 @@
-# TREK Places API
+# ENSCON Trip Places API
 
-The TREK Places API is TREK's own place index. It answers place search, the suggestions under the search box, the details of a place picked from it, the category buttons on the map and the geocoding behind imports, with no API key, no quota and no account. In the app it is called the **TREK API**, and a result that came from it carries a **TREK** mark.
+The ENSCON Trip Places API is ENSCON Trip's own place index. It answers place search, the suggestions under the search box, the details of a place picked from it, the category buttons on the map and the geocoding behind imports, with no API key, no quota and no account. In the app it is called the **ENSCON Trip API**, and a result that came from it carries a **ENSCON Trip** mark.
 
 It does not replace OpenStreetMap. A search asks both and shows their results together, because each is good at what the other lacks: the index is strongest on businesses such as restaurants, shops and hotels, and OpenStreetMap is where the temples, bridges, viewpoints and stations are. How the two meet in the search box is described in [Places and Search](Places-and-Search).
 

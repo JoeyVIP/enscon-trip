@@ -1,6 +1,6 @@
 # User Settings
 
-The Settings page lets you personalise every aspect of TREK — appearance, maps, notifications, offline behaviour, and your account.
+The Settings page lets you personalise every aspect of ENSCON Trip — appearance, maps, notifications, offline behaviour, and your account.
 
 ## Navigating to Settings
 
