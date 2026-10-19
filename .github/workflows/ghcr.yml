@@ -47,7 +47,7 @@ jobs:
             TAG="$SHORT"
           fi
           # tag 只允許 docker 合法字元
-          TAG="$(echo "$TAG" | tr -c 'A-Za-z0-9_.-' '-' | cut -c1-120)"
+          TAG="$(printf '%s' "$TAG" | tr -c 'A-Za-z0-9_.-' '-' | cut -c1-120)"
           echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
           echo "tags=$IMAGE:$TAG,$IMAGE:sha-$SHORT" >> "$GITHUB_OUTPUT"
           echo "Image: $IMAGE  tags: $TAG, sha-$SHORT"
