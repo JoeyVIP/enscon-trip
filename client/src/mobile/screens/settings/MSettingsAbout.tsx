@@ -1,4 +1,4 @@
-import { Bug, BookOpen, Coffee, ExternalLink, Heart, Info, Lightbulb } from 'lucide-react'
+import { Bug, BookOpen, ExternalLink, Heart, Info, Lightbulb } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useTranslation } from '../../../i18n'
 import { MSetCard } from './MSettingsUi'
@@ -15,12 +15,9 @@ export default function MSettingsAbout({ appVersion }: { appVersion: string }) {
   const { t } = useTranslation()
 
   const links: AboutLink[] = [
-    { href: 'https://ko-fi.com/mauriceboe', icon: Coffee, title: 'Ko-fi', sub: t('admin.github.support') },
-    { href: 'https://buymeacoffee.com/mauriceboe', icon: Heart, title: 'Buy Me a Coffee', sub: t('admin.github.support') },
-    { href: 'https://discord.gg/NhZBDSd4qW', icon: Heart, title: 'Discord', sub: 'Join the community' },
-    { href: 'https://github.com/mauriceboe/TREK/issues/new?template=bug_report.yml', icon: Bug, title: t('settings.about.reportBug'), sub: t('settings.about.reportBugHint') },
-    { href: 'https://github.com/mauriceboe/TREK/discussions/new?category=feature-requests', icon: Lightbulb, title: t('settings.about.featureRequest'), sub: t('settings.about.featureRequestHint') },
-    { href: 'https://github.com/mauriceboe/TREK/wiki', icon: BookOpen, title: 'Wiki', sub: t('settings.about.wikiHint') },
+    { href: 'https://github.com/JoeyVIP/enscon-trip/issues/new', icon: Bug, title: t('settings.about.reportBug'), sub: t('settings.about.reportBugHint') },
+    { href: 'https://github.com/JoeyVIP/enscon-trip/issues/new?labels=enhancement', icon: Lightbulb, title: t('settings.about.featureRequest'), sub: t('settings.about.featureRequestHint') },
+    { href: 'https://github.com/JoeyVIP/enscon-trip/tree/main/wiki', icon: BookOpen, title: 'Wiki', sub: t('settings.about.wikiHint') },
   ]
 
   return (
@@ -54,6 +51,13 @@ export default function MSettingsAbout({ appVersion }: { appVersion: string }) {
           </a>
         ))}
       </div>
+
+      <p className="mt-3 font-geist text-[0.6875rem] text-m-faint">
+        {t('settings.about.basedOnPrefix')}
+        <a href="https://github.com/liketrek/TREK" target="_blank" rel="noopener noreferrer" className="underline">TREK</a>
+        {t('settings.about.basedOnSuffix')}{' '}
+        <a href="https://github.com/JoeyVIP/enscon-trip" target="_blank" rel="noopener noreferrer" className="underline">{t('settings.about.sourceCodeLink')}</a>
+      </p>
     </MSetCard>
   )
 }

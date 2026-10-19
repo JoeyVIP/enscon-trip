@@ -259,7 +259,7 @@ describe('MAdminSheets', () => {
 
     expect(screen.getByRole('dialog', { name: 'How to Update' })).toBeInTheDocument();
     expect(screen.getByText('v3.4.0 → v3.5.0')).toBeInTheDocument();
-    expect(screen.getByText(/docker pull mauriceboe\/trek:latest/)).toBeInTheDocument();
+    expect(screen.getByText(/docker pull ghcr.io\/joeyvip\/enscon-trip:latest/)).toBeInTheDocument();
     expect(
       screen.getByText(
         'Your ENSCON Trip instance runs in Docker. To update to v3.5.0, run the following commands on your server:',
@@ -282,7 +282,7 @@ describe('MAdminSheets', () => {
 
     expect(screen.getByRole('link', { name: 'Open the update guide' })).toHaveAttribute(
       'href',
-      'https://github.com/liketrek/TREK/wiki/Updating',
+      'https://github.com/JoeyVIP/enscon-trip#updating',
     );
     expect(screen.queryByText(/docker pull/)).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'View on GitHub' })).toHaveAttribute(

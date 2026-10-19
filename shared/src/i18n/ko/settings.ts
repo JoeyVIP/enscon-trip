@@ -228,6 +228,9 @@ const settings: TranslationStrings = {
   'settings.about.wikiHint': '문서 및 가이드',
   'settings.about.descriptionManaged':
     'ENSCON Trip helps you organize your trips from the first idea to the last memory. Day planning, budget, packing lists, photos and much more — all in one place.',
+  'settings.about.basedOnPrefix': 'Based on ',
+  'settings.about.basedOnSuffix': ' (Maurice Boe), licensed under AGPL-3.0.',
+  'settings.about.sourceCodeLink': 'Source code',
   'settings.about.sourceTitle': 'Source code',
   'settings.about.sourceHint': 'ENSCON Trip is open source, licensed AGPL-3.0',
   'settings.about.supporters.badge': '월간 후원자',

@@ -187,6 +187,9 @@ const settings: TranslationStrings = {
   'settings.about.wikiHint': '文档和指南',
   'settings.about.descriptionManaged':
     'ENSCON 旅程 helps you organize your trips from the first idea to the last memory. Day planning, budget, packing lists, photos and much more — all in one place.',
+  'settings.about.basedOnPrefix': '基于 ',
+  'settings.about.basedOnSuffix': '（Maurice Boe），依据 AGPL-3.0 发布。',
+  'settings.about.sourceCodeLink': '源代码',
   'settings.about.sourceTitle': 'Source code',
   'settings.about.sourceHint': 'ENSCON 旅程 is open source, licensed AGPL-3.0',
   'settings.about.supporters.badge': '月度支持者',

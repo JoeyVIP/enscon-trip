@@ -40,14 +40,14 @@ afterEach(() => {
 });
 
 describe('GitHubPanel', () => {
-  it('FE-ADMIN-GH-001: support link cards always render', async () => {
+  it('FE-ADMIN-GH-001: link cards always render (no donation or Discord cards)', async () => {
     render(<GitHubPanel />);
     await waitFor(() =>
       expect(screen.queryByRole('status')).not.toBeInTheDocument(),
     );
-    expect(screen.getByText('Ko-fi')).toBeInTheDocument();
-    expect(screen.getByText('Buy Me a Coffee')).toBeInTheDocument();
-    expect(screen.getByText('Discord')).toBeInTheDocument();
+    expect(screen.queryByText('Ko-fi')).not.toBeInTheDocument();
+    expect(screen.queryByText('Buy Me a Coffee')).not.toBeInTheDocument();
+    expect(screen.queryByText('Discord')).not.toBeInTheDocument();
     expect(screen.getByText('Report a Bug')).toBeInTheDocument();
     expect(screen.getByText('Feature Request')).toBeInTheDocument();
     expect(screen.getByText('Wiki')).toBeInTheDocument();
@@ -57,20 +57,14 @@ describe('GitHubPanel', () => {
     render(<GitHubPanel />);
     await waitFor(() => expect(screen.queryByText('Loading...')).not.toBeInTheDocument());
 
-    const kofi = screen.getByText('Ko-fi').closest('a')!;
-    expect(kofi).toHaveAttribute('href', 'https://ko-fi.com/mauriceboe');
-    expect(kofi).toHaveAttribute('target', '_blank');
-    expect(kofi).toHaveAttribute('rel', 'noopener noreferrer');
+    const bug = screen.getByText('Report a Bug').closest('a')!;
+    expect(bug).toHaveAttribute('href', 'https://github.com/JoeyVIP/enscon-trip/issues/new');
+    expect(bug).toHaveAttribute('target', '_blank');
+    expect(bug).toHaveAttribute('rel', 'noopener noreferrer');
 
-    const bmc = screen.getByText('Buy Me a Coffee').closest('a')!;
-    expect(bmc).toHaveAttribute('href', 'https://buymeacoffee.com/mauriceboe');
-    expect(bmc).toHaveAttribute('target', '_blank');
-    expect(bmc).toHaveAttribute('rel', 'noopener noreferrer');
-
-    const discord = screen.getByText('Discord').closest('a')!;
-    expect(discord).toHaveAttribute('href', 'https://discord.gg/NhZBDSd4qW');
-    expect(discord).toHaveAttribute('target', '_blank');
-    expect(discord).toHaveAttribute('rel', 'noopener noreferrer');
+    const wiki = screen.getByText('Wiki').closest('a')!;
+    expect(wiki).toHaveAttribute('href', 'https://github.com/JoeyVIP/enscon-trip/tree/main/wiki');
+    expect(wiki).toHaveAttribute('target', '_blank');
   });
 
   it('FE-ADMIN-GH-003: loading spinner shown while fetching releases', () => {
@@ -274,14 +268,6 @@ describe('GitHubPanel', () => {
     render(<GitHubPanel />);
     await waitFor(() => expect(screen.queryByText('Loading...')).not.toBeInTheDocument());
 
-    const kofiLink = screen.getByText('Ko-fi').closest('a')!;
-    fireEvent.mouseEnter(kofiLink);
-    fireEvent.mouseLeave(kofiLink);
-
-    const discordLink = screen.getByText('Discord').closest('a')!;
-    fireEvent.mouseEnter(discordLink);
-    fireEvent.mouseLeave(discordLink);
-
     const bugLink = screen.getByText('Report a Bug').closest('a')!;
     fireEvent.mouseEnter(bugLink);
     fireEvent.mouseLeave(bugLink);
@@ -294,12 +280,8 @@ describe('GitHubPanel', () => {
     fireEvent.mouseEnter(wikiLink);
     fireEvent.mouseLeave(wikiLink);
 
-    const bmcLink = screen.getByText('Buy Me a Coffee').closest('a')!;
-    fireEvent.mouseEnter(bmcLink);
-    fireEvent.mouseLeave(bmcLink);
-
     // All links still visible
-    expect(screen.getByText('Ko-fi')).toBeInTheDocument();
+    expect(screen.getByText('Wiki')).toBeInTheDocument();
   });
 
   it('FE-ADMIN-GH-012: clicking "Load more" appends next page', async () => {

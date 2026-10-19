@@ -13,41 +13,23 @@
   <img src="docs/subtitle-dark.png" alt="your trip. your plan." height="28" />
 </picture>
 
+ENSCON 旅程（ENSCON Trip）是 [TREK](https://github.com/liketrek/TREK)（作者 Maurice Boe，[github.com/mauriceboe/TREK](https://github.com/mauriceboe/TREK)）的分支，依 AGPL-3.0 釋出；我們的修改都在本 repo。
+<br />
+ENSCON Trip is a fork of [TREK](https://github.com/liketrek/TREK) by Maurice Boe, released under AGPL-3.0; all our changes are in this repository.
+
 A self-hosted, real-time collaborative travel planner — with maps, budgets, packing lists, a journal, and AI built in.
 
 <br />
 
-<a href="https://demo.liketrek.com"><img alt="Demo" src="https://img.shields.io/badge/Demo-try-111827?style=for-the-badge" /></a>
+<a href="https://github.com/JoeyVIP/enscon-trip/actions/workflows/test.yml"><img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/JoeyVIP/enscon-trip/test.yml?branch=main&style=for-the-badge" /></a>
 &nbsp;
-<a href="https://hub.docker.com/r/mauriceboe/trek"><img alt="Docker" src="https://img.shields.io/badge/Docker-ready-2496ED?style=for-the-badge" /></a>
-&nbsp;
-<a href="https://sonarcloud.io/project/overview?id=liketrek_TREK"><img alt="Sonar Quality Gate" src="https://img.shields.io/sonar/quality_gate/liketrek_TREK?server=https%3A%2F%2Fsonarcloud.io&style=for-the-badge" /></a>
-&nbsp;
-<img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/liketrek/TREK/test.yml?branch=main&style=for-the-badge">
-&nbsp;
-<a href="https://discord.gg/NhZBDSd4qW"><img alt="Discord" src="https://img.shields.io/badge/Discord-join-5865F2?style=for-the-badge" /></a>
-&nbsp;
-<a href="https://kanban.pakulat.org/shared/I4wxF6inOOMB0C6hH6kQm3efyNxFjwyI"><img alt="Roadmap" src="https://img.shields.io/badge/Roadmap-view-0EA5E9?style=for-the-badge" /></a>
-&nbsp;
-<a href="https://ko-fi.com/mauriceboe"><img alt="Ko-fi" src="https://img.shields.io/badge/Ko--fi-support-FF5E5B?style=for-the-badge" /></a>
-&nbsp;
-<a href="https://www.buymeacoffee.com/mauriceboe"><img alt="BMAC" src="https://img.shields.io/badge/BMAC-support-FFDD00?style=for-the-badge" /></a>
+<a href="https://github.com/JoeyVIP/enscon-trip/pkgs/container/enscon-trip"><img alt="Container image" src="https://img.shields.io/badge/ghcr.io-joeyvip%2Fenscon--trip-2496ED?style=for-the-badge" /></a>
 <br />
 <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-AGPL_v3-6B7280?style=flat-square" /></a>
-<a href="https://github.com/liketrek/TREK/releases"><img alt="Latest Release" src="https://img.shields.io/github/v/release/liketrek/trek?include_prereleases&style=flat-square&color=6B7280" /></a>
-<a href="https://hub.docker.com/r/mauriceboe/trek"><img alt="Docker Pulls" src="https://img.shields.io/docker/pulls/mauriceboe/trek?style=flat-square&color=6B7280" /></a>
-<a href="https://github.com/liketrek/TREK"><img alt="Stars" src="https://img.shields.io/github/stars/liketrek/trek?style=flat-square&color=6B7280" /></a>
 </div>
 
 ---
 
-<div align="center">
-
-<img src="https://github.com/mauriceboe/trek-media/releases/download/readme-assets/TREK1.webp" alt="ENSCON Trip, a tour of the app" width="100%" />
-
-</div>
-
-<br />
 
 ## What you get
 
@@ -181,13 +163,6 @@ Most of what follows is an addon an admin switches on or off. Lists, Costs, Docu
 
 <br />
 
-<div align="center">
-  <a href="docs/screenshots/showcase-desktop-1.webp"><img src="docs/screenshots/showcase-desktop-1.webp" alt="Atlas · dashboard · trip planner" width="100%" /></a>
-  <a href="docs/screenshots/showcase-mobile.webp"><img src="docs/screenshots/showcase-mobile.webp" alt="Mobile PWA · dashboard, day plan, map, costs" width="100%" /></a>
-  <a href="docs/screenshots/showcase-desktop-2.webp"><img src="docs/screenshots/showcase-desktop-2.webp" alt="Collections · journey journal · costs" width="100%" /></a>
-</div>
-
-<br />
 
 ## AI usage
 
@@ -248,12 +223,15 @@ with secure defaults and every option documented inline. Download it, then:
 docker compose up -d
 ```
 
-See [Install with Docker Compose](https://github.com/liketrek/TREK/wiki/Install-Docker-Compose)
+See [Install with Docker Compose — 上游 TREK 文件 (upstream docs)](https://github.com/liketrek/TREK/wiki/Install-Docker-Compose)
 for the full walkthrough.
 
 <br />
 
 <h2 id="helm-kubernetes">Helm (Kubernetes)</h2>
+
+> Helm chart 目前沿用上游 TREK 的，尚未提供我們自己的。
+> The Helm chart is currently upstream TREK's; we do not publish our own yet.
 
 ```bash
 helm repo add trek https://chart.liketrek.com
@@ -279,7 +257,7 @@ ENSCON Trip then launches fullscreen with its own icon, just like a native app.
 
 ## Updating
 
-See [Updating](https://github.com/liketrek/TREK/wiki/Updating) — Docker Compose,
+See [Updating — 上游 TREK 文件 (upstream docs)](https://github.com/liketrek/TREK/wiki/Updating) — Docker Compose,
 Docker run, Helm, Portainer, Unraid and Proxmox, plus the encryption-key note.
 
 <br />
@@ -363,7 +341,7 @@ Caddy handles TLS and WebSockets automatically.
 ## Environment variables
 
 Every variable, its default and what it does: see
-[Environment Variables](https://github.com/liketrek/TREK/wiki/Environment-Variables).
+[Environment Variables — 上游 TREK 文件 (upstream docs)](https://github.com/liketrek/TREK/wiki/Environment-Variables).
 
 This fork (ENSCON) adds `OIDC_ALLOW_CROSS_BROWSER_CALLBACK`, `OIDC_HIDE_PASSWORD_FORM`,
 `OIDC_BUTTON_COLOR`, `EXTRA_LINK_URL` and `EXTRA_LINK_LABEL`; see `wiki/Environment-Variables.md`.
@@ -397,16 +375,6 @@ based on TREK (https://github.com/liketrek/TREK) by Maurice, licensed under AGPL
 5. 交通卡餘額、租車 ETC 費用、素食與五辛提醒
 
 商標：本 fork 名稱與 logo 為 ENSCON 所有，不使用 TREK 的名稱與 logo。詳見 `NOTICE.md`、`TRADEMARKS.md`。
-
-## Star History
-
-<a href="https://www.star-history.com/?repos=liketrek%2FTREK&type=date&legend=bottom-right">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=liketrek/TREK&type=date&theme=dark&legend=bottom-right&sealed_token=tW9agibKugOyPk0yPURgSdnizM7K72zbJENGD9iyk24ZcwYHtCUn-hk9jh1gdacO0O7xJ3Io7LaNrwYD3mChzcpzZIqDC8_HevYG1qnT0XNTmN6Ez4UZrQ" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=liketrek/TREK&type=date&legend=bottom-right&sealed_token=tW9agibKugOyPk0yPURgSdnizM7K72zbJENGD9iyk24ZcwYHtCUn-hk9jh1gdacO0O7xJ3Io7LaNrwYD3mChzcpzZIqDC8_HevYG1qnT0XNTmN6Ez4UZrQ" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=liketrek/TREK&type=date&legend=bottom-right&sealed_token=tW9agibKugOyPk0yPURgSdnizM7K72zbJENGD9iyk24ZcwYHtCUn-hk9jh1gdacO0O7xJ3Io7LaNrwYD3mChzcpzZIqDC8_HevYG1qnT0XNTmN6Ez4UZrQ" />
- </picture>
-</a>
 
 ## Data sources
 
