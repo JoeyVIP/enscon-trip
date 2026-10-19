@@ -1,0 +1,71 @@
+# ENSCON 旅程：建置 Docker image 並推到 GitHub Container Registry（ghcr.io/joeyvip/enscon-trip）。
+# 取代上游的 docker.yml（那支推 TREK 的 Docker Hub，已在 PR #2 拿掉）。
+#
+# 觸發：手動（workflow_dispatch），或推 v* tag。main 的每次 push 不會自動建，避免意外上線；
+# 要上線時由 Atlas 手動跑或打 tag。
+# 只用內建的 GITHUB_TOKEN 推 GHCR，不需要任何額外 secret。
+# 只建 linux/amd64（Railway 是 amd64）；之後要 arm64 再加。
+name: Build & Push (GHCR)
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Image tag（例如 2026-10-20 或 test）；空白就用 commit 短 SHA'
+        type: string
+        default: ''
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: ghcr-build
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 決定 image 名稱與 tag
+        id: meta
+        run: |
+          IMAGE="ghcr.io/$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')"
+          SHORT="${GITHUB_SHA::7}"
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            TAG="${GITHUB_REF_NAME}"
+          elif [ -n "${{ github.event.inputs.tag }}" ]; then
+            TAG="${{ github.event.inputs.tag }}"
+          else
+            TAG="$SHORT"
+          fi
+          # tag 只允許 docker 合法字元
+          TAG="$(echo "$TAG" | tr -c 'A-Za-z0-9_.-' '-' | cut -c1-120)"
+          echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
+          echo "tags=$IMAGE:$TAG,$IMAGE:sha-$SHORT" >> "$GITHUB_OUTPUT"
+          echo "Image: $IMAGE  tags: $TAG, sha-$SHORT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.description=ENSCON Trip (based on TREK, AGPL-3.0)
+            org.opencontainers.image.licenses=AGPL-3.0-only
