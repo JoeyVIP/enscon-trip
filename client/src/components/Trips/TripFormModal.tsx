@@ -60,7 +60,7 @@ export default function TripFormModal({ isOpen, onClose, onSave, trip, onCoverUp
   const toast = useToast()
   const { t } = useTranslation()
   const currentUser = useAuthStore(s => s.user)
-  const defaultCurrency = useSettingsStore(s => s.settings.default_currency) || 'EUR'
+  const defaultCurrency = useSettingsStore(s => s.settings.default_currency) || 'TWD' // ENSCON：新行程預設新台幣（上游 EUR）
   const tripRemindersEnabled = useAuthStore(s => s.tripRemindersEnabled)
   const setTripRemindersEnabled = useAuthStore(s => s.setTripRemindersEnabled)
   const can = useCanDo()
@@ -72,7 +72,7 @@ export default function TripFormModal({ isOpen, onClose, onSave, trip, onCoverUp
     description: '',
     start_date: '',
     end_date: '',
-    currency: 'EUR',
+    currency: 'TWD',
     reminder_days: 0 as number,
     day_count: 7 as number | '',
   })

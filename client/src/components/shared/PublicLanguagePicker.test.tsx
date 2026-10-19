@@ -75,6 +75,8 @@ describe('PublicLanguagePicker', () => {
     render(<PublicLanguagePicker locale="en" open onOpenChange={onOpenChange} />)
     fireEvent.click(screen.getByRole('button', { name: 'Deutsch' }))
     expect(useSettingsStore.getState().settings.language).toBe('de')
+    // ENSCON：訪客選的語言要寫進 localStorage，重新整理後還記得。
+    expect(localStorage.getItem('app_language')).toBe('de')
     expect(onOpenChange).toHaveBeenCalledWith(false)
   })
 

@@ -150,6 +150,16 @@ describe('deriveOidc', () => {
     expect(deriveOidc({ OIDC_ONLY: '1' }).only).toBe(true);
     expect(deriveOidc({ OIDC_ONLY: 'no' }).only).toBe(false);
   });
+
+  // ENSCON 新增的三個 OIDC 旗標：預設全關、按鈕預設 LINE 綠。
+  it('ENSCON flags default off and the button defaults to LINE green', () => {
+    expect(deriveOidc({}).allowCrossBrowserCallback).toBe(false);
+    expect(deriveOidc({ OIDC_ALLOW_CROSS_BROWSER_CALLBACK: 'true' }).allowCrossBrowserCallback).toBe(true);
+    expect(deriveOidc({}).hidePasswordForm).toBe(false);
+    expect(deriveOidc({ OIDC_HIDE_PASSWORD_FORM: '1' }).hidePasswordForm).toBe(true);
+    expect(deriveOidc({}).buttonColor).toBe('#06C755');
+    expect(deriveOidc({ OIDC_BUTTON_COLOR: '#123456' }).buttonColor).toBe('#123456');
+  });
 });
 
 describe('deriveSmtp', () => {

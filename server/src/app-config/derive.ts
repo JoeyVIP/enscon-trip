@@ -204,6 +204,9 @@ export function deriveOidc(raw: RawEnv) {
     discoveryUrl: raw.OIDC_DISCOVERY_URL,
     scope: raw.OIDC_SCOPE || 'openid email profile',
     only: parseBool(raw.OIDC_ONLY) === true,
+    allowCrossBrowserCallback: parseBool(raw.OIDC_ALLOW_CROSS_BROWSER_CALLBACK) === true,
+    hidePasswordForm: parseBool(raw.OIDC_HIDE_PASSWORD_FORM) === true,
+    buttonColor: raw.OIDC_BUTTON_COLOR || '#06C755',
     adminClaim: raw.OIDC_ADMIN_CLAIM || 'groups',
     adminValue: raw.OIDC_ADMIN_VALUE,
   };
@@ -334,6 +337,14 @@ export function deriveNet(raw: RawEnv) {
   };
 }
 
+// ENSCON：右下角額外連結（例如小遊戲）。沒有 URL 就不顯示（沒網址的按鈕沒意義）；LABEL 空時前端用預設圖示。
+export function deriveExtraLink(raw: RawEnv) {
+  return {
+    url: raw.EXTRA_LINK_URL?.trim() || '',
+    label: raw.EXTRA_LINK_LABEL?.trim() || '',
+  };
+}
+
 export function deriveAll(raw: RawEnv) {
   return {
     app: deriveApp(raw),
@@ -353,6 +364,7 @@ export function deriveAll(raw: RawEnv) {
     db: deriveDb(raw),
     paths: derivePaths(raw),
     net: deriveNet(raw),
+    extraLink: deriveExtraLink(raw),
   };
 }
 

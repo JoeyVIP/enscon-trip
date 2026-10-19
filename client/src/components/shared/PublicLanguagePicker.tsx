@@ -114,7 +114,9 @@ export default function PublicLanguagePicker({ locale, open, onOpenChange }: Pub
               aria-current={lang.value === current}
               onClick={() => {
                 // No API call: a share-link visitor has no account to save it to.
-                useSettingsStore.setState(s => ({ settings: { ...s.settings, language: lang.value } }))
+                // ENSCON：改用 setLanguageLocal 寫進 localStorage app_language，訪客自己選的語言
+                // 下次開分享頁還記得（原本只改記憶體，重新整理就回到預設）。
+                useSettingsStore.getState().setLanguageLocal(lang.value)
                 onOpenChange(false)
               }}
               onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')}

@@ -977,11 +977,11 @@ describe('folded trip CRUD', () => {
       title: 'New Trip', start_date: '2025-06-01', end_date: '2025-06-03', reminder_days: 99,
     });
     expect(reminderDays).toBe(3); // out-of-range → default 3
-    expect((trip as any).currency).toBe('EUR'); // no currency → 'EUR'
+    expect((trip as any).currency).toBe('TWD'); // no currency → 'TWD' (ENSCON)
     expect(getDays(tripId)).toHaveLength(3);
   });
 
-  it('TRIP-SVC-069: create without a currency takes the display currency, admin default included, else EUR', () => {
+  it('TRIP-SVC-069: create without a currency takes the display currency, admin default included, else TWD', () => {
     const { user } = createUser(testDb);
     const setUser = (value: string) =>
       testDb.prepare("INSERT INTO settings (user_id, key, value) VALUES (?, 'default_currency', ?) ON CONFLICT(user_id, key) DO UPDATE SET value = excluded.value")
@@ -991,12 +991,12 @@ describe('folded trip CRUD', () => {
         .run(JSON.stringify(value));
     const currencyOf = (data: Parameters<typeof svc.create>[1]) => (svc.create(user.id, data).trip as any).currency;
 
-    expect(currencyOf({ title: 'Nothing set' })).toBe('EUR');
+    expect(currencyOf({ title: 'Nothing set' })).toBe('TWD');
     // "Trip currency" in the settings stores an empty string, which counts as unset.
     setUser('');
-    expect(currencyOf({ title: 'Cleared, no admin default' })).toBe('EUR');
+    expect(currencyOf({ title: 'Cleared, no admin default' })).toBe('TWD');
     setUser('   ');
-    expect(currencyOf({ title: 'Blank, no admin default' })).toBe('EUR');
+    expect(currencyOf({ title: 'Blank, no admin default' })).toBe('TWD');
     setUser('');
     setAdmin('CHF');
     expect(currencyOf({ title: 'Admin default' })).toBe('CHF');

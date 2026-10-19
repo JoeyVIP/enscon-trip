@@ -10,6 +10,10 @@ import { server } from './helpers/msw/server';
 // testTimeout, so a genuinely broken assertion fails, it just takes longer.
 configure({ asyncUtilTimeout: 5000 });
 
+// ENSCON fork 把語言的最後 fallback 改成 zh-TW；既有測試都以英文字串斷言，
+// 所以在 store 模組載入前先把 app_language 設成 en，讓測試維持上游行為。
+localStorage.setItem('app_language', 'en');
+
 // Mock the websocket module so stores don't try to open real connections
 vi.mock('../src/api/websocket', () => ({
   connect: vi.fn(),

@@ -156,13 +156,13 @@ export class TripsService {
 
   /**
    * The currency a trip gets when the caller names none: the person's display
-   * currency, admin default merged in, else EUR. The trip dialog pre-fills the
+   * currency, admin default merged in, else TWD (ENSCON fork：台灣使用者，原本是 EUR). The trip dialog pre-fills the
    * same value on the client, so a trip created through MCP or a plugin lands
    * in the currency the person reads amounts in instead of always in EUR.
    */
   private defaultCurrencyFor(userId: number): string {
     const preferred = this.settings.getUserSettings(userId).default_currency;
-    return typeof preferred === 'string' && preferred.trim() ? preferred.trim() : 'EUR';
+    return typeof preferred === 'string' && preferred.trim() ? preferred.trim() : 'TWD';
   }
 
   canAccessTrip(tripId: string | number, userId: number) {

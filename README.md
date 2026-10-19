@@ -365,6 +365,12 @@ Caddy handles TLS and WebSockets automatically.
 Every variable, its default and what it does: see
 [Environment Variables](https://github.com/liketrek/TREK/wiki/Environment-Variables).
 
+This fork (ENSCON) adds `OIDC_ALLOW_CROSS_BROWSER_CALLBACK`, `OIDC_HIDE_PASSWORD_FORM`,
+`OIDC_BUTTON_COLOR`, `EXTRA_LINK_URL` and `EXTRA_LINK_LABEL`; see `wiki/Environment-Variables.md`.
+It also defaults the UI language to 繁體中文 and new trips to TWD.
+Note: the database column default for `trips.currency` is still `EUR` (no migration); the app always
+writes an explicit currency on insert, so this only matters for rows inserted outside the app.
+
 ## Star History
 
 <a href="https://www.star-history.com/?repos=liketrek%2FTREK&type=date&legend=bottom-right">

@@ -379,6 +379,10 @@ export interface AppConfig {
   demo_mode: boolean
   oidc_configured: boolean
   oidc_display_name?: string
+  // ENSCON fork：登入頁只藏帳密表單、OIDC 主按鈕顏色、右下角額外連結
+  oidc_hide_password_form?: boolean
+  oidc_button_color?: string
+  extra_link?: { url: string; label: string } | null
   oidc_only_mode?: boolean
   has_maps_key?: boolean
   /** Amap (高德地图) key present for this caller — the alternative places provider. */

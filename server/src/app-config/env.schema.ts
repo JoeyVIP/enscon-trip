@@ -89,6 +89,14 @@ export const envSchema = z.object({
   OIDC_DISCOVERY_URL: url,
   OIDC_SCOPE: anyString,
   OIDC_ONLY: boolStr,
+  // ENSCON：允許 OIDC callback 在「不同瀏覽器」完成（LINE App 內建瀏覽器 → 外部瀏覽器會掉 state cookie）。
+  OIDC_ALLOW_CROSS_BROWSER_CALLBACK: boolStr,
+  // ENSCON：登入頁只藏帳密表單（後端密碼登入照常可用；跟 OIDC_ONLY 不同）。
+  OIDC_HIDE_PASSWORD_FORM: boolStr,
+  OIDC_BUTTON_COLOR: anyString,
+  // ENSCON：右下角額外連結浮動按鈕（例如小遊戲），兩個都空就不顯示。
+  EXTRA_LINK_URL: anyString,
+  EXTRA_LINK_LABEL: anyString,
   OIDC_ADMIN_CLAIM: anyString,
   OIDC_ADMIN_VALUE: anyString,
 
