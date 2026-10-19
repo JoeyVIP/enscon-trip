@@ -29,6 +29,7 @@ import { useRoadtripPreferencesSync } from './hooks/useRoadtripPreferencesSync'
 import { registerSyncTriggers, unregisterSyncTriggers } from './sync/syncTriggers'
 import OfflineBanner from './components/Layout/OfflineBanner'
 import ExtraLinkButton from './components/Layout/ExtraLinkButton'
+import SourceLink from './components/Layout/SourceLink'
 import { SystemNoticeHost } from './components/SystemNotices/SystemNoticeHost.js'
 // Notice action registrations (side-effect imports):
 import './pages/Trips/noticeActions.js'
@@ -388,6 +389,8 @@ export default function App() {
       <ErrorBoundary boundaryId="widget:offline-banner" fallback={null}><OfflineBanner /></ErrorBoundary>
       {/* ENSCON：右下角額外連結（EXTRA_LINK_URL），元件自己判斷路徑，登入頁不顯示 */}
       <ErrorBoundary boundaryId="widget:extra-link" fallback={null}><ExtraLinkButton /></ErrorBoundary>
+      {/* ENSCON：AGPL-3.0 第 13 條要求網路使用者拿得到原始碼，每一頁（含登入、分享頁）都放連結 */}
+      <ErrorBoundary boundaryId="widget:source-link" fallback={null}><SourceLink /></ErrorBoundary>
       {/* One boundary for all route chunks, above <Routes> so it stays mounted
           across navigations. react-router runs location updates inside a transition,
           so a mounted boundary keeps the current page on screen instead of flashing
