@@ -216,11 +216,11 @@ describe('Tool: create_trip', () => {
     });
   });
 
-  it('falls back to EUR when neither the user nor the admin set a display currency', async () => {
+  it('falls back to TWD (ENSCON default) when neither the user nor the admin set a display currency', async () => {
     const { user } = createUser(testDb);
     await withHarness(user.id, async (h) => {
       const data = parseToolResult(await h.client.callTool({ name: 'create_trip', arguments: { title: 'Plain' } })) as any;
-      expect(data.trip.currency).toBe('EUR');
+      expect(data.trip.currency).toBe('TWD');
     });
   });
 });

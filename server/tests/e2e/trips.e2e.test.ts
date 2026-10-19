@@ -191,7 +191,7 @@ describe('Trips e2e (real auth guard + temp SQLite)', () => {
     const ok = await request(server).post('/api/trips').set('Cookie', sessionCookie(1)).send({ title: 'T' });
     expect(ok.status).toBe(201);
     // The dateless create seeds the default 7 placeholder days.
-    expect(ok.body.trip).toMatchObject({ title: 'T', currency: 'EUR', day_count: 7, is_owner: 1 });
+    expect(ok.body.trip).toMatchObject({ title: 'T', currency: 'TWD', day_count: 7, is_owner: 1 });
     const dayRows = db.prepare('SELECT COUNT(*) AS n FROM days WHERE trip_id = ?').get(ok.body.trip.id) as { n: number };
     expect(dayRows.n).toBe(7);
     // The DI-native AuditService wrote the real row (audit_log DDL above).

@@ -81,11 +81,13 @@ export default function LoginPage(): React.ReactElement {
     oidcOnly,
     hidePasswordForm,
     oidcButtonColor,
-    oidcInviteToken,
+    oidcInviteToken: storedOidcInvite,
     handleDemoLogin,
     handleSubmit,
     handlePasskeyLogin,
   } = useLogin();
+  // ENSCON：SSO 連結的邀請碼——hook 算好的（網址優先、沒有就 localStorage）；hook 沒給時退回網址上的 inviteToken
+  const oidcInviteToken = storedOidcInvite || inviteToken;
 
   const oidcButtonShown = !!(appConfig?.oidc_configured && appConfig?.oidc_login && !oidcOnly && !hidePasswordForm);
   const passkeyAvailable = !!(

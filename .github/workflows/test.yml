@@ -233,15 +233,27 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+  # ENSCON：fork 沒有上游的 MINIO_LICENSE_KEY。job 層的 if 讀不到 secrets，所以先用一個小 job 判斷有沒有設，
+  # 沒設就整個跳過 S3 contract（而不是紅燈）。
+  minio-gate:
+    runs-on: ubuntu-latest
+    outputs:
+      has_key: ${{ steps.check.outputs.has_key }}
+    steps:
+      - id: check
+        env:
+          KEY: ${{ secrets.MINIO_LICENSE_KEY }}
+        run: if [ -n "$KEY" ]; then echo has_key=true; else echo has_key=false; fi >> "$GITHUB_OUTPUT"
+
   s3-contract:
     name: S3 Driver Contract (MinIO)
     runs-on: ubuntu-latest
-    needs: [plugin-facts, i18n-parity, server-quality, client-quality, plugin-sdk-quality]
+    needs: [plugin-facts, i18n-parity, server-quality, client-quality, plugin-sdk-quality, minio-gate]
     # Fork PRs don't get repo secrets, so MINIO_LICENSE_KEY would be empty and
     # the AIStor container would fail to boot. Pushes and manual dispatches do
     # have secrets, so only fork PRs are filtered out. (The implicit success()
     # on this expression also keeps the job skipped when a preflight fails.)
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    if: needs.minio-gate.outputs.has_key == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
 
     steps:
       - uses: actions/checkout@v6
