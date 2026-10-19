@@ -524,11 +524,8 @@ describe('Navbar styling and menu details', () => {
       expect(link.style.background).toBe('transparent');
     }
 
-    const discord = screen.getByTitle('Discord');
-    fireEvent.mouseEnter(discord);
-    expect(discord.style.background).toBe('rgba(88, 101, 242, 0.125)');
-    fireEvent.mouseLeave(discord);
-    expect(discord.style.background).toBe('var(--bg-tertiary)');
+    // ENSCON：上游的 Discord 社群連結已從使用者選單移除（不替別人導流）
+    expect(screen.queryByTitle('Discord')).toBeNull();
 
     expect(document.querySelector('img[src="/text-light.svg"]')).not.toBeNull();
   });
