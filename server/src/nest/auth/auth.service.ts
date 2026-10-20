@@ -446,7 +446,8 @@ export class AuthService {
             validInvite.id
           );
           if (!updated) {
-            console.warn(`[Auth] Invite token ${validInvite.token.slice(0, 8)}... exceeded max_uses due to race condition`);
+            // 只記邀請的資料列 id，不記邀請碼本身（含任何切片）。
+            console.warn(`[Auth] Invite id=${validInvite.id} exceeded max_uses due to race condition`);
           }
           // Trip-bound invite (#1402): auto-add the freshly registered user to the
           // trip. Idempotent + owner-safe; no-ops if the bound trip was since deleted.
