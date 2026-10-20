@@ -49,9 +49,11 @@ export default function ExtraLinkButton() {
 
   return (
     <>
-      {/* 手機版要在底部工具列上方（104px + 安全區），桌機 24px；跟 arcade-btn.js 一樣 */}
+      {/* 手機版要在底部工具列上方（104px + 安全區），桌機 24px；跟 arcade-btn.js 一樣。
+          z-index 58：蓋過行程頁（z-50）與底部導覽，但在手機彈出視窗（MSheet z-60）、檔案燈箱（z-65）
+          底下——原本 900 會蓋住筆記閱讀畫面右下角的「編輯」鈕與表單的「儲存」。 */}
       <style>{`
-        .enscon-extra-link{position:fixed;right:14px;bottom:calc(env(safe-area-inset-bottom, 0px) + 104px);z-index:900;
+        .enscon-extra-link{position:fixed;right:14px;bottom:calc(env(safe-area-inset-bottom, 0px) + 104px);z-index:58;
           display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:999px;
           background:#111827;color:#fff;font-weight:700;font-size:14px;text-decoration:none;
           box-shadow:0 4px 14px rgba(0,0,0,0.18)}
