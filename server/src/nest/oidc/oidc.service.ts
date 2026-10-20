@@ -250,6 +250,22 @@ export class OidcService implements OnModuleDestroy {
 
   oidcLoginEnabled(): boolean { return this.auth.resolveAuthToggles().oidc_login; }
 
+  /**
+   * ENSCON（InviteEntryGate，見 platform/invite-entry.ts）：/register?invite=X 能不能跳過前端、
+   * 直接送去 LINE 登入。條件跟前端 useLogin 一致——登入頁只剩 OIDC 一條路：
+   * OIDC 已設定且開著、已經有使用者（首次安裝建 admin 一定走表單），而且
+   * 密碼登入整個關掉（OIDC_ONLY）或密碼表單被藏起來（OIDC_HIDE_PASSWORD_FORM）。
+   * 邀請碼本身也要還能用（存在、沒過期、沒用完）；不能用就交回前端顯示「邀請連結無效」。
+   */
+  allowsInviteEntry(invite: string): boolean {
+    if (!this.oidcLoginEnabled() || !this.getOidcConfig()) return false;
+    const hasUsers = !!this.db.prepare('SELECT 1 FROM users WHERE COALESCE(is_guest, 0) = 0 LIMIT 1').get();
+    if (!hasUsers) return false;
+    const lineOnly = !this.auth.resolveAuthToggles().password_login || readEnv().oidc.hidePasswordForm;
+    if (!lineOnly) return false;
+    return this.auth.validateInviteToken(invite).valid === true;
+  }
+
   getAppUrl() { return getAppUrl(); }
 
   setAuthCookie(res: Response, token: string, req: Request, remember?: RememberOption) { setAuthCookie(res, token, req, remember); }

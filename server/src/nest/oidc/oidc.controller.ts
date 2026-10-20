@@ -43,6 +43,10 @@ export class OidcController {
 
   @Get('login')
   async login(@Req() req: Request, @Res() res: Response): Promise<void> {
+    // 診斷日誌：每次進來留一行，只標有沒有帶邀請碼（不記值）。callback 那行到不了的環境
+    // （例如 staging 被轉接層白名單擋在 LINE 之前）也能從這行看出邀請碼有沒有跟過來。
+    const rawInvite = req.query?.invite;
+    this.logger.log(`oidc login start hadInvite=${typeof rawInvite === 'string' && rawInvite.length > 0}`);
     if (!this.oidc.oidcLoginEnabled()) {
       res.status(403).json({ error: 'SSO login is disabled.' });
       return;

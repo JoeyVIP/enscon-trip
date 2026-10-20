@@ -185,6 +185,41 @@ describe('useLogin — app config probe', () => {
     await waitFor(() => expect(window.location.href).toBe('/api/auth/oidc/login?remember=1'));
   });
 
+  // ENSCON 10/20 事故：舊版前端（sha-a818980）把邀請碼以純字串存進 enscon_invite、拿掉網址上的
+  // invite，SW 更新重新載入後新版前端要讀得到，LINE 登入才會帶邀請碼。
+  it('FE-LOGIN-HOOK-007b: 自動跳 LINE 時帶上舊版前端存的邀請碼', async () => {
+    localStorage.setItem('enscon_invite', '3de66a7c9839d43960db5cb5717ad779');
+    server.use(
+      http.get('/api/auth/app-config', () =>
+        HttpResponse.json(buildAppConfig({ password_login: false, oidc_configured: true, oidc_login: true })),
+      ),
+    );
+
+    const { result } = renderLogin();
+    await ready(result);
+
+    await waitFor(() =>
+      expect(window.location.href).toBe('/api/auth/oidc/login?invite=3de66a7c9839d43960db5cb5717ad779&remember=1'),
+    );
+    localStorage.removeItem('enscon_invite');
+  });
+
+  it('FE-LOGIN-HOOK-007c: 只藏密碼表單時，LINE 鈕的邀請碼也讀得到舊版格式', async () => {
+    localStorage.setItem('enscon_invite', '3de66a7c9839d43960db5cb5717ad779');
+    server.use(
+      http.get('/api/auth/app-config', () =>
+        HttpResponse.json(buildAppConfig({ oidc_configured: true, oidc_login: true, oidc_hide_password_form: true })),
+      ),
+    );
+
+    const { result } = renderLogin();
+    await ready(result);
+
+    expect(result.current.hidePasswordForm).toBe(true);
+    expect(result.current.oidcInviteToken).toBe('3de66a7c9839d43960db5cb5717ad779');
+    localStorage.removeItem('enscon_invite');
+  });
+
   it('FE-LOGIN-HOOK-008: does not bounce back to the IdP right after a logout', async () => {
     server.use(
       http.get('/api/auth/app-config', () =>

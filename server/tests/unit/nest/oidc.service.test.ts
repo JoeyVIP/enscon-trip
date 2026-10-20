@@ -1292,3 +1292,76 @@ describe('OIDC settings — the lockout guard', () => {
     toggles.mockRestore();
   });
 });
+
+// ── ENSCON：邀請連結直接送去 LINE 登入的條件（InviteEntryGate）──────────────────
+
+describe('allowsInviteEntry（邀請連結不經 SPA）', () => {
+  const INVITE = '3de66a7c9839d43960db5cb5717ad779';
+  const envKeys = ['OIDC_HIDE_PASSWORD_FORM', 'OIDC_ONLY', 'OIDC_ISSUER', 'OIDC_CLIENT_ID', 'OIDC_CLIENT_SECRET'] as const;
+  const saved: Record<string, string | undefined> = {};
+
+  function configureOidc() {
+    const put = testDb.prepare('INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)');
+    put.run('oidc_issuer', 'https://oidc.example.com');
+    put.run('oidc_client_id', 'client-id');
+    put.run('oidc_client_secret', 'client-secret');
+  }
+  function addInvite(over: { token?: string; max_uses?: number; used_count?: number; expires_at?: string | null } = {}) {
+    const { user } = createUser(testDb, { email: `inv-${Math.random().toString(36).slice(2)}@example.com` });
+    testDb.prepare('INSERT INTO invite_tokens (token, max_uses, used_count, expires_at, created_by) VALUES (?, ?, ?, ?, ?)')
+      .run(over.token ?? INVITE, over.max_uses ?? 1, over.used_count ?? 0, over.expires_at ?? null, user.id);
+  }
+
+  beforeEach(() => {
+    for (const k of envKeys) { saved[k] = process.env[k]; delete process.env[k]; }
+  });
+  afterEach(() => {
+    for (const k of envKeys) { if (saved[k] === undefined) delete process.env[k]; else process.env[k] = saved[k]; }
+  });
+
+  it('OIDC-SVC-075: 藏密碼表單＋OIDC 已設定＋有使用者＋邀請碼可用 → 放行', () => {
+    process.env.OIDC_HIDE_PASSWORD_FORM = 'true';
+    configureOidc();
+    addInvite();
+    expect(svc.allowsInviteEntry(INVITE)).toBe(true);
+  });
+
+  it('OIDC-SVC-076: 密碼登入整個關掉（OIDC_ONLY）也算只剩 LINE → 放行', () => {
+    process.env.OIDC_ONLY = 'true';
+    configureOidc();
+    addInvite();
+    expect(svc.allowsInviteEntry(INVITE)).toBe(true);
+  });
+
+  it('OIDC-SVC-077: 一般註冊模式（密碼表單沒藏）→ 不放行，維持原本的註冊頁', () => {
+    configureOidc();
+    addInvite();
+    expect(svc.allowsInviteEntry(INVITE)).toBe(false);
+  });
+
+  it('OIDC-SVC-078: OIDC 沒設定或關閉 → 不放行', () => {
+    process.env.OIDC_HIDE_PASSWORD_FORM = 'true';
+    addInvite();
+    expect(svc.allowsInviteEntry(INVITE)).toBe(false);
+    configureOidc();
+    testDb.prepare("INSERT OR REPLACE INTO app_settings (key, value) VALUES ('oidc_login', 'false')").run();
+    expect(svc.allowsInviteEntry(INVITE)).toBe(false);
+  });
+
+  it('OIDC-SVC-079: 還沒有任何使用者（首次安裝）→ 不放行', () => {
+    process.env.OIDC_HIDE_PASSWORD_FORM = 'true';
+    configureOidc();
+    expect(testDb.prepare('SELECT COUNT(*) AS n FROM users').get()).toEqual({ n: 0 });
+    expect(svc.allowsInviteEntry(INVITE)).toBe(false);
+  });
+
+  it('OIDC-SVC-080: 邀請碼不存在、過期或用完 → 不放行（交回前端顯示「邀請連結無效」）', () => {
+    process.env.OIDC_HIDE_PASSWORD_FORM = 'true';
+    configureOidc();
+    addInvite({ token: 'used-up-invite-0001', max_uses: 1, used_count: 1 });
+    addInvite({ token: 'expired-invite-0001', expires_at: '2020-01-01T00:00:00.000Z' });
+    expect(svc.allowsInviteEntry('missing-invite-0001')).toBe(false);
+    expect(svc.allowsInviteEntry('used-up-invite-0001')).toBe(false);
+    expect(svc.allowsInviteEntry('expired-invite-0001')).toBe(false);
+  });
+});
