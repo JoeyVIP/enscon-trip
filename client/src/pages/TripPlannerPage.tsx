@@ -1,4 +1,4 @@
-import React, { useState, Suspense } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import { createPortal } from 'react-dom'
 import { useParams, useNavigate, useSearchParams } from 'react-router'
 import { useTripStore } from '../store/tripStore'
@@ -47,7 +47,9 @@ import { useRouteCalculation } from '../hooks/useRouteCalculation'
 import { usePlaceSelection } from '../hooks/usePlaceSelection'
 import { usePlannerHistory } from '../hooks/usePlannerHistory'
 import type { Accommodation, TripMember, Day, Place, Reservation, PackingItem, TodoItem } from '../types'
-import { ListTodo, Download, Plus, Trash2, FolderPlus } from 'lucide-react'
+import { splitSouvenirs, type SouvenirMember } from '../components/Todo/souvenirModel'
+import apiClient from '../api/client'
+import { ListTodo, Gift, Download, Plus, Trash2, FolderPlus } from 'lucide-react'
 import { useTripPlanner } from './tripPlanner/useTripPlanner'
 import { usePoiExplore } from '../components/Map/usePoiExplore'
 import { useMergedMapPois } from '../components/Map/useMergedMapPois'
@@ -63,6 +65,7 @@ import { useTouchDragBridge } from '../hooks/useTouchDragBridge'
 const ReservationsPanel = lazyWithRetry(() => import('../components/Planner/ReservationsPanel'))
 const PackingListPanel = lazyWithRetry(() => import('../components/Packing/PackingListPanel'))
 const TodoListPanel = lazyWithRetry(() => import('../components/Todo/TodoListPanel'))
+const SouvenirPanel = lazyWithRetry(() => import('../components/Todo/SouvenirPanel'))
 const FileManager = lazyWithRetry(() => import('../components/Files/FileManager'))
 const CostsPanel = lazyWithRetry(() => import('../components/Budget/CostsPanel'))
 // Named export, so it needs the extra hop. Importing it statically would keep the
@@ -112,11 +115,20 @@ function LazyPanel({ id, children, overlay }: { id: string; children: React.Reac
   )
 }
 
-function ListsContainer({ tripId, packingItems, todoItems }: { tripId: number; packingItems: PackingItem[]; todoItems: TodoItem[] }) {
-  const [subTab, setSubTab] = useState<'packing' | 'todo'>(() => {
-    return (sessionStorage.getItem(`trip-lists-subtab-${tripId}`) as 'packing' | 'todo') || 'packing'
+function ListsContainer({ tripId, packingItems, todoItems: allTodoItems }: { tripId: number; packingItems: PackingItem[]; todoItems: TodoItem[] }) {
+  // 伴手禮品項與待辦共用 todo_items，用 kind 拆開顯示
+  const { souvenirs, todos: todoItems } = splitSouvenirs(allTodoItems)
+  const [souvenirMembers, setSouvenirMembers] = useState<SouvenirMember[]>([])
+  useEffect(() => {
+    apiClient.get(`/trips/${tripId}/members`).then(r => {
+      const owner = r.data?.owner
+      setSouvenirMembers(owner ? [owner, ...(r.data?.members || [])] : (r.data?.members || []))
+    }).catch(() => {})
+  }, [tripId])
+  const [subTab, setSubTab] = useState<'packing' | 'todo' | 'souvenir'>(() => {
+    return (sessionStorage.getItem(`trip-lists-subtab-${tripId}`) as 'packing' | 'todo' | 'souvenir') || 'packing'
   })
-  const setSubTabPersist = (tab: 'packing' | 'todo') => { setSubTab(tab); sessionStorage.setItem(`trip-lists-subtab-${tripId}`, tab) }
+  const setSubTabPersist = (tab: 'packing' | 'todo' | 'souvenir') => { setSubTab(tab); sessionStorage.setItem(`trip-lists-subtab-${tripId}`, tab) }
   const [importPackingSignal, setImportPackingSignal] = useState(0)
   const [clearCheckedSignal, setClearCheckedSignal] = useState(0)
   const [saveTemplateSignal, setSaveTemplateSignal] = useState(0)
@@ -128,6 +140,7 @@ function ListsContainer({ tripId, packingItems, todoItems }: { tripId: number; p
   const tabs = [
     { id: 'packing' as const, label: t('todo.subtab.packing'), icon: PackageCheck, count: packingItems.length },
     { id: 'todo' as const, label: t('todo.subtab.todo'), icon: ListTodo, count: todoItems.length },
+    { id: 'souvenir' as const, label: t('twSouvenir.tab'), icon: Gift, count: souvenirs.length },
   ]
 
   return (
@@ -233,6 +246,11 @@ function ListsContainer({ tripId, packingItems, todoItems }: { tripId: number; p
         {subTab === 'packing' && (
           <LazyPanel id="packing">
             <PackingListPanel tripId={tripId} items={packingItems} openImportSignal={importPackingSignal} clearCheckedSignal={clearCheckedSignal} saveTemplateSignal={saveTemplateSignal} inlineHeader={false} view={packingView} onViewChange={setPackingView} />
+          </LazyPanel>
+        )}
+        {subTab === 'souvenir' && (
+          <LazyPanel id="souvenir">
+            <SouvenirPanel tripId={tripId} items={souvenirs} members={souvenirMembers} />
           </LazyPanel>
         )}
         {subTab === 'todo' && (

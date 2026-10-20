@@ -63,3 +63,23 @@ describe('todoReorderRequestSchema', () => {
     expect(todoReorderRequestSchema.safeParse({ orderedIds: ['a'] }).success).toBe(false);
   });
 });
+
+describe('伴手禮欄位', () => {
+  it('create 接受 kind／quantity／recipient／store／price_jpy', () => {
+    expect(
+      todoCreateItemRequestSchema.safeParse({ name: '零食', kind: 'souvenir', quantity: 3, recipient: '小美', store: '唐吉訶德', price_jpy: 1200 }).success,
+    ).toBe(true);
+  });
+  it('quantity 必須是正整數、price_jpy 不可為負', () => {
+    expect(todoCreateItemRequestSchema.safeParse({ name: 'X', quantity: 0 }).success).toBe(false);
+    expect(todoCreateItemRequestSchema.safeParse({ name: 'X', price_jpy: -1 }).success).toBe(false);
+  });
+  it('kind 只接受 souvenir（或 null）、price_jpy 有上限', () => {
+    expect(todoCreateItemRequestSchema.safeParse({ name: 'X', kind: 'other' }).success).toBe(false);
+    expect(todoCreateItemRequestSchema.safeParse({ name: 'X', kind: null }).success).toBe(true);
+    expect(todoCreateItemRequestSchema.safeParse({ name: 'X', price_jpy: 100_000_001 }).success).toBe(false);
+  });
+  it('update 可用 null 清掉 recipient／store／price_jpy', () => {
+    expect(todoUpdateItemRequestSchema.safeParse({ recipient: null, store: null, price_jpy: null }).success).toBe(true);
+  });
+});
