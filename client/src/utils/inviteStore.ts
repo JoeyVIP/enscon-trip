@@ -36,6 +36,14 @@ function readLocalStorage(): string {
   try {
     const raw = localStorage.getItem(INVITE_STORAGE_KEY)
     if (!raw) return ''
+    // 舊版前端（#14 之前，例如 sha-a818980）在同一個 key 存的是「邀請碼本身」，不是 JSON。
+    // 舊 service worker 端出舊版前端 → 它存好邀請碼、把網址上的 invite 拿掉 → SW 更新後重新載入，
+    // 新版前端只剩這一份可以讀；讀不懂就會變成「LINE 登入沒帶邀請碼」（10/20 事故）。
+    // 認得舊格式，並改寫成新格式、從現在起算 30 分鐘，免得一份舊值永遠不過期。
+    if (INVITE_RE.test(raw)) {
+      try { localStorage.setItem(INVITE_STORAGE_KEY, JSON.stringify({ v: raw, t: Date.now() })) } catch { /* ignore */ }
+      return raw
+    }
     const parsed = JSON.parse(raw) as { v?: unknown; t?: unknown }
     if (typeof parsed?.v !== 'string' || typeof parsed.t !== 'number') return ''
     if (Date.now() - parsed.t > INVITE_LS_TTL_MS) return ''

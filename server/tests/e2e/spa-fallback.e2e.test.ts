@@ -61,8 +61,8 @@ describe('SPA fallback e2e: pages get index.html, missing build files a 404 (#25
 
   afterAll(async () => {
     await app?.close();
-    for (const file of created) fs.rmSync(file, { force: true });
-    for (const dir of createdDirs.reverse()) fs.rmSync(dir, { recursive: true, force: true });
+    for (const file of created.splice(0)) fs.rmSync(file, { force: true });
+    for (const dir of createdDirs.splice(0).reverse()) fs.rmSync(dir, { recursive: true, force: true });
     if (previousEnv === undefined) delete process.env.NODE_ENV;
     else process.env.NODE_ENV = previousEnv;
   });
@@ -108,5 +108,62 @@ describe('SPA fallback e2e: pages get index.html, missing build files a 404 (#25
     const res = await request(server).post('/dashboard').send({});
     expect(res.status).toBe(404);
     expect(res.body).toEqual({ error: 'Cannot POST /dashboard' });
+  });
+});
+
+// ENSCON：邀請連結不經 SPA。這裡用真的 Express response 驗 302 的 Location 與 cookie 標頭，
+// gate 用假的（條件本身由 oidc.service.test 的 OIDC-SVC-075～080 驗）。
+describe('SPA fallback e2e: 邀請連結在只給 LINE 登入的站上直接 302 去 OIDC 登入', () => {
+  const previousEnv = process.env.NODE_ENV;
+  const INVITE = '3de66a7c9839d43960db5cb5717ad779';
+  let app: INestApplication;
+  let server: Server;
+
+  beforeAll(async () => {
+    ensurePublicFile('index.html', '<!DOCTYPE html><html><body><div id="root"></div></body></html>');
+    process.env.NODE_ENV = 'production';
+    const moduleRef = await Test.createTestingModule({ imports: [NoRoutesModule] }).compile();
+    app = moduleRef.createNestApplication();
+    applyPlatformStatic(app.getHttpAdapter().getInstance());
+    const gate = { allowsInviteEntry: (invite: string) => invite === INVITE };
+    app.useGlobalFilters(new TrekExceptionFilter(), new SpaFallbackFilter(gate));
+    await app.init();
+    server = app.getHttpServer();
+  });
+
+  afterAll(async () => {
+    await app?.close();
+    // 上一組的 afterAll 已經清過一輪；這組重建的 index.html（與目錄）也要收掉。
+    for (const file of created.splice(0)) fs.rmSync(file, { force: true });
+    for (const dir of createdDirs.splice(0).reverse()) fs.rmSync(dir, { recursive: true, force: true });
+    if (previousEnv === undefined) delete process.env.NODE_ENV;
+    else process.env.NODE_ENV = previousEnv;
+  });
+
+  it('舊的邀請連結 /register?invite=X → 302 到 /api/auth/oidc/login?invite=X&remember=1，並留前端讀得到的 cookie', async () => {
+    const res = await request(server).get(`/register?invite=${INVITE}`);
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toBe(`/api/auth/oidc/login?invite=${INVITE}&remember=1`);
+    expect(res.headers['cache-control']).toBe('no-store');
+    const cookie = ([] as string[]).concat(res.headers['set-cookie'] ?? []).find((c) => c.startsWith('enscon_invite='));
+    expect(cookie).toBeDefined();
+    expect(cookie).toContain(`enscon_invite=${INVITE}`);
+    expect(cookie).toContain('Path=/');
+    expect(cookie).toContain('SameSite=Lax');
+    expect(cookie).not.toMatch(/HttpOnly/i);
+  });
+
+  it('/login?invite=X 也一樣', async () => {
+    const res = await request(server).get(`/login?invite=${INVITE}`);
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toBe(`/api/auth/oidc/login?invite=${INVITE}&remember=1`);
+  });
+
+  it('?pw=1 管理員入口與失效邀請碼照舊回 index.html', async () => {
+    for (const url of [`/login?invite=${INVITE}&pw=1`, '/register?invite=ffffffffffffffffffffffffffffffff', '/register']) {
+      const res = await request(server).get(url);
+      expect(res.status).toBe(200);
+      expect(res.headers['content-type']).toContain('text/html');
+    }
   });
 });

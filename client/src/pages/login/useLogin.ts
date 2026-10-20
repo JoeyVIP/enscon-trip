@@ -191,7 +191,9 @@ export function useLogin() {
             if (!fromCache && !config.password_login && config.oidc_login && config.oidc_configured && config.has_users && !invite && !noRedirect && !oidcErrorSeen.current) {
               // No switch to consult on this path: OIDC-only always asks for the
               // remembered lifetime, matching the SSO button on the panel (#1927).
-              window.location.href = '/api/auth/oidc/login?remember=1'
+              // ENSCON：網址上的 invite 已被拿掉（舊版前端、重新整理）但還存著的話，自動跳轉也要帶上。
+              const storedInvite = loadInvite()
+              window.location.href = '/api/auth/oidc/login?' + (storedInvite ? 'invite=' + encodeURIComponent(storedInvite) + '&' : '') + 'remember=1'
             }
           }
         })

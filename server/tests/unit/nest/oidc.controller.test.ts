@@ -596,6 +596,25 @@ describe('OidcController 診斷日誌', () => {
     warn.mockRestore();
   });
 
+  it('/login 進入時記一行 oidc login start hadInvite=true|false，不含邀請碼', async () => {
+    const log = vi.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
+    await ctl(svc()).login({ query: { invite: 'SECRET-INVITE-5678', remember: '1' }, headers: {} } as unknown as Request, makeRes());
+    await ctl(svc()).login({ query: { remember: '1' }, headers: {} } as unknown as Request, makeRes());
+    await ctl(svc()).login({ query: { invite: '' }, headers: {} } as unknown as Request, makeRes());
+    // 就算 SSO 被關掉、提早 403，也要先留這一行
+    await ctl(svc({ oidcLoginEnabled: vi.fn().mockReturnValue(false) }))
+      .login({ query: { invite: 'SECRET-INVITE-5678' }, headers: {} } as unknown as Request, makeRes());
+    const starts = lines(log).filter((l) => l.startsWith('oidc login start'));
+    expect(starts).toEqual([
+      'oidc login start hadInvite=true',
+      'oidc login start hadInvite=false',
+      'oidc login start hadInvite=false',
+      'oidc login start hadInvite=true',
+    ]);
+    expect(lines(log).join('\n')).not.toContain('SECRET-INVITE');
+    log.mockRestore();
+  });
+
   it('exchange 失敗四種原因', () => {
     const warn = vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => {});
     ctl(svc()).exchange(undefined, reqEx(), makeRes());

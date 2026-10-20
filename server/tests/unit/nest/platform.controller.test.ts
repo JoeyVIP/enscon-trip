@@ -19,6 +19,7 @@ import {
   storageStaticHandler,
   isBuildFilePath,
   PUBLIC_DIR,
+  SW_CLEAR_SITE_DATA,
 } from '../../../src/nest/platform/platform.routes';
 import { SpaFallbackFilter } from '../../../src/nest/platform/spa-fallback.filter';
 import { StorageNotFoundError, StorageInvalidKeyError } from '../../../src/nest/storage/storage.types';
@@ -406,6 +407,40 @@ describe('applyPlatformStatic', () => {
   });
 });
 
+// ENSCON：sw.js 附 Clear-Site-Data，值鎖死成 "cache"。
+// 改成 "storage"／"cookies"／"*" 會清掉登入、IndexedDB（離線行程）與 SW 註冊——這個測試就是擋這件事。
+describe('sw.js 的 Clear-Site-Data', () => {
+  const original = process.env.NODE_ENV;
+  afterEach(() => { process.env.NODE_ENV = original; });
+
+  async function setHeadersFn() {
+    process.env.NODE_ENV = 'production';
+    const expressMod = (await import('express')).default as unknown as { static: ReturnType<typeof vi.fn> };
+    expressMod.static.mockClear();
+    const { app } = fakeApp();
+    applyPlatformStatic(app);
+    return (expressMod.static.mock.calls[0][1] as { setHeaders: (res: unknown, p: string) => void }).setHeaders;
+  }
+
+  it('值一字不差就是 "cache"（含雙引號），不含 storage／cookies／*', () => {
+    expect(SW_CLEAR_SITE_DATA).toBe('"cache"');
+    expect(SW_CLEAR_SITE_DATA).not.toMatch(/storage|cookies|\*|executionContexts/i);
+  });
+
+  it('只加在 sw.js，值就是 "cache"', async () => {
+    const setHeaders = await setHeadersFn();
+    const sw = makeRes();
+    setHeaders(sw, '/pub/sw.js');
+    expect(sw.headers['Clear-Site-Data']).toBe('"cache"');
+    expect(sw.headers['Cache-Control']).toBe('no-cache, no-store, must-revalidate');
+    for (const p of ['/pub/index.html', '/pub/registerSW.js', '/pub/manifest.webmanifest', '/pub/assets/index-AbC123.js', '/pub/workbox-0000aaaa.js']) {
+      const r = makeRes();
+      setHeaders(r, p);
+      expect(r.headers['Clear-Site-Data']).toBeUndefined();
+    }
+  });
+});
+
 describe('applyPlatformSpa', () => {
   const original = process.env.NODE_ENV;
   afterEach(() => { process.env.NODE_ENV = original; });
@@ -550,5 +585,117 @@ describe('SpaFallbackFilter', () => {
     Object.defineProperty(exc, 'message', { value: '' });
     new SpaFallbackFilter().catch(exc, host({ method: 'GET', path: '/dashboard' }, res));
     expect(res.body).toEqual({ error: 'Not Found' });
+  });
+});
+
+// ENSCON：邀請連結不經 SPA——帶合法邀請碼的 /register、/login 在只給 LINE 登入的站上直接 302。
+describe('SpaFallbackFilter 邀請連結直接送去 LINE 登入', () => {
+  const original = process.env.NODE_ENV;
+  afterEach(() => { process.env.NODE_ENV = original; });
+  const INVITE = '3de66a7c9839d43960db5cb5717ad779';
+
+  function inviteRes() {
+    const res = Object.assign(makeRes(), {
+      redirectedTo: '' as string,
+      redirect: vi.fn(function (this: { statusCode: number; redirectedTo: string }, code: number, url: string) {
+        this.statusCode = code;
+        this.redirectedTo = url;
+      }),
+      cookie: vi.fn(),
+    });
+    return res;
+  }
+  function host(req: Record<string, unknown>, res: unknown) {
+    return { switchToHttp: () => ({ getRequest: () => req, getResponse: () => res }) } as never;
+  }
+  const get = (path: string, query: Record<string, unknown> = {}, headers: Record<string, string> = {}) =>
+    ({ method: 'GET', path, query, headers, secure: true });
+  const gate = (allowed = true) => ({ allowsInviteEntry: vi.fn().mockReturnValue(allowed) });
+
+  it.each(['/register', '/login', '/register/'])('%s?invite=X → 302 /api/auth/oidc/login?invite=X&remember=1', (path) => {
+    process.env.NODE_ENV = 'production';
+    const g = gate();
+    const res = inviteRes();
+    new SpaFallbackFilter(g).catch(new NotFoundException(), host(get(path, { invite: INVITE }), res));
+    expect(g.allowsInviteEntry).toHaveBeenCalledWith(INVITE);
+    expect(res.statusCode).toBe(302);
+    expect(res.redirectedTo).toBe(`/api/auth/oidc/login?invite=${INVITE}&remember=1`);
+    expect(res.headers['Cache-Control']).toBe('no-store');
+    expect(res.sendFile).not.toHaveBeenCalled();
+    // 前端讀得到的同名 cookie，LINE 登入失敗後「重試」還能補回邀請碼
+    expect(res.cookie).toHaveBeenCalledWith('enscon_invite', INVITE, expect.objectContaining({ httpOnly: false, maxAge: 10 * 60 * 1000, path: '/', sameSite: 'lax' }));
+  });
+
+  it('gate 說不行（一般註冊模式、首次安裝、邀請碼失效…）→ 照舊回 index.html', () => {
+    process.env.NODE_ENV = 'production';
+    const res = inviteRes();
+    new SpaFallbackFilter(gate(false)).catch(new NotFoundException(), host(get('/register', { invite: INVITE }), res));
+    expect(res.redirect).not.toHaveBeenCalled();
+    expect(String(res.body)).toContain('index.html');
+  });
+
+  it.each([
+    ['?pw=1 管理員入口', '/login', { invite: INVITE, pw: '1' }, {}],
+    ['?redirect= OAuth 交接', '/login', { invite: INVITE, redirect: '/oauth/consent' }, {}],
+    ['LINE 回程 oidc_error', '/login', { invite: INVITE, oidc_error: 'x' }, {}],
+    ['格式不對的邀請碼', '/register', { invite: 'bad token!' }, {}],
+    ['太短的邀請碼', '/register', { invite: 'short' }, {}],
+    ['重複的 invite 參數', '/register', { invite: [INVITE, INVITE] }, {}],
+    ['沒有邀請碼', '/register', {}, {}],
+    ['別的頁面', '/dashboard', { invite: INVITE }, {}],
+    ['Discord 連結預覽爬蟲', '/register', { invite: INVITE }, { 'user-agent': 'Mozilla/5.0 (compatible; Discordbot/2.0; +https://discordapp.com)' }],
+    ['Facebook／LINE 類預覽爬蟲', '/register', { invite: INVITE }, { 'user-agent': 'facebookexternalhit/1.1' }],
+  ])('%s → 不問 gate、照舊回 index.html', (_case, path, query, headers) => {
+    process.env.NODE_ENV = 'production';
+    const g = gate();
+    const res = inviteRes();
+    new SpaFallbackFilter(g).catch(new NotFoundException(), host(get(path, query, headers), res));
+    expect(g.allowsInviteEntry).not.toHaveBeenCalled();
+    expect(res.redirect).not.toHaveBeenCalled();
+    expect(String(res.body)).toContain('index.html');
+  });
+
+  it('Discord／LINE App 內建瀏覽器（不是爬蟲）照樣 302', () => {
+    process.env.NODE_ENV = 'production';
+    for (const ua of [
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Discord/250.0',
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Safari Line/14.16.0',
+    ]) {
+      const res = inviteRes();
+      new SpaFallbackFilter(gate()).catch(new NotFoundException(), host(get('/register', { invite: INVITE }, { 'user-agent': ua }), res));
+      expect(res.statusCode).toBe(302);
+    }
+  });
+
+  it('gate 丟錯 → 退回 index.html，不變成 500', () => {
+    process.env.NODE_ENV = 'production';
+    const res = inviteRes();
+    const g = { allowsInviteEntry: vi.fn(() => { throw new Error('db locked'); }) };
+    new SpaFallbackFilter(g).catch(new NotFoundException(), host(get('/register', { invite: INVITE }), res));
+    expect(res.redirect).not.toHaveBeenCalled();
+    expect(String(res.body)).toContain('index.html');
+  });
+
+  it('沒注入 gate（e2e 空模組）或非 production → 原行為', () => {
+    process.env.NODE_ENV = 'production';
+    const res = inviteRes();
+    new SpaFallbackFilter().catch(new NotFoundException(), host(get('/register', { invite: INVITE }), res));
+    expect(String(res.body)).toContain('index.html');
+
+    process.env.NODE_ENV = 'development';
+    const g = gate();
+    const dev = inviteRes();
+    new SpaFallbackFilter(g).catch(new NotFoundException('nope'), host(get('/register', { invite: INVITE }), dev));
+    expect(g.allowsInviteEntry).not.toHaveBeenCalled();
+    expect(dev.statusCode).toBe(404);
+  });
+
+  it('非 GET 不處理', () => {
+    process.env.NODE_ENV = 'production';
+    const g = gate();
+    const res = inviteRes();
+    new SpaFallbackFilter(g).catch(new NotFoundException('gone'), host({ ...get('/register', { invite: INVITE }), method: 'POST' }, res));
+    expect(g.allowsInviteEntry).not.toHaveBeenCalled();
+    expect(res.statusCode).toBe(404);
   });
 });
