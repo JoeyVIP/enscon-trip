@@ -9,6 +9,7 @@ import { useAuthStore } from '../store/authStore';
 import { useSettingsStore } from '../store/settingsStore';
 import { useAddonStore } from '../store/addonStore';
 import { usePluginStore } from '../store/pluginStore';
+import { usePermissionsStore } from '../store/permissionsStore';
 import DashboardPage from './DashboardPage';
 
 // FE-PAGE-DESKDASH-001 onwards
@@ -444,4 +445,40 @@ describe('DashboardPage (desktop)', () => {
     expect(container.querySelectorAll('.trips .trek-skeleton').length).toBe(0);
   });
 
+  it('FE-PAGE-DESKDASH-TW-001: a hero without a cover is drawn and offers "Add cover"', async () => {
+    const { container } = render(<DashboardPage />);
+
+    const cta = await screen.findByRole('button', { name: 'Add cover' });
+    expect(cta.className).toContain('hero-tool-cover');
+    const hero = container.querySelector('.hero-trip') as HTMLElement;
+    expect(hero.querySelector('[data-testid="trip-cover-art"] svg[data-motif="city"]')).toBeInTheDocument();
+  });
+
+  it('FE-PAGE-DESKDASH-TW-002: a hero with a cover photo shows the photo and no "Add cover"', async () => {
+    onlyTrips([{ ...TRIP, cover_image: '/uploads/covers/p.jpg' }]);
+    const { container } = render(<DashboardPage />);
+
+    await waitFor(() => expect(container.querySelector('.hero-trip img.bg')).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'Add cover' })).not.toBeInTheDocument();
+  });
+
+  it('FE-PAGE-DESKDASH-TW-004: no "Add cover" for a member who may not change the cover', async () => {
+    // Cover upload limited to owners, and this member does not own the trip.
+    usePermissionsStore.setState({ permissions: { trip_cover_upload: 'trip_owner' } });
+    onlyTrips([{ ...TRIP, user_id: 99, is_owner: 0 }]);
+    const { container } = render(<DashboardPage />);
+
+    await waitFor(() => expect(container.querySelector('.hero-trip [data-testid="trip-cover-art"]')).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'Add cover' })).not.toBeInTheDocument();
+    // Opening the trip is still offered.
+    expect(screen.getByRole('button', { name: 'Open trip: Paris Adventure' })).toBeInTheDocument();
+  });
+
+  it('FE-PAGE-DESKDASH-TW-003: the hero and the cards carry a visible "Open trip" button', async () => {
+    onlyTrips([TRIP, buildTrip({ id: 102, title: 'Kyoto', start_date: '2026-09-01', end_date: '2026-09-05' })]);
+    render(<DashboardPage />);
+
+    expect(await screen.findByRole('button', { name: 'Open trip: Paris Adventure' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Open trip: Kyoto' })).toBeInTheDocument();
+  });
 });

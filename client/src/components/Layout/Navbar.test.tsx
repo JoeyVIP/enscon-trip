@@ -351,7 +351,8 @@ describe('Navbar styling and menu details', () => {
     render(<Navbar />);
 
     expect(nav().style.background).toBe('rgba(9, 9, 11, 0.95)');
-    expect(document.querySelector('img[src="/logo-light.svg"]')).not.toBeNull();
+    // The mark swaps to its dark-bar variant; the product name next to it is live text.
+    expect(document.querySelector('img[src="/icons/icon-white.svg"]')).not.toBeNull();
 
     Object.defineProperty(window, 'scrollY', { value: 40, configurable: true });
     fireEvent.scroll(window);
@@ -614,5 +615,16 @@ describe('Navbar layout (#1983)', () => {
     for (let i = 0; i < 8; i++) {
       expect(screen.getByRole('link', { name: new RegExp(`Addon ${i}`, 'i') })).toBeInTheDocument();
     }
+  });
+
+  it('FE-COMP-NAVBAR-TW-001: the bar names the product in live text, not a wordmark image', () => {
+    render(<Navbar />);
+
+    const name = screen.getByTestId('navbar-app-name');
+    expect(name).toHaveTextContent('ENSCON Trip');
+    expect(name.className).toContain('truncate');
+    expect(screen.getByRole('link', { name: 'ENSCON Trip' })).toContainElement(name);
+    // The old logo-*.svg had 旅程 drawn into it for every language.
+    expect(document.querySelector('img[src$="/logo-dark.svg"], img[src$="/logo-light.svg"]')).not.toBeInTheDocument();
   });
 });

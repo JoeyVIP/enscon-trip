@@ -14,6 +14,8 @@ import { useSettingsStore } from '../../store/settingsStore';
 import { startAuthentication } from '@simplewebauthn/browser';
 import { START_DESTINATION_ROUTE } from '../../utils/startDestination';
 import { useLogin } from './useLogin';
+import { takeFreshLogin } from '../../utils/postLoginLanding';
+import { saveInvite, clearInvite } from '../../utils/inviteStore';
 
 const mockNavigate = vi.fn();
 vi.mock('react-router', async () => {
@@ -1131,5 +1133,46 @@ describe('OIDC-only auto-redirect suppression', () => {
     // Never redirected in the first place: the bounce requires password_login false.
     expect(window.location.href).not.toContain('/api/auth/oidc/login');
     expect(result.current.appConfig?.password_login).toBe(true);
+  });
+});
+
+describe('useLogin — ENSCON fresh-login landing mark', () => {
+  beforeEach(() => {
+    sessionStorage.clear();
+    clearInvite();
+  });
+
+  it('FE-LOGIN-HOOK-TW-001: a login that hands over to the start route marks the session as freshly logged in', async () => {
+    const { result } = renderLogin();
+    await ready(result);
+
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    await act(async () => {
+      await result.current.handleDemoLogin();
+    });
+
+    expect(takeFreshLogin()).toEqual({ viaInvite: false });
+  });
+
+  it('FE-LOGIN-HOOK-TW-002: a LINE/OIDC login that carried an invite is marked as via-invite', async () => {
+    saveInvite('invite-token-abc123');
+    setSearch('?oidc_code=code-tw2');
+    server.use(http.get('/api/auth/oidc/exchange', () => HttpResponse.json({ token: 'tok' })));
+
+    renderLogin();
+
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith(START_DESTINATION_ROUTE, { replace: true }));
+    expect(takeFreshLogin()).toEqual({ viaInvite: true });
+  });
+
+  it('FE-LOGIN-HOOK-TW-003: an explicit redirect is honoured and leaves no mark', async () => {
+    sessionStorage.setItem('oidc_redirect', '/trips/9');
+    setSearch('?oidc_code=code-tw3');
+    server.use(http.get('/api/auth/oidc/exchange', () => HttpResponse.json({ token: 'tok' })));
+
+    renderLogin();
+
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/trips/9', { replace: true }));
+    expect(takeFreshLogin()).toBeNull();
   });
 });

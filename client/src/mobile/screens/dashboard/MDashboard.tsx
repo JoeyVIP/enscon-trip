@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import {
   Archive, ArchiveRestore, ArrowRight, Bell, CalendarDays, CalendarPlus, Copy,
-  LayoutGrid, List, MapPin, Pencil, Plus, RefreshCw, Trash2, Users,
+  ImagePlus, LayoutGrid, List, MapPin, Pencil, Plus, RefreshCw, Trash2, Users,
 } from 'lucide-react'
 import { useTranslation } from '../../../i18n'
 import MDancingTrek from '../../components/MDancingTrek'
@@ -17,7 +17,8 @@ import type { TripCardBadge } from '../../../api/client'
 import DemoBanner from '../../../components/Layout/DemoBanner'
 import { IcsSubscribeModal } from '../../../components/Planner/IcsSubscribeModal'
 import PluginWidgets from '../../../components/Plugins/PluginWidgets'
-import { entityGradient } from '../../../utils/gradients'
+import TripCoverArt, { TripCoverScene, TripCoverSky } from '../../../components/shared/TripCoverArt'
+import { useCanDo } from '../../../store/permissionsStore'
 import MGlassBar from '../../components/MGlassBar'
 import MIconBtn from '../../components/MIconBtn'
 import MSegmented from '../../components/MSegmented'
@@ -68,6 +69,7 @@ export default function MDashboard(): React.ReactElement {
   const isAuthenticated = useAuthStore(s => s.isAuthenticated)
   const unread = useInAppNotificationStore(s => s.unreadCount)
   const fetchUnreadCount = useInAppNotificationStore(s => s.fetchUnreadCount)
+  const can = useCanDo()
   const [menuOpen, setMenuOpen] = useState(false)
   const [subOpen, setSubOpen] = useState(false)
 
@@ -193,6 +195,7 @@ export default function MDashboard(): React.ReactElement {
                 key={trip.id}
                 trip={trip}
                 locale={locale}
+                t={t}
                 badge={statusLabel(trip)}
                 pluginBadges={badgesFor(trip.id)}
                 actions={actionsFor(trip, 'grid')}
@@ -228,10 +231,15 @@ export default function MDashboard(): React.ReactElement {
           // The page itself is the scroller since #1809, no inner container to walk up to.
           onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }) }}
           aria-label={appName}
-          className="flex flex-none items-center gap-[7px]"
+          // The product name sits beside the tile and gives way first: it can
+          // shrink and truncate, the bell and avatar to its right never do.
+          className="flex min-w-0 items-center gap-[9px] text-left"
         >
-          <span className="flex h-[38px] w-[38px] items-center justify-center rounded-[11px] bg-[#101013]">{/* theme-lint-disable — brand tile stays black in both themes */}
+          <span className="flex h-[38px] w-[38px] flex-none items-center justify-center rounded-[11px] bg-[#101013]">{/* theme-lint-disable — brand tile stays black in both themes */}
             <img src="/icons/icon-white.svg" alt="" className="block h-[22px] w-[22px]" />
+          </span>
+          <span data-testid="m-dash-app-name" className="min-w-0 truncate text-[1.0625rem] font-extrabold tracking-[-.01em] text-m-ink">
+            {appName}
           </span>
         </button>
         <div className="min-w-0 flex-1" />
@@ -279,6 +287,11 @@ export default function MDashboard(): React.ReactElement {
             t={t}
             onOpen={() => navigate(`/trips/${spotlight.id}`)}
             actions={actionsFor(spotlight, 'list')}
+            // The edit sheet is where a cover is uploaded or picked; only offered
+            // to people allowed to change it (the same check the sheet makes).
+            onAddCover={!spotlight.cover_image && !spotlight.is_archived && can('trip_cover_upload', spotlight)
+              ? () => openEdit(spotlight)
+              : undefined}
           />
         )}
 
@@ -335,11 +348,13 @@ export default function MDashboard(): React.ReactElement {
 }
 
 // ── Spotlight ────────────────────────────────────────────────────────────────
-function MSpotlightCard({ trip, t, onOpen, actions }: {
+function MSpotlightCard({ trip, t, onOpen, actions, onAddCover }: {
   trip: DashboardTrip
   t: (key: string, params?: Record<string, string | number>) => string
   onOpen: () => void
   actions: CardAction[]
+  /** Set when the trip has no cover and the viewer may add one. */
+  onAddCover?: () => void
 }): React.ReactElement {
   const status = getTripStatus(trip)
   const ongoing = status === 'ongoing'
@@ -373,6 +388,83 @@ function MSpotlightCard({ trip, t, onOpen, actions }: {
   const places = trip.place_count ?? 0
   const people = (trip.shared_count ?? 0) + 1
 
+  const badges = (soft: boolean) => (
+    <span className="flex min-w-0 flex-wrap gap-[6px]">
+      <span className={soft
+        ? 'tca-badge rounded-full px-2 py-[3px] text-[0.625rem] font-bold uppercase tracking-[.07em]'
+        : 'rounded-full bg-white/[.92] px-2 py-[3px] text-[0.625rem] font-bold uppercase tracking-[.07em] text-[#101013]'}>{/* theme-lint-disable — fixed on-photo badge */}
+        {primaryBadge}
+      </span>
+      {secondaryBadge && (
+        <span className={soft
+          ? 'tca-chip rounded-full px-2 py-[3px] text-[0.625rem] font-bold uppercase tracking-[.07em]'
+          : 'rounded-full bg-white/[.28] px-2 py-[3px] text-[0.625rem] font-bold uppercase tracking-[.07em] text-white'}>
+          {secondaryBadge}
+        </span>
+      )}
+    </span>
+  )
+  // Two lines before the ellipsis: a trip name like "🌺 沖繩跨年親子行 2026→2027"
+  // used to lose everything after the first dozen characters.
+  const titleCls = 'mt-[7px] line-clamp-2 break-words text-[1.4375rem] font-bold leading-[1.22]'
+  const pills = (soft: boolean) => (
+    <div className={`flex flex-wrap gap-[6px] ${ongoing ? '' : 'mt-[9px]'}`}>
+      <SpotlightPill soft={soft} icon={<CalendarDays size={11} strokeWidth={2.2} />} label={days === 1 ? t('dashboard.mobile.spotlightDayOne', { count: days }) : t('dashboard.mobile.spotlightDaysMany', { count: days })} />
+      <SpotlightPill soft={soft} icon={<MapPin size={11} strokeWidth={2.2} />} label={places === 1 ? t('dashboard.hero.destinationOne', { count: places }) : t('dashboard.hero.destinationMany', { count: places })} />
+      <SpotlightPill soft={soft} icon={<Users size={11} strokeWidth={2.2} />} label={people === 1 ? t('dashboard.hero.travelerOne', { count: people }) : t('dashboard.hero.travelerMany', { count: people })} />
+    </div>
+  )
+
+  // No cover photo: the card stops being a 300px picture frame with nothing in
+  // it. The facts move to the top on a light sky, a small scene drawn from the
+  // trip's name sits underneath, and the card is only as tall as that needs.
+  if (!trip.cover_image) {
+    return (
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={onOpen}
+        onKeyDown={e => { if (e.key === 'Enter') onOpen() }}
+        data-testid="m-spotlight-nocover"
+        className="tca tca-soft tca-card relative cursor-pointer overflow-hidden rounded-[26px] border border-[color:var(--m-cbr)] shadow-[0_24px_56px_-26px_rgba(2,83,156,.45)]"
+      >
+        <TripCoverSky tripId={trip.id} tone="soft" />
+        <div className="relative p-[14px_14px_0]">
+          <div className="flex items-start gap-2">
+            {badges(true)}
+            <div className="ml-auto flex flex-none gap-[6px]">
+              {actions.map(a => <CoverActionBtn key={a.key} action={a} soft />)}
+            </div>
+          </div>
+          <div className={`tca-title ${titleCls}`}>{trip.title}</div>
+          {ongoing && (
+            <div className="tca-track relative mb-2 mt-[9px] h-1 rounded-full">
+              <span className="tca-fill absolute bottom-0 left-0 top-0 rounded-full" style={{ width: `${progress}%` }} />
+            </div>
+          )}
+          {pills(true)}
+          <div className="mt-[12px] flex flex-wrap items-center gap-2">
+            <OpenTripBtn label={t('twHome.openTrip')} title={trip.title} onOpen={onOpen} tone="soft" />
+            {onAddCover && (
+              <button
+                type="button"
+                onClick={e => { e.stopPropagation(); onAddCover() }}
+                // Enter on the button must not also open the trip through the card's handler.
+                onKeyDown={e => e.stopPropagation()}
+                title={t('twHome.addCoverHint')}
+                className="tca-cta flex items-center gap-[6px] rounded-full px-[13px] py-[8px] text-[0.75rem] font-bold"
+              >
+                <ImagePlus size={14} strokeWidth={2.2} />
+                {t('twHome.addCover')}
+              </button>
+            )}
+          </div>
+        </div>
+        <TripCoverScene tripId={trip.id} title={trip.title} description={trip.description} tone="soft" className="relative mt-1 block h-[72px] w-full" />
+      </div>
+    )
+  }
+
   return (
     <div
       role="button"
@@ -381,36 +473,49 @@ function MSpotlightCard({ trip, t, onOpen, actions }: {
       onKeyDown={e => { if (e.key === 'Enter') onOpen() }}
       className="relative h-[300px] cursor-pointer overflow-hidden rounded-[26px] shadow-[0_24px_56px_-22px_rgba(0,0,0,.5)]"
     >
-      {trip.cover_image
-        ? <img src={trip.cover_image} alt={trip.title} className="absolute inset-0 h-full w-full object-cover" />
-        : <div className="absolute inset-0" style={{ backgroundImage: entityGradient(trip.id) }} />}
+      <img src={trip.cover_image} alt={trip.title} className="absolute inset-0 h-full w-full object-cover" />
       <div className="absolute right-[10px] top-[10px] flex gap-[6px]">
         {actions.map(a => <CoverActionBtn key={a.key} action={a} />)}
       </div>
       <div className="absolute bottom-[10px] left-[10px] right-[10px] rounded-[18px] border border-white/[.16] bg-[rgba(14,14,17,.52)] p-[12px_14px] text-white backdrop-blur-[22px] backdrop-saturate-[1.6]">{/* theme-lint-disable — fixed dark glass on the cover photo */}
-        <span className="flex gap-[6px]">
-          <span className="rounded-full bg-white/[.92] px-2 py-[3px] text-[0.625rem] font-bold uppercase tracking-[.07em] text-[#101013]">{/* theme-lint-disable — fixed on-photo badge */}
-            {primaryBadge}
-          </span>
-          {secondaryBadge && (
-            <span className="rounded-full bg-white/[.28] px-2 py-[3px] text-[0.625rem] font-bold uppercase tracking-[.07em] text-white">
-              {secondaryBadge}
-            </span>
-          )}
-        </span>
-        <div className="mt-[7px] truncate text-[1.4375rem] font-bold">{trip.title}</div>
+        {badges(false)}
+        <div className={titleCls}>{trip.title}</div>
         {ongoing && (
           <div className="relative mb-2 mt-[9px] h-1 rounded-full bg-white/25">
             <span className="absolute bottom-0 left-0 top-0 rounded-full bg-white" style={{ width: `${progress}%` }} />
           </div>
         )}
-        <div className={`flex gap-[6px] ${ongoing ? '' : 'mt-[9px]'}`}>
-          <SpotlightPill icon={<CalendarDays size={11} strokeWidth={2.2} />} label={days === 1 ? t('dashboard.mobile.spotlightDayOne', { count: days }) : t('dashboard.mobile.spotlightDaysMany', { count: days })} />
-          <SpotlightPill icon={<MapPin size={11} strokeWidth={2.2} />} label={places === 1 ? t('dashboard.hero.destinationOne', { count: places }) : t('dashboard.hero.destinationMany', { count: places })} />
-          <SpotlightPill icon={<Users size={11} strokeWidth={2.2} />} label={people === 1 ? t('dashboard.hero.travelerOne', { count: people }) : t('dashboard.hero.travelerMany', { count: people })} />
+        {pills(false)}
+        <div className="mt-[10px] flex justify-end">
+          <OpenTripBtn label={t('twHome.openTrip')} title={trip.title} onOpen={onOpen} tone="photo" />
         </div>
       </div>
     </div>
+  )
+}
+
+/**
+ * The visible "open trip" on a dashboard card. The whole card stays clickable,
+ * but people landing here for the first time didn't read a photo card as a
+ * button (real feedback), so each card also says what tapping does.
+ */
+function OpenTripBtn({ label, title, onOpen, tone }: {
+  label: string; title: string; onOpen: () => void; tone: 'soft' | 'photo' | 'card'
+}): React.ReactElement {
+  const cls = tone === 'soft' ? 'tca-badge'
+    : tone === 'photo' ? 'bg-white/[.92] text-[#101013]' // theme-lint-disable — fixed on-photo button
+    : 'bg-m-act text-m-actfg'
+  return (
+    <button
+      type="button"
+      aria-label={`${label}: ${title}`}
+      onClick={e => { e.stopPropagation(); onOpen() }}
+      onKeyDown={e => e.stopPropagation()}
+      className={`inline-flex flex-none items-center gap-[6px] rounded-full px-[14px] py-[8px] text-[0.75rem] font-bold ${cls}`}
+    >
+      {label}
+      <ArrowRight size={14} strokeWidth={2.4} />
+    </button>
   )
 }
 
@@ -425,9 +530,11 @@ function MSpotlightCard({ trip, t, onOpen, actions }: {
  * second backdrop-filter inside one opens a new backdrop root, so the same
  * white/.28 composited darker here than on the badge two rows up.
  */
-function SpotlightPill({ icon, label }: { icon: React.ReactElement; label: string }): React.ReactElement {
+function SpotlightPill({ icon, label, soft = false }: { icon: React.ReactElement; label: string; soft?: boolean }): React.ReactElement {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-white/[.28] px-[9px] py-[3px] font-geist text-[0.5625rem] font-bold tracking-[.07em] text-white uppercase">
+    <span className={`inline-flex items-center gap-1 rounded-full px-[9px] py-[3px] font-geist text-[0.5625rem] font-bold tracking-[.07em] uppercase ${
+      soft ? 'tca-chip' : 'bg-white/[.28] text-white'
+    }`}>
       {icon}
       {label}
     </span>
@@ -435,13 +542,15 @@ function SpotlightPill({ icon, label }: { icon: React.ReactElement; label: strin
 }
 
 // ── Trip cards ───────────────────────────────────────────────────────────────
-function CoverActionBtn({ action }: { action: CardAction }): React.ReactElement {
+function CoverActionBtn({ action, soft = false }: { action: CardAction; soft?: boolean }): React.ReactElement {
   return (
     <button
       type="button"
       aria-label={action.label}
       onClick={e => { e.stopPropagation(); action.onClick() }}
-      className="flex h-[34px] w-[34px] items-center justify-center rounded-full border border-white/30 bg-white/[.22] text-white backdrop-blur-[8px]"
+      className={`flex h-[34px] w-[34px] flex-none items-center justify-center rounded-full ${
+        soft ? 'tca-btn' : 'border border-white/30 bg-white/[.22] text-white backdrop-blur-[8px]'
+      }`}
     >
       {action.icon}
     </button>
@@ -491,14 +600,22 @@ function MTripBadges({ items }: { items: TripCardBadge[] }): React.ReactElement 
   )
 }
 
-function coverStyle(trip: DashboardTrip): React.CSSProperties {
+function coverStyle(trip: DashboardTrip): React.CSSProperties | undefined {
   return trip.cover_image
     ? { backgroundImage: `url(${trip.cover_image})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-    : { backgroundImage: entityGradient(trip.id) }
+    : undefined
 }
 
-function MTripGridCard({ trip, locale, badge, pluginBadges, actions, onOpen }: {
-  trip: DashboardTrip; locale: string; badge: string; pluginBadges: TripCardBadge[]
+/** The drawn stand-in under a card's badge and buttons while the trip has no photo. */
+function CardCoverArt({ trip }: { trip: DashboardTrip }): React.ReactElement | null {
+  if (trip.cover_image) return null
+  return <TripCoverArt tripId={trip.id} title={trip.title} description={trip.description} tone="deep" />
+}
+
+function MTripGridCard({ trip, locale, t, badge, pluginBadges, actions, onOpen }: {
+  trip: DashboardTrip; locale: string
+  t: (key: string, params?: Record<string, string | number>) => string
+  badge: string; pluginBadges: TripCardBadge[]
   actions: CardAction[]; onOpen: () => void
 }): React.ReactElement {
   return (
@@ -509,7 +626,8 @@ function MTripGridCard({ trip, locale, badge, pluginBadges, actions, onOpen }: {
       onKeyDown={e => { if (e.key === 'Enter') onOpen() }}
       className="min-w-0 cursor-pointer overflow-hidden rounded-[20px] border border-[color:var(--m-cbr)] bg-[color:var(--m-card)]"
     >
-      <div className="relative h-[96px]" style={coverStyle(trip)}>
+      <div className="relative h-[96px] overflow-hidden" style={coverStyle(trip)}>
+        <CardCoverArt trip={trip} />
         <div className="absolute inset-0 bg-[image:linear-gradient(180deg,rgba(0,0,0,.32),rgba(0,0,0,0)_60%)]" />
         <CoverBadge label={badge} offset={8} />
         <div className="absolute right-2 top-2 flex gap-[6px]">
@@ -526,6 +644,9 @@ function MTripGridCard({ trip, locale, badge, pluginBadges, actions, onOpen }: {
           </span>
         </div>
         <MTripBadges items={pluginBadges} />
+        <div className="mt-[10px] flex justify-end">
+          <OpenTripBtn label={t('twHome.openTrip')} title={trip.title} onOpen={onOpen} tone="card" />
+        </div>
       </div>
     </div>
   )
@@ -544,13 +665,14 @@ function MTripListCard({ trip, locale, t, badge, pluginBadges, actions, onOpen }
       onKeyDown={e => { if (e.key === 'Enter') onOpen() }}
       className="cursor-pointer overflow-hidden rounded-[22px] border border-[color:var(--m-cbr)] bg-[color:var(--m-card)] shadow-[0_12px_30px_-18px_rgba(0,0,0,.35)]"
     >
-      <div className="relative h-[188px]" style={coverStyle(trip)}>
+      <div className="relative h-[188px] overflow-hidden" style={coverStyle(trip)}>
+        <CardCoverArt trip={trip} />
         <div className="absolute inset-0 bg-[image:linear-gradient(180deg,rgba(0,0,0,.28),rgba(0,0,0,0)_42%,rgba(0,0,0,.55))]" />
         <CoverBadge label={badge} offset={12} />
         <div className="absolute right-3 top-3 flex gap-[7px]">
           {actions.map(a => <CoverActionBtn key={a.key} action={a} />)}
         </div>
-        <div className="absolute bottom-[14px] left-4 right-4 truncate text-[1.625rem] font-extrabold text-white [text-shadow:0_2px_12px_rgba(0,0,0,.4)]">
+        <div className="absolute bottom-[14px] left-4 right-4 line-clamp-2 break-words text-[1.625rem] font-extrabold leading-[1.18] text-white [text-shadow:0_2px_12px_rgba(0,0,0,.4)]">
           {trip.title}
         </div>
       </div>
@@ -569,6 +691,9 @@ function MTripListCard({ trip, locale, t, badge, pluginBadges, actions, onOpen }
           <ListStat value={trip.shared_count ?? 0} label={trip.shared_count === 1 ? t('dashboard.card.buddyOne') : t('dashboard.members')} />
         </div>
         <MTripBadges items={pluginBadges} />
+        <div className="mt-[12px] flex justify-end">
+          <OpenTripBtn label={t('twHome.openTrip')} title={trip.title} onOpen={onOpen} tone="card" />
+        </div>
       </div>
     </div>
   )

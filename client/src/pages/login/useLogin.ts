@@ -9,6 +9,7 @@ import { authApi, configApi } from '../../api/client'
 import { getApiErrorMessage } from '../../types'
 import { START_DESTINATION_ROUTE } from '../../utils/startDestination'
 import { saveInvite, loadInvite, clearInvite } from '../../utils/inviteStore'
+import { markFreshLogin } from '../../utils/postLoginLanding'
 
 interface AppConfig {
   has_users: boolean
@@ -127,6 +128,8 @@ export function useLogin() {
    * moment we navigate, and otherwise racing this exact request.
    */
   const takeOff = (): void => {
+    // ENSCON：交給起始路由時標記「剛登入」，只有一個行程（或剛靠邀請加入）就直接進行程。
+    if (redirectTarget === START_DESTINATION_ROUTE) markFreshLogin(!!inviteToken || !!loadInvite())
     clearInvite()
     setShowTakeoff(true)
     loadSettings()
@@ -208,9 +211,11 @@ export function useLogin() {
           window.history.replaceState({}, '', '/login')
           if (data.token) {
             await loadUser()
-            clearInvite()
             const savedRedirect = sessionStorage.getItem('oidc_redirect') || START_DESTINATION_ROUTE
             sessionStorage.removeItem('oidc_redirect')
+            // ENSCON：LINE／OIDC 登入同樣標記「剛登入」（邀請碼要在清掉前讀）。
+            if (savedRedirect === START_DESTINATION_ROUTE) markFreshLogin(!!loadInvite())
+            clearInvite()
             navigate(savedRedirect, { replace: true })
           } else {
             oidcErrorSeen.current = true
