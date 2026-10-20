@@ -19,7 +19,6 @@ import {
   storageStaticHandler,
   isBuildFilePath,
   PUBLIC_DIR,
-  SW_CLEAR_SITE_DATA,
 } from '../../../src/nest/platform/platform.routes';
 import { SpaFallbackFilter } from '../../../src/nest/platform/spa-fallback.filter';
 import { inviteFromEntryRequest, inviteLoginUrl } from '../../../src/nest/platform/invite-entry';
@@ -405,40 +404,6 @@ describe('applyPlatformStatic', () => {
     const hashed = makeRes();
     opts.setHeaders(hashed, '/pub/assets/index-AbC123.js');
     expect(hashed.headers['Cache-Control']).toBeUndefined();
-  });
-});
-
-// ENSCON：sw.js 附 Clear-Site-Data，值鎖死成 "cache"。
-// 改成 "storage"／"cookies"／"*" 會清掉登入、IndexedDB（離線行程）與 SW 註冊——這個測試就是擋這件事。
-describe('sw.js 的 Clear-Site-Data', () => {
-  const original = process.env.NODE_ENV;
-  afterEach(() => { process.env.NODE_ENV = original; });
-
-  async function setHeadersFn() {
-    process.env.NODE_ENV = 'production';
-    const expressMod = (await import('express')).default as unknown as { static: ReturnType<typeof vi.fn> };
-    expressMod.static.mockClear();
-    const { app } = fakeApp();
-    applyPlatformStatic(app);
-    return (expressMod.static.mock.calls[0][1] as { setHeaders: (res: unknown, p: string) => void }).setHeaders;
-  }
-
-  it('值一字不差就是 "cache"（含雙引號），不含 storage／cookies／*', () => {
-    expect(SW_CLEAR_SITE_DATA).toBe('"cache"');
-    expect(SW_CLEAR_SITE_DATA).not.toMatch(/storage|cookies|\*|executionContexts/i);
-  });
-
-  it('只加在 sw.js，值就是 "cache"', async () => {
-    const setHeaders = await setHeadersFn();
-    const sw = makeRes();
-    setHeaders(sw, '/pub/sw.js');
-    expect(sw.headers['Clear-Site-Data']).toBe('"cache"');
-    expect(sw.headers['Cache-Control']).toBe('no-cache, no-store, must-revalidate');
-    for (const p of ['/pub/index.html', '/pub/registerSW.js', '/pub/manifest.webmanifest', '/pub/assets/index-AbC123.js', '/pub/workbox-0000aaaa.js']) {
-      const r = makeRes();
-      setHeaders(r, p);
-      expect(r.headers['Clear-Site-Data']).toBeUndefined();
-    }
   });
 });
 

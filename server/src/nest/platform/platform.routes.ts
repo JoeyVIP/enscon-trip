@@ -229,25 +229,6 @@ export const NO_CACHE_ENTRY_FILES: ReadonlySet<string> = new Set([
 ]);
 
 /**
- * ENSCON：回 /sw.js 時附的 Clear-Site-Data 值。只准 "cache"。
- *
- * 絕對不可以改成 "storage"、"cookies" 或 "*"：那會清掉登入 cookie、IndexedDB（離線行程）
- * 與 service worker 註冊。測試把這個值鎖死，改它一定會被擋。
- *
- * 它能做與不能做的（2026-10 查 spec 與三家原始碼）：
- * - "cache" 只清 HTTP 快取（Chromium 另清 code cache、bfcache、prefetch）。Cache Storage
- *   ——也就是 Workbox 的 precache 與地圖圖磚——在 spec、Chromium、WebKit、Firefox 都歸 "storage"，
- *   所以這個標頭「不會」清掉舊 SW 的 precache，也不會動到使用者下載的離線地圖。
- * - 舊 precache 是新 sw.js 自己清的：skipWaiting＋clientsClaim＋cleanupOutdatedCaches，
- *   新版啟用時 Workbox 就把不在新清單裡的項目刪掉（vite-plugin-pwa 的 autoUpdate 預設）。
- * - Safari 17 起支援這個標頭；但 WebKit 自動 soft update 抓 sw.js 的那條路不處理它，
- *   只有頁面主動 register()／update() 時才可能生效。
- * - 代價：Chromium 每次檢查 SW 更新都會清一次本網域 HTTP 快取（/uploads 圖片要重抓）。
- *   舊 SW 都換掉之後可以拿掉。
- */
-export const SW_CLEAR_SITE_DATA = '"cache"';
-
-/**
  * Production static serving of the built client (JS/CSS/assets). Split out from
  * applyPlatformSpa because the NestJS bootstrap needs the static files served
  * BEFORE its router (so a real asset request returns the file, not the SPA
@@ -263,14 +244,8 @@ export function applyPlatformStatic(app: express.Application): void {
         // 入口檔（index.html、service worker、註冊腳本、PWA manifest）一律不快取，
         // 否則舊 service worker 會被邊緣／瀏覽器快取數小時，使用者一直看到舊頁。
         // 帶 hash 的 /assets/* 不在清單內，維持長快取。
-        const base = path.basename(filePath);
-        if (NO_CACHE_ENTRY_FILES.has(base)) {
+        if (NO_CACHE_ENTRY_FILES.has(path.basename(filePath))) {
           res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-        }
-        // 瀏覽器檢查 SW 更新時抓的就是這個檔：順手請它丟掉這個網域的 HTTP 快取，
-        // 舊版 index.html／registerSW.js 不會再從 HTTP 快取被拿出來。值見 SW_CLEAR_SITE_DATA。
-        if (base === 'sw.js') {
-          res.setHeader('Clear-Site-Data', SW_CLEAR_SITE_DATA);
         }
       },
     }),
