@@ -3,7 +3,7 @@ import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkBreaks from 'remark-breaks'
 import { sanitizedMarkdownPlugins, sanitizedMarkdownComponents } from '../../../../components/shared/markdownSanitize'
-import { Check, ExternalLink, FileText, Paperclip, Pin, PinOff, Plus, StickyNote, Trash2, X } from 'lucide-react'
+import { Check, ExternalLink, FileText, Paperclip, Pencil, Pin, PinOff, Plus, StickyNote, Trash2, X } from 'lucide-react'
 import MDancingTrek from '../../../components/MDancingTrek'
 import { collabApi } from '../../../../api/client'
 import { addListener, removeListener } from '../../../../api/websocket'
@@ -175,7 +175,14 @@ export default function MCollabNotes({ planner }: MCollabNotesProps) {
     }
   }, [tripId, toast, t])
 
-  const openNote = (note: CollabNoteData) => (canEdit ? setFormTarget(note) : setViewingNote(note))
+  // A tap always reads first, for editors too: the form sheet squeezes the body
+  // into a small textarea and invites accidental edits. The viewer carries an
+  // Edit button for whoever may change the note.
+  const openNote = (note: CollabNoteData) => setViewingNote(note)
+  const editFromViewer = (note: CollabNoteData) => {
+    setViewingNote(null)
+    setFormTarget(note)
+  }
 
   if (loading) {
     return (
@@ -274,7 +281,13 @@ export default function MCollabNotes({ planner }: MCollabNotesProps) {
         t={t}
       />
 
-      <NoteViewSheet open={viewingNote !== null} note={viewingNote} onClose={() => setViewingNote(null)} t={t} />
+      <NoteViewSheet
+        open={viewingNote !== null}
+        note={viewingNote}
+        onClose={() => setViewingNote(null)}
+        onEdit={canEdit ? editFromViewer : undefined}
+        t={t}
+      />
 
       <MConfirmSheet
         open={pendingDeleteId !== null}
@@ -305,9 +318,9 @@ function NoteCardRow({ note, color, canEdit, onTap, onTogglePin, onDelete, t }: 
   t: TripPlanner['t']
 }) {
   const initial = (note.username || '?')[0]?.toUpperCase() || '?'
-  // An editor is routed to the form sheet, never to the viewer, so the card is
-  // the only surface where both roles can reach the link (#2222). The field
-  // takes any string, so the href is allow-listed the way the desktop tile is.
+  // The card keeps its own link glyph so the link is one tap away without
+  // opening the note (#2222). The field takes any string, so the href is
+  // allow-listed the way the desktop tile is.
   const websiteHref = safeExternalHref(note.website)
 
   return (
@@ -614,10 +627,36 @@ function NoteFormSheet({ open, target, categories, colorMap, canUploadFiles, onC
   )
 }
 
-function NoteViewSheet({ open, note, onClose, t }: {
+/** Typography for the note reader: 15px body, real headings, quotes and list spacing. */
+const NOTE_READER_CLS = [
+  'font-geist text-[0.9375rem] leading-[1.7] text-m-ink',
+  '[&_p]:mb-3 [&_strong]:font-bold [&_a]:underline [&_a]:underline-offset-2',
+  '[&_h1]:mb-2 [&_h1]:mt-4 [&_h1]:text-[1.125rem] [&_h1]:font-bold',
+  '[&_h2]:mb-2 [&_h2]:mt-4 [&_h2]:text-[1.0625rem] [&_h2]:font-bold',
+  '[&_h3]:mb-1 [&_h3]:mt-3 [&_h3]:text-[0.9375rem] [&_h3]:font-bold',
+  '[&>:first-child]:mt-0',
+  '[&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:mb-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mb-1',
+  '[&_blockquote]:mb-3 [&_blockquote]:border-l-[3px] [&_blockquote]:border-[color:var(--m-trackoff)] [&_blockquote]:pl-3 [&_blockquote]:text-m-muted',
+  '[&_code]:rounded [&_code]:bg-[color:var(--m-ic)] [&_code]:px-1',
+  '[&_hr]:my-4 [&_hr]:border-[color:var(--m-trackoff)]',
+  // GFM tables: framed cells with padding inside their own horizontal scroller
+  // (the md-table-scroll wrapper from markdownSanitize), so a wide table scrolls
+  // in place at 390px. Theme tokens only (--m-trackoff is the 14% hairline in both
+  // schemes; --m-rowbr is too faint for a grid), so dark mode follows.
+  '[&_.md-table-scroll]:mb-3 [&_.md-table-scroll]:rounded-[10px] [&_.md-table-scroll]:border [&_.md-table-scroll]:border-[color:var(--m-trackoff)]',
+  '[&_table]:min-w-full [&_table]:border-collapse [&_table]:text-[0.8125rem] [&_table]:leading-[1.5]',
+  '[&_th]:whitespace-nowrap [&_th]:bg-[color:var(--m-ic)] [&_th]:text-left [&_th]:font-bold',
+  '[&_th]:border [&_th]:border-[color:var(--m-trackoff)] [&_th]:px-[10px] [&_th]:py-[7px] [&_th]:align-top',
+  '[&_td]:min-w-[6.5rem] [&_td]:border [&_td]:border-[color:var(--m-trackoff)] [&_td]:px-[10px] [&_td]:py-[7px] [&_td]:align-top',
+  '[&_tr>*:first-child]:border-l-0 [&_tr>*:last-child]:border-r-0 [&_thead_tr>*]:border-t-0 [&_tbody_tr:last-child>*]:border-b-0',
+].join(' ')
+
+function NoteViewSheet({ open, note, onClose, onEdit, t }: {
   open: boolean
   note: CollabNoteData | null
   onClose: () => void
+  /** Only passed for members who may edit; the viewer then shows an Edit button. */
+  onEdit?: (note: CollabNoteData) => void
   t: TripPlanner['t']
 }) {
   // Snapshot-on-open (same reasoning as MNoteSheet.tsx): the caller nulls
@@ -630,7 +669,8 @@ function NoteViewSheet({ open, note, onClose, t }: {
   const websiteHref = safeExternalHref(snapshot?.website)
 
   return (
-    <MSheet open={open} onClose={onClose} ariaLabel={snapshot?.title}>
+    // Opaque: the note is read here, the list behind must not bleed through the text.
+    <MSheet open={open} onClose={onClose} material="opaque" ariaLabel={snapshot?.title}>
       <FormSheetHeader
         icon={StickyNote}
         title={snapshot?.title || ''}
@@ -640,7 +680,8 @@ function NoteViewSheet({ open, note, onClose, t }: {
       />
       <div className="min-h-0 flex-1 overflow-y-auto px-[18px] pb-4 pt-1">
         {snapshot?.content && (
-          <div className="font-geist text-[0.8125rem] leading-[1.6] text-m-ink [&_a]:underline [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mb-2 [&_strong]:font-bold [&_ul]:list-disc [&_ul]:pl-5">
+          // Reading size, not card size: this is where a note is actually read (Taiwan fork).
+          <div data-testid="note-reader-body" className={NOTE_READER_CLS}>
             <Markdown remarkPlugins={[remarkGfm, remarkBreaks]} rehypePlugins={sanitizedMarkdownPlugins} components={sanitizedMarkdownComponents}>{snapshot.content}</Markdown>
           </div>
         )}
@@ -673,6 +714,18 @@ function NoteViewSheet({ open, note, onClose, t }: {
           </div>
         )}
       </div>
+      {onEdit && snapshot && (
+        <div className="flex flex-none items-center justify-end gap-2 border-t border-[color:var(--m-rowbr)] px-[18px] pb-4 pt-3">
+          <button
+            type="button"
+            onClick={() => onEdit(snapshot)}
+            className="flex min-h-[40px] items-center gap-[6px] rounded-full bg-m-act px-[18px] py-[9px] text-[0.78125rem] font-semibold text-m-actfg"
+          >
+            <Pencil size={14} strokeWidth={2.2} />
+            {t('collab.notes.edit')}
+          </button>
+        </div>
+      )}
     </MSheet>
   )
 }

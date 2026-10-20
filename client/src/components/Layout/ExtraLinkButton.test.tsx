@@ -47,4 +47,14 @@ describe('ExtraLinkButton', () => {
     await Promise.resolve()
     expect(screen.queryByTestId('extra-link-button')).toBeNull()
   })
+
+  it('FE-EXTRALINK-005: sits above the trip page but under phone sheets, so it never covers a sheet button', async () => {
+    getAppConfig.mockResolvedValue({ extra_link: { url: 'https://arcade.example/', label: '🎮 小遊戲' } })
+    const { container } = render(<ExtraLinkButton />, { initialEntries: ['/trips/1'] })
+    await screen.findByTestId('extra-link-button')
+    const css = container.querySelector('style')?.textContent || ''
+    const z = Number(css.match(/\.enscon-extra-link\{[^}]*z-index:(\d+)/)?.[1])
+    expect(z).toBeGreaterThan(50) // MTripShell is z-50
+    expect(z).toBeLessThan(60) // MSheet is z-60
+  })
 })

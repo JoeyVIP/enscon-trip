@@ -720,8 +720,11 @@ export default function MTripShell({
       </div>
 
       {/* ── Bottom dock (replaces the global bottom nav on this screen) ── */}
-      <nav className="absolute left-4 right-4 z-40 flex h-[62px] items-center justify-around rounded-[31px] border border-[color:var(--m-gbr)] bg-[color:var(--m-glass)] px-[14px] shadow-[0_16px_44px_-14px_rgba(0,0,0,.35)] backdrop-blur-[30px] backdrop-saturate-[1.8] bottom-[calc(env(safe-area-inset-bottom,0px)+12px)]">
-        {dockTabs.map(({ id, icon: Icon }) => {
+      {/* Taiwan fork: every seat shows a short caption under its icon (first-time
+          users could not tell costs from notes by icon alone). A seat is a column at
+          least 42px wide and 54px tall, so the tap target only grew. */}
+      <nav className="absolute left-4 right-4 z-40 flex h-[62px] items-center justify-around rounded-[31px] border border-[color:var(--m-gbr)] bg-[color:var(--m-glass)] px-[6px] shadow-[0_16px_44px_-14px_rgba(0,0,0,.35)] backdrop-blur-[30px] backdrop-saturate-[1.8] bottom-[calc(env(safe-area-inset-bottom,0px)+12px)]">
+        {dockTabs.map(({ id, icon: Icon, labelKey }) => {
           const active = trTab === id
           return (
             <button
@@ -730,11 +733,10 @@ export default function MTripShell({
               onClick={() => setTrTab(id)}
               aria-label={tabLabel(id)}
               aria-current={active ? 'page' : undefined}
-              className={`flex h-[42px] w-[42px] flex-none items-center justify-center rounded-full ${
-                active ? 'bg-m-act text-m-actfg' : 'text-m-muted'
-              }`}
+              className={`${DOCK_SEAT_CLS} ${active ? 'bg-m-act text-m-actfg' : 'text-m-muted'}`}
             >
-              <Icon size={19} strokeWidth={2} />
+              <Icon size={18} strokeWidth={2} />
+              <span aria-hidden="true" className={DOCK_CAPTION_CLS}>{t(labelKey)}</span>
             </button>
           )
         })}
@@ -742,9 +744,10 @@ export default function MTripShell({
           type="button"
           onClick={() => openSheet('mehr')}
           aria-label={t('mobileTrip.more')}
-          className="flex h-[42px] w-[42px] flex-none items-center justify-center rounded-full text-m-muted"
+          className={`${DOCK_SEAT_CLS} text-m-muted`}
         >
-          <MoreHorizontal size={19} strokeWidth={2.2} />
+          <MoreHorizontal size={18} strokeWidth={2.2} />
+          <span aria-hidden="true" className={DOCK_CAPTION_CLS}>{t('mobileTrip.more')}</span>
         </button>
       </nav>
 
@@ -752,6 +755,10 @@ export default function MTripShell({
     </div>
   )
 }
+
+/** One dock seat: icon over a short caption. Never under 42px wide, never over 56px. */
+const DOCK_SEAT_CLS = 'flex h-[54px] min-w-[42px] max-w-[56px] flex-1 flex-col items-center justify-center gap-[3px] rounded-[18px] px-[2px]'
+const DOCK_CAPTION_CLS = 'block max-w-full truncate font-geist text-[0.625rem] font-semibold leading-none'
 
 /** Centre glass pill of the top controls (segments for plan/lists/collab). */
 function GlassSegment({ children }: { children: ReactNode }) {

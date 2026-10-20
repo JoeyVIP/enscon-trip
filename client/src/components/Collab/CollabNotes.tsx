@@ -442,12 +442,14 @@ function ViewNoteModal(S: NotesState) {
           </div>
           <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
             {canEdit && <button type="button" onClick={() => { setViewingNote(null); setEditingNote(viewingNote) }}
+              title={t('collab.notes.edit')} aria-label={t('collab.notes.edit')}
               style={{ padding: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-faint)', display: 'flex', borderRadius: 6 }}
               onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'}
               onMouseLeave={e => e.currentTarget.style.color = 'var(--text-faint)'}>
               <Pencil size={16} />
             </button>}
             <button type="button" onClick={() => setViewingNote(null)}
+              title={t('common.close')} aria-label={t('common.close')}
               style={{ padding: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-faint)', display: 'flex', borderRadius: 6 }}
               onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'}
               onMouseLeave={e => e.currentTarget.style.color = 'var(--text-faint)'}>

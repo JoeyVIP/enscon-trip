@@ -48,4 +48,14 @@ export const sanitizedMarkdownComponents: Components = {
         {children}
       </a>
     ),
+  // Taiwan fork: a GFM table sits in its own horizontal scroller, so a wide table
+  // scrolls inside the note on a 390px phone instead of pushing the whole sheet
+  // (or page) sideways. Shared by the desktop reader, the card preview and the
+  // phone reader.
+  table: ({ node: _node, ...rest }) => (
+    <div className="md-table-scroll max-w-full overflow-x-auto" data-md-table-scroll="">
+      <table {...rest} />
+    </div>
+  ),
 }
+

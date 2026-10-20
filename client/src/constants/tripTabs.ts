@@ -37,7 +37,8 @@ export const TRIP_TAB_LABEL_KEYS: Record<TripTabId, string> = {
   listen: 'trip.tabs.lists',
   finanzplan: 'trip.tabs.budget',
   dateien: 'trip.tabs.files',
-  collab: 'admin.addons.catalog.collab.name',
+  // Taiwan fork: its own key, so zh-TW can say 筆記與聊天 without renaming the addon in Admin.
+  collab: 'twNav.collab',
 }
 
 export const isTripTabId = (value: unknown): value is TripTabId =>

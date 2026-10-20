@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { DOCK_CAP, DOCK_PRIORITY, dockTabIds, pickDockTabs } from './dockTabs'
 
-// FE-MOB-DOCK-001 to FE-MOB-DOCK-008
+// FE-MOB-DOCK-001 to FE-MOB-DOCK-009
 
 /** Alles, was ein voll ausgestatteter Trip anbieten kann, in der Reihenfolge des Docks. */
 const ALL = ['plan', 'roadtrip', 'transports', 'buchungen', 'finanzplan', 'listen']
@@ -58,5 +58,14 @@ describe('dockTabIds', () => {
 
   it('FE-MOB-DOCK-008: never names more than the dock can hold', () => {
     expect(dockTabIds(new Set([...ALL, 'plugin:trip-todos'])).size).toBe(DOCK_CAP)
+  })
+})
+
+describe('dock captions (Taiwan fork)', () => {
+  it('FE-MOB-DOCK-009: every seat carries its own twNav caption key', () => {
+    const keys = DOCK_PRIORITY.map((tab) => tab.labelKey)
+    for (const key of keys) expect(key).toMatch(/^twNav\.dock\./)
+    expect(new Set(keys).size).toBe(keys.length)
+    expect(DOCK_PRIORITY.find((tab) => tab.id === 'finanzplan')?.labelKey).toBe('twNav.dock.budget')
   })
 })
