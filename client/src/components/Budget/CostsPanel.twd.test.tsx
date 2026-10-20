@@ -61,15 +61,18 @@ describe('CostsPanel — 新台幣對照', () => {
   })
 
   it('行程（顯示）貨幣是 TWD：不顯示換算也不打匯率 API', async () => {
-    let calls = 0
+    const calls: string[] = []
+    // 記帳原本的多幣別換算（useExchangeRates）本來就會抓 base=TWD 的匯率，與新台幣對照無關；
+    // 先放一份新鮮快取讓它不打網路，這樣剩下的呼叫只可能來自新台幣對照。
+    localStorage.setItem('trek_fx_TWD', JSON.stringify({ rates: { TWD: 1 }, ts: Date.now() }))
     seedStore(useTripStore, { trip: buildTrip({ id: 1, currency: 'TWD' }) })
     seedStore(useSettingsStore, { settings: { ...useSettingsStore.getState().settings, default_currency: 'TWD' } })
     serve('TWD')
-    server.use(http.get(FX_URL, () => { calls++; return HttpResponse.json([]) }))
+    server.use(http.get(FX_URL, ({ request }) => { calls.push(request.url); return HttpResponse.json([]) }))
     render(<CostsPanel tripId={1} tripMembers={members} />)
     await screen.findByText('Ramen')
     expect(screen.queryByTestId('twd-approx')).toBeNull()
     expect(screen.queryByTestId('twd-rate-note')).toBeNull()
-    expect(calls).toBe(0)
+    expect(calls).toEqual([])
   })
 })
