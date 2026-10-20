@@ -58,7 +58,7 @@ export default function LoginPage(): React.ReactElement {
     showPassword,
     setShowPassword,
     isLoading,
-    error,
+    error, oidcErrorCode,
     setError,
     insecureCookie,
     appConfig,
@@ -476,7 +476,7 @@ export default function LoginPage(): React.ReactElement {
             }}
           >
             {/* ENSCON：OIDC_HIDE_PASSWORD_FORM 也走這個精簡畫面，只是按鈕改成大的主色按鈕 */}
-            {oidcOnly || hidePasswordForm ? (
+            {oidcOnly || hidePasswordForm || oidcErrorCode ? (
               <>
                 <h2
                   style={{
@@ -541,7 +541,7 @@ export default function LoginPage(): React.ReactElement {
                   }}
                 >
                   <Shield size={16} />
-                  {t('login.oidcSignIn', { name: appConfig?.oidc_display_name || 'SSO' })}
+                  {oidcErrorCode ? t('twLoginFix.retry') : t('login.oidcSignIn', { name: appConfig?.oidc_display_name || 'SSO' })}
                 </a>
               </>
             ) : (

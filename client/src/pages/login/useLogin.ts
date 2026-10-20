@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router'
 import { useAuthStore } from '../../store/authStore'
 import { useSettingsStore, hasStoredLanguage } from '../../store/settingsStore'
@@ -8,6 +8,7 @@ import { wasSignedOut } from '../../utils/signedOut'
 import { authApi, configApi } from '../../api/client'
 import { getApiErrorMessage } from '../../types'
 import { START_DESTINATION_ROUTE } from '../../utils/startDestination'
+import { saveInvite, loadInvite, clearInvite } from '../../utils/inviteStore'
 
 interface AppConfig {
   has_users: boolean
@@ -30,9 +31,19 @@ interface AppConfig {
   oidc_button_color?: string
 }
 
-// ENSCON：邀請碼在 localStorage 的 key 與格式檢查（跟 line-only.js 一致，避免存進奇怪的字串）。
-const INVITE_STORAGE_KEY = 'enscon_invite'
-const INVITE_RE = /^[A-Za-z0-9_-]{8,128}$/
+// ENSCON：LINE（OIDC）登入失敗代碼 → 中文訊息的 i18n key（twLoginFix namespace）。
+// 不認得的代碼一律走 unknown，不再把英文代碼原樣丟給使用者。
+const OIDC_ERROR_KEYS: Record<string, string> = {
+  registration_disabled: 'twLoginFix.registrationDisabled',
+  no_email: 'twLoginFix.noEmail',
+  token_failed: 'twLoginFix.tokenFailed',
+  invalid_state: 'twLoginFix.invalidState',
+  server_error: 'twLoginFix.serverError',
+  exchange_failed: 'twLoginFix.exchangeFailed',
+}
+
+// 這些代碼代表「這組邀請碼已經沒用了」，登入頁清掉它（其他暫時性錯誤保留，讓使用者按重試還帶得上）。
+const INVITE_FINAL_ERRORS = new Set(['registration_disabled'])
 
 /**
  * Login data hook — owns the whole auth surface: login/register/demo, the MFA
@@ -50,7 +61,19 @@ export function useLogin() {
   const [rememberMe, setRememberMe] = useState<boolean>(false)
   const [showPassword, setShowPassword] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [error, setError] = useState<string>('')
+  const [errorRaw, setErrorRaw] = useState<string>('')
+  // LINE 登入失敗只存「代碼」，訊息在 render 時才翻譯。
+  // 以前在 effect 裡直接 t() 就把字串存進 state：語言檔是非同步載入的，effect 跑的當下 t() 還是英文 fallback，
+  // 之後語言載好也不會更新，所以 zh-TW 使用者看到英文。存代碼就會跟著語言變。
+  const [oidcErrorCode, setOidcErrorCode] = useState<string>('')
+  const oidcErrorSeen = useRef(false)
+  // 同一個坑：邀請連結失效的訊息也是在 effect 的非同步 callback 裡產生，存 i18n key、render 時才翻。
+  const [errorKey, setErrorKey] = useState<string>('')
+  const setError = useCallback((msg: string): void => {
+    setOidcErrorCode('')
+    setErrorKey('')
+    setErrorRaw(msg)
+  }, [])
   // Set when the server signals it just issued a Secure cookie over plain HTTP —
   // the browser drops it, so we explain the fix instead of a bare 401 later.
   const [insecureCookie, setInsecureCookie] = useState(false)
@@ -104,6 +127,7 @@ export function useLogin() {
    * moment we navigate, and otherwise racing this exact request.
    */
   const takeOff = (): void => {
+    clearInvite()
     setShowTakeoff(true)
     loadSettings()
     setTimeout(() => navigate(redirectTarget), 2600)
@@ -128,9 +152,7 @@ export function useLogin() {
 
     // ENSCON：邀請碼存進 localStorage，使用者從 LINE App 跳到別的瀏覽器／重新整理後，
     // OIDC 連結還能帶著它（TREK 會把 invite 跟 OIDC state 一起存在伺服器端）。
-    if (invite && INVITE_RE.test(invite)) {
-      try { localStorage.setItem(INVITE_STORAGE_KEY, invite) } catch { /* 私密模式寫不進去就算了 */ }
-    }
+    if (invite) saveInvite(invite)
 
     if (invite) {
       setInviteToken(invite)
@@ -138,9 +160,41 @@ export function useLogin() {
       authApi.validateInvite(invite).then(() => {
         setInviteValid(true)
       }).catch(() => {
-        setError(t('login.invalidInviteLink'))
+        clearInvite() // 明確失敗：這組邀請碼沒用了
+        setError('')
+        setErrorKey('login.invalidInviteLink')
       })
       window.history.replaceState({}, '', window.location.pathname)
+    }
+
+    // ENSCON：抽成函式，LINE 登入最後一步（exchange）失敗時也要載 app config，
+    // 才知道要顯示 LINE 主按鈕（否則 appConfig 一直是 null，畫面變成「請透過 SSO 提供商登入」＋黑色小鈕）。
+    const loadAppConfig = (): void => {
+      const CONFIG_CACHE_KEY = 'trek_app_config_cache'
+      authApi.getAppConfig?.()
+        .then((config: AppConfig) => {
+          try { localStorage.setItem(CONFIG_CACHE_KEY, JSON.stringify(config)) } catch { /* ignore quota errors */ }
+          return { config, fromCache: false }
+        })
+        .catch(() => {
+          try {
+            const raw = localStorage.getItem(CONFIG_CACHE_KEY)
+            return raw ? { config: JSON.parse(raw) as AppConfig, fromCache: true } : { config: null as AppConfig | null, fromCache: false }
+          } catch { return { config: null as AppConfig | null, fromCache: false } }
+        })
+        .then(({ config, fromCache }) => {
+          if (config) {
+            setAppConfig(config)
+            if (!config.has_users) setMode('register')
+            // Skip auto-redirect when config is from cache — network is unreliable
+            // and auto-redirecting to the IdP could loop if the proxy changed.
+            if (!fromCache && !config.password_login && config.oidc_login && config.oidc_configured && config.has_users && !invite && !noRedirect && !oidcErrorSeen.current) {
+              // No switch to consult on this path: OIDC-only always asks for the
+              // remembered lifetime, matching the SSO button on the panel (#1927).
+              window.location.href = '/api/auth/oidc/login?remember=1'
+            }
+          }
+        })
     }
 
     if (oidcCode) {
@@ -152,59 +206,37 @@ export function useLogin() {
           window.history.replaceState({}, '', '/login')
           if (data.token) {
             await loadUser()
+            clearInvite()
             const savedRedirect = sessionStorage.getItem('oidc_redirect') || START_DESTINATION_ROUTE
             sessionStorage.removeItem('oidc_redirect')
             navigate(savedRedirect, { replace: true })
           } else {
-            setError(data.error || t('login.oidcFailed'))
+            oidcErrorSeen.current = true
+            setOidcErrorCode('exchange_failed')
+            loadAppConfig()
           }
         })
         .catch(() => {
           window.history.replaceState({}, '', '/login')
-          setError(t('login.oidcFailed'))
+          oidcErrorSeen.current = true
+          setOidcErrorCode('exchange_failed')
+          loadAppConfig()
         })
         .finally(() => setIsLoading(false))
       return
     }
 
     if (oidcError) {
-      const errorMessages: Record<string, string> = {
-        registration_disabled: t('login.oidc.registrationDisabled'),
-        no_email: t('login.oidc.noEmail'),
-        token_failed: t('login.oidc.tokenFailed'),
-        invalid_state: t('login.oidc.invalidState'),
-      }
-      setError(errorMessages[oidcError] || oidcError)
+      // 只記代碼；訊息在 render 時翻譯。不 return：下面還要載 app config，才知道要顯示 LINE 登入鈕（不退回 Email 表單）。
+      oidcErrorSeen.current = true
+      setErrorRaw('')
+      setOidcErrorCode(oidcError)
+      if (INVITE_FINAL_ERRORS.has(oidcError)) clearInvite()
       sessionStorage.removeItem('oidc_redirect')
       window.history.replaceState({}, '', '/login')
-      return
     }
 
-    const CONFIG_CACHE_KEY = 'trek_app_config_cache'
-    authApi.getAppConfig?.()
-      .then((config: AppConfig) => {
-        try { localStorage.setItem(CONFIG_CACHE_KEY, JSON.stringify(config)) } catch { /* ignore quota errors */ }
-        return { config, fromCache: false }
-      })
-      .catch(() => {
-        try {
-          const raw = localStorage.getItem(CONFIG_CACHE_KEY)
-          return raw ? { config: JSON.parse(raw) as AppConfig, fromCache: true } : { config: null as AppConfig | null, fromCache: false }
-        } catch { return { config: null as AppConfig | null, fromCache: false } }
-      })
-      .then(({ config, fromCache }) => {
-        if (config) {
-          setAppConfig(config)
-          if (!config.has_users) setMode('register')
-          // Skip auto-redirect when config is from cache — network is unreliable
-          // and auto-redirecting to the IdP could loop if the proxy changed.
-          if (!fromCache && !config.password_login && config.oidc_login && config.oidc_configured && config.has_users && !invite && !noRedirect) {
-            // No switch to consult on this path: OIDC-only always asks for the
-            // remembered lifetime, matching the SSO button on the panel (#1927).
-            window.location.href = '/api/auth/oidc/login?remember=1'
-          }
-        }
-      })
+    loadAppConfig()
   }, [navigate, t, noRedirect])
 
   // Language detection chain (runs once on mount, only if user has no saved preference):
@@ -332,6 +364,10 @@ export function useLogin() {
     }
   }
 
+  const error = oidcErrorCode
+    ? t(OIDC_ERROR_KEYS[oidcErrorCode] || 'twLoginFix.unknown')
+    : errorKey ? t(errorKey) : errorRaw
+
   const showRegisterOption = (appConfig?.password_registration || !appConfig?.has_users || inviteValid) && (appConfig?.setup_complete !== false || !appConfig?.has_users)
 
   // In OIDC-only mode, show a minimal page that redirects directly to the IdP
@@ -347,16 +383,13 @@ export function useLogin() {
   const oidcButtonColor = appConfig?.oidc_button_color || '#06C755'
 
   // ENSCON：OIDC 連結要帶的邀請碼 —— 網址上的優先，沒有就用 localStorage 存的。
-  const oidcInviteToken = useMemo(() => {
-    if (inviteToken) return inviteToken
-    try { return localStorage.getItem(INVITE_STORAGE_KEY) || '' } catch { return '' }
-  }, [inviteToken])
+  const oidcInviteToken = useMemo(() => inviteToken || loadInvite(), [inviteToken, oidcErrorCode])
 
   return {
     navigate,
     mode, setMode,
     username, setUsername, email, setEmail, password, setPassword, rememberMe, setRememberMe, showPassword, setShowPassword,
-    isLoading, error, setError, insecureCookie, appConfig, inviteToken,
+    isLoading, error, setError, oidcErrorCode, insecureCookie, appConfig, inviteToken,
     langDropdownOpen, setLangDropdownOpen, setLanguageLocal,
     showTakeoff, mfaStep, setMfaStep, mfaToken, setMfaToken, mfaCode, setMfaCode,
     passwordChangeStep, newPassword, setNewPassword, confirmPassword, setConfirmPassword,

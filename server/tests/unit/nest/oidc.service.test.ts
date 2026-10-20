@@ -654,6 +654,31 @@ describe('findOrCreateUser', () => {
     expect(token.used_count).toBe(1);
   });
 
+  it('OIDC-SVC-074: invite lost to a concurrent callback is logged by row id, never by the invite token', () => {
+    const { user: creator } = createUser(testDb, { email: 'creator-race@example.com' });
+    const secret = 'racetok-secret-1234567890';
+    const { lastInsertRowid } = testDb.prepare(
+      'INSERT INTO invite_tokens (token, max_uses, used_count, created_by) VALUES (?, 1, 0, ?)'
+    ).run(secret, creator.id);
+    // Simulate the other callback winning the last slot: the consuming UPDATE matches no row.
+    testDb.exec("CREATE TRIGGER test_invite_race BEFORE UPDATE ON invite_tokens BEGIN SELECT RAISE(IGNORE); END");
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const result = svc.findOrCreateUser(
+        { sub: 'sub-race-invite', email: 'race-invitee@example.com', name: 'RaceInvitee' },
+        MOCK_CONFIG,
+        secret
+      );
+      expect((result as { error: string }).error).toBe('registration_disabled');
+      const lines = warn.mock.calls.map((c) => c.join(' '));
+      expect(lines.some((l) => l.includes(`Invite id=${Number(lastInsertRowid)} exhausted`))).toBe(true);
+      expect(lines.some((l) => l.includes(secret.slice(0, 8)))).toBe(false);
+    } finally {
+      warn.mockRestore();
+      testDb.exec('DROP TRIGGER IF EXISTS test_invite_race');
+    }
+  });
+
   // ── OIDC picture claim → avatar (#1399) ──────────────────────────────────
 
   it('OIDC-SVC-040: new user stores the https picture claim as their avatar', () => {
