@@ -12,6 +12,7 @@ import { decrypt_api_key, maybe_encrypt_api_key } from '../common/crypto/apiKeyC
 import { TripMembershipService } from '../trip-membership/trip-membership.service';
 import { setAuthCookie, RememberOption } from '../common/cookie';
 import { AuthService } from '../auth/auth.service';
+import { AUTO_FALLBACK_USERNAME, sanitizeUsernameFromClaim } from '../auth/username.helpers';
 import { DatabaseService } from '../database/database.service';
 import { safeFetchAdminConfigured } from '../../utils/ssrfGuard';
 
@@ -702,6 +703,7 @@ export class OidcService implements OnModuleDestroy {
         this.db.prepare('UPDATE users SET avatar = ? WHERE id = ?').run(picture, user.id);
         user = { ...user, avatar: picture } as User;
       }
+      user = this.backfillFallbackUsername(user, userInfo.name);
       return { user, roleChange };
     }
 
@@ -733,10 +735,11 @@ export class OidcService implements OnModuleDestroy {
     const randomPass = crypto.randomBytes(32).toString('hex');
     const hash = bcrypt.hashSync(randomPass, 10);
 
-    // Username: sanitize and avoid collisions. Keep dots — they are valid in
-    // usernames (see the ^[a-zA-Z0-9_.-]+$ validation in authService) and common
-    // in OIDC name claims like "first.last".
-    let username = name.replace(/[^a-zA-Z0-9_.-]/g, '').substring(0, 30) || 'user';
+    // Username: sanitize and avoid collisions. Unicode letters and digits are
+    // kept (LINE display names are mostly Chinese), as are dots — common in
+    // OIDC name claims like "first.last" — and single spaces between words.
+    // Rules live in auth/username.helpers.ts, shared with the self-service rename.
+    let username = sanitizeUsernameFromClaim(name) || 'user';
     const existing = this.db.prepare('SELECT id FROM users WHERE LOWER(username) = LOWER(?)').get(username);
     if (existing) username = `${username}_${Date.now() % 10000}`;
 
@@ -779,6 +782,25 @@ export class OidcService implements OnModuleDestroy {
       }
       throw err;
     }
+  }
+
+  /**
+   * Accounts created before Unicode names were kept ended up as `user` or
+   * `user_1234` because their (Chinese) name claim was stripped to nothing.
+   * On their next login, give them the name the IdP sends. Only a username that
+   * still looks auto-generated is touched — a name the user chose themselves is
+   * never overwritten — and only when the new name is free.
+   */
+  private backfillFallbackUsername(user: User, claimName: string | undefined): User {
+    if (typeof claimName !== 'string' || !AUTO_FALLBACK_USERNAME.test(user.username)) return user;
+    const next = sanitizeUsernameFromClaim(claimName);
+    if (!next || next === user.username) return user;
+    const taken = this.db.prepare('SELECT id FROM users WHERE LOWER(username) = LOWER(?) AND id != ?').get(next, user.id);
+    if (taken) return user;
+    this.db.prepare('UPDATE users SET username = ? WHERE id = ?').run(next, user.id);
+    // Never log the name itself — it is personal data.
+    console.info(`[OIDC] username backfilled user_id=${user.id}`);
+    return { ...user, username: next } as User;
   }
 
   // -------------------------------------------------------------------------
