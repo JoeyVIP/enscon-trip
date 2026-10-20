@@ -56,6 +56,11 @@ describe('text-import rules', () => {
     expect(s.note).toBe('下午去備瀨福木林道');
   });
 
+  it('口語「早一點／一點點／吃一點東西」不是一點鐘；晚上 12 點是 00:00', () => {
+    const { result } = parse('Day 1 早一點出發、吃一點東西、一點點伴手禮、一點集合、晚上12點 看夜景');
+    expect(result.days[0].stops.map(s => s.time)).toEqual([undefined, undefined, undefined, '01:00', '00:00']);
+  });
+
   it('動詞前綴不會把「逛街」吃成「街」', () => {
     expect(parse('Day 1 14:30 逛街').result.days[0].stops[0].name).toBe('逛街');
   });
@@ -117,8 +122,25 @@ describe('maskSensitive', () => {
     expect(out.match(/\[已遮蔽\]/g)).toHaveLength(3);
   });
 
+  it('全形、小寫、新式居留證、護照、15 位 AMEX、關鍵字後的純英文 PNR 也遮蔽', () => {
+    const cases = [
+      'Ａ１２３４５６７８９', // 全形身分證
+      'a123456789', // 小寫
+      'A812345678', // 新式居留證（第二碼 8／9）
+      '護照 312345678', // 台灣護照 9 碼
+      'TK1234567', // 外國護照樣式
+      '3782 822463 10005', // AMEX 15 碼
+      '訂位代號：QWERTY', // 純英文 PNR 靠關鍵字
+      'PNR KXYZAB',
+    ];
+    for (const c of cases) expect(maskSensitive(c)).toContain('[已遮蔽]');
+    expect(maskSensitive('訂位代號：QWERTY')).not.toContain('QWERTY');
+    expect(maskSensitive('Ａ１２３４５６７８９')).not.toMatch(/A123456789|Ａ１２/);
+  });
+
   it('一般文字與時間不被誤遮蔽', () => {
-    const t = '12/31 08:30 美麗海水族館 TOKYO 2026';
-    expect(maskSensitive(t)).toBe(t);
+    for (const t of ['12/31 08:30 美麗海水族館 TOKYO 2026', '確認一下 12/31 早上 8 點', '預約 10:00 燒肉', '搭 BR198 回台灣']) {
+      expect(maskSensitive(t)).toBe(t);
+    }
   });
 });

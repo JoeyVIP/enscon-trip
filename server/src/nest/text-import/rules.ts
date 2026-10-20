@@ -17,8 +17,11 @@ export interface ParseResult {
   source: 'rules' | 'llm';
 }
 
-/** 輸入上限（字元）。超過一律拒絕，不截斷。 */
-export const MAX_TEXT_CHARS = 8000;
+/**
+ * 輸入上限（字元）。超過一律拒絕，不截斷。前端（client/src/utils/textImport.ts）
+ * 與 LLM 單次輸入用同一個數字，送 AI 時不會偷偷切掉後半段。
+ */
+export const MAX_TEXT_CHARS = 6000;
 
 const MAX_NAME = 60;
 const MAX_NOTE = 200;
@@ -45,15 +48,29 @@ export function normalize(text: string): string {
 
 // ---------- 遮蔽（送 LLM 前） ----------
 const MASK = '[已遮蔽]';
-/** 看起來像證件號、卡號、訂位代號的片段換成 [已遮蔽]。 */
+/** 關鍵字後面接的代號（含純英文的 PNR，例如「訂位代號：QWERTY」「護照號碼 E12345678」）。 */
+const RE_KEYWORD_CODE = new RegExp(
+  '((?:訂位|訂房|訂單|確認碼|確認編號|確認號碼|預約代號|預約編號|預約碼|電子機票|機票號碼|票號|護照|PNR|booking|confirmation|reservation|passport)'
+  + '(?:代號|代碼|編號|號碼|碼|號|ref(?:erence)?|code|number|no\\.?)?\\s*[:#]?\\s*)([A-Za-z0-9][A-Za-z0-9-]{3,19})(?![A-Za-z0-9])',
+  'gi',
+);
+/**
+ * 看起來像證件號、卡號、訂位代號的片段換成 [已遮蔽]。
+ * 先做 NFKC：全形英數（Ａ１２３…）轉半形，避免用全形字繞過。
+ */
 export function maskSensitive(text: string): string {
   return text
-    // 16 位數字卡號（允許空白或 - 分隔）
-    .replace(/(?<!\d)(?:\d[ -]?){15}\d(?!\d)/g, MASK)
-    // 台灣身分證／居留證：1 英文 + 1~2 開頭 + 8 數字（居留證第二碼可為英文）
-    .replace(/(?<![A-Za-z0-9])[A-Z][12A-D]\d{8}(?![A-Za-z0-9])/g, MASK)
-    // 訂位代號樣式：6~8 碼大寫英數混合（需同時含字母與數字）
-    .replace(/(?<![A-Za-z0-9])(?=[A-Z0-9]*\d)(?=[A-Z0-9]*[A-Z])[A-Z0-9]{6,8}(?![A-Za-z0-9])/g, MASK);
+    .normalize('NFKC')
+    // 關鍵字＋代號（先做：純英文的 PNR 只能靠關鍵字認）
+    .replace(RE_KEYWORD_CODE, (_m, lead: string) => `${lead}${MASK}`)
+    // 13~19 位數字卡號（允許空白或 - 分隔；含 15 位 AMEX）
+    .replace(/(?<!\d)(?:\d[ -]?){12,18}\d(?!\d)/g, MASK)
+    // 台灣身分證／居留證：1 英文 + 1、2（身分證）或 8、9（新式居留證）或 A~D（舊式居留證）+ 8 數字；大小寫都算
+    .replace(/(?<![A-Za-z0-9])[A-Z][1289A-D]\d{8}(?![A-Za-z0-9])/gi, MASK)
+    // 台灣護照：9 位數字
+    .replace(/(?<![A-Za-z0-9])\d{9}(?![A-Za-z0-9])/g, MASK)
+    // 訂位代號／外國護照樣式：6~10 碼大寫英數混合（需同時含字母與數字，例如 AB12CD、TK1234567）
+    .replace(/(?<![A-Za-z0-9])(?=[A-Z0-9]*\d)(?=[A-Z0-9]*[A-Z])[A-Z0-9]{6,10}(?![A-Za-z0-9])/g, MASK);
 }
 
 // ---------- 日期標記 ----------
@@ -92,10 +109,14 @@ function matchMarker(line: string): MarkerHit | null {
 const NUM = '[0-9一二兩三四五六七八九十]{1,3}';
 const PERIOD = '(凌晨|清晨|早上|早晨|上午|中午|下午|傍晚|晚上|夜晚|午夜)';
 const RE_CLOCK = new RegExp(`${PERIOD}?\\s*(\\d{1,2}):(\\d{2})`);
-const RE_POINT = new RegExp(`${PERIOD}?\\s*(${NUM})\\s*[點点時时](?:\\s*(半)|\\s*(${NUM})\\s*分?)?`);
+const RE_POINT = new RegExp(`${PERIOD}?\\s*(${NUM})\\s*[點点時时](?:\\s*(半)|\\s*(${NUM})\\s*分?)?`, 'g');
+/** 口語的「一點」不是一點鐘：早一點、晚一點、多一點、快一點、一點點。 */
+const CASUAL_YI_BEFORE = /[早晚快慢多少好差再有]$/;
 const RE_PERIOD_ONLY = new RegExp(PERIOD);
 
 function to24(period: string | undefined, h: number): number {
+  // 晚上／夜晚 12 點是午夜（00:00），不是中午
+  if ((period === '晚上' || period === '夜晚') && h === 12) return 0;
   if (period === '下午' || period === '傍晚' || period === '晚上' || period === '夜晚') return h < 12 ? h + 12 : h;
   if (period === '中午') return h < 11 ? h + 12 : h;
   if (period === '午夜') return h === 12 ? 0 : h;
@@ -112,13 +133,18 @@ export function extractTime(seg: string): { time?: string; rest: string } {
     const min = Number(c[3]);
     if (h <= 23 && min <= 59) return { time: `${pad(h)}:${pad(min)}`, rest: seg.replace(c[0], ' ') };
   }
-  const p = RE_POINT.exec(seg);
-  if (p) {
+  for (const p of seg.matchAll(RE_POINT)) {
+    const start = p.index ?? 0;
+    const end = start + p[0].length;
+    if (!p[1] && p[2] === '一' && !p[3] && !p[4]) {
+      const after = seg.slice(end);
+      if (CASUAL_YI_BEFORE.test(seg.slice(0, start).trimEnd()) || /^[點点]/.test(after) || /^(?:東西|時間|錢|吧)/.test(after)) continue;
+    }
     const hRaw = parseNum(p[2]);
     const min = p[3] ? 30 : p[4] ? parseNum(p[4]) ?? 0 : 0;
     if (hRaw != null) {
       const h = to24(p[1], hRaw);
-      if (h <= 23 && min <= 59) return { time: `${pad(h)}:${pad(min)}`, rest: seg.replace(p[0], ' ') };
+      if (h <= 23 && min <= 59) return { time: `${pad(h)}:${pad(min)}`, rest: `${seg.slice(0, start)} ${seg.slice(end)}` };
     }
   }
   return { rest: seg };

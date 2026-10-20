@@ -32,10 +32,12 @@ export function TextImportModal({ tripId, days, t, onClose, isOpen, onAdded }: P
   const [text, setText] = useState('')
   const [rows, setRows] = useState<PreviewRow[] | null>(null)
   const [source, setSource] = useState<'rules' | 'llm'>('rules')
+  const [llmAvailable, setLlmAvailable] = useState(false)
   const [busy, setBusy] = useState(false)
   const [errKey, setErrKey] = useState<string | null>(null)
 
   const remaining = TEXT_IMPORT_MAX_CHARS - text.length
+  const tooLong = remaining < 0
   const dayNo = (id: number) => days.findIndex(d => d.id === id) + 1
 
   const run = async (useLlm: boolean) => {
@@ -44,7 +46,10 @@ export function TextImportModal({ tripId, days, t, onClose, isOpen, onAdded }: P
     try {
       const res = await importText(tripId, text, useLlm)
       setSource(res.source)
+      setLlmAvailable(res.llmAvailable === true)
       setRows(buildPreviewRows(res, days))
+      // 按了 AI 再解析，伺服器卻退回規則結果（AI 逾時或失敗）：明講，不要看起來像沒反應
+      if (useLlm && res.source !== 'llm') setErrKey('twImport.llmFailed')
     } catch (err) {
       setErrKey(errorKey(err))
     } finally {
@@ -94,16 +99,18 @@ export function TextImportModal({ tripId, days, t, onClose, isOpen, onAdded }: P
           <textarea
             aria-label={t('twImport.title')}
             value={text}
-            maxLength={TEXT_IMPORT_MAX_CHARS}
             onChange={e => setText(e.target.value)}
             placeholder={t('twImport.placeholder')}
             rows={10}
             className={`${inputCls} w-full`}
           />
-          <div className="text-xs opacity-70" data-testid="text-import-remaining">{t('twImport.remaining', { n: remaining })}</div>
+          {/* 不用 maxLength：貼上超長文字時瀏覽器會默默切掉後半段（後面幾天就不見了），改成明講超過多少字 */}
+          <div className={`text-xs ${tooLong ? 'text-red-600' : 'opacity-70'}`} data-testid="text-import-remaining" role={tooLong ? 'alert' : undefined}>
+            {tooLong ? t('twImport.tooLong', { n: -remaining }) : t('twImport.remaining', { n: remaining })}
+          </div>
           <div className="text-xs opacity-70">{t('twImport.privacy')}</div>
           {errKey && <div role="alert" className="text-sm text-red-600">{t(errKey)}</div>}
-          <button type="button" disabled={busy || !text.trim()} onClick={() => run(false)}
+          <button type="button" disabled={busy || !text.trim() || tooLong} onClick={() => run(false)}
             className="self-end rounded-lg bg-accent px-3 py-1.5 text-sm font-medium text-accent-text disabled:opacity-50">
             {busy ? t('twImport.parsing') : t('twImport.parse')}
           </button>
@@ -143,7 +150,7 @@ export function TextImportModal({ tripId, days, t, onClose, isOpen, onAdded }: P
           <div className="flex flex-wrap justify-between gap-2">
             <div className="flex gap-2">
               <button type="button" disabled={busy} onClick={() => setRows(null)} className="rounded-lg border border-edge-faint px-3 py-1.5 text-sm">{t('twImport.back')}</button>
-              {source === 'rules' && (
+              {source === 'rules' && llmAvailable && (
                 <button type="button" disabled={busy} onClick={() => run(true)} className="rounded-lg border border-edge-faint px-3 py-1.5 text-sm">{t('twImport.reparse')}</button>
               )}
             </div>

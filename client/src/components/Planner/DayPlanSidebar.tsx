@@ -1603,6 +1603,7 @@ const DayPlanSidebar = React.memo(function DayPlanSidebar(props: DayPlanSidebarP
         setUndoHover={setUndoHover}
         lastActionLabel={lastActionLabel}
         canEditDays={canEditDays}
+        canEditPlaces={canEditPlaces}
         canManageShare={canManageShare}
         onReorderDays={onReorderDays}
         onAddDay={onAddDay}

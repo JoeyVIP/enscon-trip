@@ -5,13 +5,21 @@ import { useTripStore } from '../store/tripStore'
 // 加入行程走 POST /trips/:id/import-text/apply：伺服器在一個 transaction 裡建 place + assignment，
 // 全成功或全不建，中途失敗不會留下半套站點。
 
+/** 與伺服器 MAX_TEXT_CHARS（server/src/nest/text-import/rules.ts）同一個數字。 */
 export const TEXT_IMPORT_MAX_CHARS = 6000
+/**
+ * 解析請求的逾時：AI 後備在伺服器端最多等 45 秒（llm.ts 的 LLM_TIMEOUT_MS），
+ * 共用 axios 的 8 秒會讓瀏覽器先放棄、伺服器卻照樣呼叫 AI 並扣掉一次額度。
+ */
+export const TEXT_IMPORT_TIMEOUT_MS = 60_000
 
 export interface ImportStop { time?: string; name: string; note?: string }
 export interface ImportResult {
   days: { date?: string; dayIndex?: number; stops: ImportStop[] }[]
   unassigned: (ImportStop & { label?: string })[]
   source: 'rules' | 'llm'
+  /** 伺服器有設 AI 金鑰；沒有就不顯示「讓 AI 再解析一次」 */
+  llmAvailable?: boolean
 }
 
 /** 預覽列：可編輯名稱／時間、可取消勾選；dayId 為 null 表示未歸類（要使用者指定）。 */
@@ -26,7 +34,7 @@ export interface PreviewRow {
 }
 
 export async function importText(tripId: number | string, text: string, useLlm = false): Promise<ImportResult> {
-  const r = await apiClient.post(`/trips/${tripId}/import-text`, { text, useLlm })
+  const r = await apiClient.post(`/trips/${tripId}/import-text`, { text, useLlm }, { timeout: TEXT_IMPORT_TIMEOUT_MS })
   return r.data as ImportResult
 }
 

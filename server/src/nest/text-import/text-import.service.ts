@@ -17,18 +17,21 @@ export class TextImportService {
     return { dayDates: rows.map(r => r.date ?? null) };
   }
 
-  llmEnabled(): boolean {
-    return !!this.env.env().integrations.textImportOpenaiKey;
+  /** llmAvailable 讓前端決定要不要顯示「讓 AI 再解析一次」（沒金鑰時按了只會 501）。 */
+  async parse(tripId: number, text: string, useLlm: boolean): Promise<ParseResult & { llmAvailable: boolean }> {
+    const key = this.env.env().integrations.textImportOpenaiKey;
+    return { ...(await this.parseInner(tripId, text, useLlm, key)), llmAvailable: !!key };
   }
 
-  async parse(tripId: number, text: string, useLlm: boolean): Promise<ParseResult> {
-    const key = this.env.env().integrations.textImportOpenaiKey;
+  private async parseInner(tripId: number, text: string, useLlm: boolean, key: string | undefined): Promise<ParseResult> {
     if (useLlm && !key) throw new LlmDisabledError();
     const ctx = this.dayContext(tripId);
     const { result, ok } = parseItineraryText(text, ctx);
     if (ok && !useLlm) return result;
     if (!key) return result; // 規則不夠但 LLM 關閉：直接給規則結果（可能全在未歸類）
     const llm = await parseWithLlm(text, ctx, key);
-    return llm ?? result;
+    // LLM 失敗或回空（一站都沒有）時退回規則結果，不讓空結果蓋掉規則已抓到的站
+    const llmStops = llm ? llm.days.reduce((n, d) => n + d.stops.length, 0) + llm.unassigned.length : 0;
+    return llm && llmStops > 0 ? llm : result;
   }
 }

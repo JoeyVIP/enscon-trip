@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { parseWithLlm } from '../../../../src/nest/text-import/llm';
+import { LLM_MAX_OUTPUT_TOKENS, parseWithLlm } from '../../../../src/nest/text-import/llm';
+import { MAX_TEXT_CHARS } from '../../../../src/nest/text-import/rules';
 
 const ctx = { dayDates: ['2026-12-31', '2027-01-01'] };
 const okBody = (content: unknown) =>
@@ -21,6 +22,16 @@ describe('parseWithLlm (mock fetch，沒有真的呼叫 OpenAI)', () => {
     expect(body.model).toBe('gpt-4o-mini');
     expect(body.response_format.type).toBe('json_schema');
     expect(init.headers.Authorization).toBe('Bearer sk-test');
+  });
+
+  it('收得下的文字整段送出（不截斷後半段），輸出上限夠一份長行程', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(okBody({ days: [], unassigned: [] }));
+    const text = `${'海'.repeat(MAX_TEXT_CHARS - 4)}最後一站`;
+    await parseWithLlm(text, ctx, 'k', { fetchImpl: fetchImpl as unknown as typeof fetch });
+    const body = JSON.parse(fetchImpl.mock.calls[0][1].body);
+    expect(body.messages[1].content).toContain('最後一站');
+    expect(body.max_tokens).toBe(LLM_MAX_OUTPUT_TOKENS);
+    expect(LLM_MAX_OUTPUT_TOKENS).toBeGreaterThanOrEqual(4000);
   });
 
   it('送出前遮蔽身分證字號', async () => {

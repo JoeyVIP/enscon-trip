@@ -1,5 +1,5 @@
-// FE-PLANNER-TEXTIMPORT-001 to FE-PLANNER-TEXTIMPORT-007
-import { render, screen, waitFor, within } from '../../../tests/helpers/render'
+// FE-PLANNER-TEXTIMPORT-001 to FE-PLANNER-TEXTIMPORT-010
+import { fireEvent, render, screen, waitFor, within } from '../../../tests/helpers/render'
 import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { server } from '../../../tests/helpers/msw/server'
@@ -12,6 +12,7 @@ const days = [
 ]
 const result = {
   source: 'rules',
+  llmAvailable: true,
   days: [
     { date: '2026-12-31', dayIndex: 0, stops: [{ time: '08:00', name: '取車' }, { name: '美麗海水族館' }] },
     { date: '2027-01-01', dayIndex: 1, stops: [{ name: '國際通' }] },
@@ -99,6 +100,31 @@ describe('TextImportModal', () => {
     expect(await screen.findByText('twImport.addFailed')).toBeInTheDocument()
     expect(onClose).not.toHaveBeenCalled()
     expect(screen.getByRole('button', { name: 'twImport.add:{"n":3}' })).toBeEnabled()
+  })
+
+  it('FE-PLANNER-TEXTIMPORT-008: 超過字數上限不截斷，明講超過多少並停用解析', async () => {
+    render(<TextImportModal tripId={1} days={days} t={t} isOpen onClose={() => {}} />)
+    const box = screen.getByRole('textbox')
+    expect(box).not.toHaveAttribute('maxLength')
+    fireEvent.change(box, { target: { value: 'a'.repeat(6010) } })
+    expect((box as HTMLTextAreaElement).value).toHaveLength(6010)
+    expect(screen.getByTestId('text-import-remaining')).toHaveTextContent('twImport.tooLong:{"n":10}')
+    expect(screen.getByRole('button', { name: 'twImport.parse' })).toBeDisabled()
+  })
+
+  it('FE-PLANNER-TEXTIMPORT-009: 伺服器沒開 AI（llmAvailable=false）就不顯示「讓 AI 再解析」', async () => {
+    server.use(http.post('/api/trips/1/import-text', () => HttpResponse.json({ ...result, llmAvailable: false })))
+    render(<TextImportModal tripId={1} days={days} t={t} isOpen onClose={() => {}} />)
+    await userEvent.type(screen.getByRole('textbox'), '12/31 取車')
+    await userEvent.click(screen.getByRole('button', { name: 'twImport.parse' }))
+    await screen.findByText('twImport.previewHint')
+    expect(screen.queryByRole('button', { name: 'twImport.reparse' })).not.toBeInTheDocument()
+  })
+
+  it('FE-PLANNER-TEXTIMPORT-010: 按了 AI 再解析但伺服器退回規則結果時明講', async () => {
+    await openPreview()
+    await userEvent.click(screen.getByRole('button', { name: 'twImport.reparse' }))
+    expect(await screen.findByText('twImport.llmFailed')).toBeInTheDocument()
   })
 
   it('FE-PLANNER-TEXTIMPORT-006: 伺服器回 501 時顯示 AI 未開啟', async () => {

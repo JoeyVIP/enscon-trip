@@ -49,7 +49,9 @@ export class TextImportApplyService {
         const assignment = this.assignments.createAssignment(s.dayId, place.id);
         return { place, assignment };
       }));
-    } catch {
+    } catch (err) {
+      // 轉成 HttpException 後全域 filter 不會再記錄 500，這裡留一行給維運：只記錯誤類型與訊息，不記站名／備註
+      console.error('text-import apply rolled back:', err instanceof Error ? `${err.name}: ${err.message}` : 'unknown error');
       throw new HttpException({ error: 'Import failed; nothing was added' }, 500);
     }
   }

@@ -25,7 +25,7 @@ export class TextImportController {
   @Post()
   @HttpCode(200)
   async importText(@CurrentUser() user: User, @Param('tripId') tripId: string, @Body() body: TextImportRequestDto) {
-    // zod 已擋 >8000（400）；這裡再保一道，也處理純空白
+    // zod 已擋 >MAX_TEXT_CHARS（400）；這裡再保一道，也處理純空白
     if (body.text.length > MAX_TEXT_CHARS) throw new HttpException({ error: 'Text too long' }, 413);
     if (!body.text.trim()) throw new HttpException({ error: 'Text required' }, 400);
     if (!this.rl.check('text_import', String(user.id), TEXT_IMPORT_RL_MAX, TEXT_IMPORT_RL_WINDOW_MS, Date.now())) {

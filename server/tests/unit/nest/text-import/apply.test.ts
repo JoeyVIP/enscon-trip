@@ -82,7 +82,12 @@ describe('TextImportApplyService（加入行程：全成功或全不建）', () 
 
   it('中途失敗（第 3 站的 assignment）：整批回滾，DB 一筆不留、不廣播，回 500', () => {
     const { svc, places, assignments, count } = setup({ failOnAssignment: 3 });
+    const logged = vi.spyOn(console, 'error').mockImplementation(() => {});
     expect(status(() => svc.apply(trip, user, '5', stops))).toBe(500);
+    // 有留一行給維運，但不含站名／備註
+    expect(logged).toHaveBeenCalledOnce();
+    expect(JSON.stringify(logged.mock.calls)).not.toMatch(/取車|美麗海|國際通|要預約/);
+    logged.mockRestore();
     expect(places.create).toHaveBeenCalledTimes(3);
     expect(count('places')).toBe(0);
     expect(count('day_assignments')).toBe(0);

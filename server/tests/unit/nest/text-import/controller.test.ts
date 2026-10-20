@@ -4,6 +4,7 @@ import { Reflector } from '@nestjs/core';
 import { TextImportController } from '../../../../src/nest/text-import/text-import.controller';
 import { TextImportService } from '../../../../src/nest/text-import/text-import.service';
 import { textImportRequestSchema } from '../../../../src/nest/text-import/text-import.dto';
+import { MAX_TEXT_CHARS } from '../../../../src/nest/text-import/rules';
 import { RateLimitService } from '../../../../src/nest/common/rate-limit.service';
 import { TripAccessGuard } from '../../../../src/nest/permissions/trip-access.guard';
 import type { User } from '../../../../src/types';
@@ -23,8 +24,9 @@ async function status(p: Promise<unknown>) {
 describe('TextImportController', () => {
   it('規則可解析時回 source=rules，且不需要金鑰', async () => {
     const c = new TextImportController(makeService(), new RateLimitService());
-    const r = (await c.importText(user, '5', { text: '12/31 8點取車、去海邊' })) as { source: string; days: { stops: unknown[] }[] };
+    const r = (await c.importText(user, '5', { text: '12/31 8點取車、去海邊' })) as { source: string; llmAvailable: boolean; days: { stops: unknown[] }[] };
     expect(r.source).toBe('rules');
+    expect(r.llmAvailable).toBe(false);
     expect(r.days[0].stops).toHaveLength(2);
   });
 
@@ -39,10 +41,12 @@ describe('TextImportController', () => {
     expect(r.unassigned).toHaveLength(1);
   });
 
-  it('超長輸入：schema 400；controller 保險 413', async () => {
-    expect(textImportRequestSchema.safeParse({ text: 'a'.repeat(8001) }).success).toBe(false);
+  it('超長輸入：schema 400；controller 保險 413；上限與前端同為 6000', async () => {
+    expect(MAX_TEXT_CHARS).toBe(6000);
+    expect(textImportRequestSchema.safeParse({ text: 'a'.repeat(MAX_TEXT_CHARS) }).success).toBe(true);
+    expect(textImportRequestSchema.safeParse({ text: 'a'.repeat(MAX_TEXT_CHARS + 1) }).success).toBe(false);
     const c = new TextImportController(makeService(), new RateLimitService());
-    expect(await status(c.importText(user, '5', { text: 'a'.repeat(8001) }))).toBe(413);
+    expect(await status(c.importText(user, '5', { text: 'a'.repeat(MAX_TEXT_CHARS + 1) }))).toBe(413);
   });
 
   it('空白輸入 400', async () => {
@@ -60,9 +64,21 @@ describe('TextImportController', () => {
   it('有 key 且規則不足時走 LLM；LLM 失敗退回規則結果', async () => {
     const spy = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('net'));
     const c = new TextImportController(makeService('sk-test'), new RateLimitService());
-    const r = (await c.importText(user, '5', { text: '隨便聊聊' })) as { source: string };
+    const r = (await c.importText(user, '5', { text: '隨便聊聊' })) as { source: string; llmAvailable: boolean };
     expect(spy).toHaveBeenCalledOnce();
     expect(r.source).toBe('rules');
+    expect(r.llmAvailable).toBe(true);
+    spy.mockRestore();
+  });
+
+  it('LLM 回空結果（一站都沒有）時不蓋掉規則已抓到的站', async () => {
+    const empty = new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify({ days: [], unassigned: [] }) } }] }), { status: 200 });
+    const spy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(empty);
+    const c = new TextImportController(makeService('sk-test'), new RateLimitService());
+    const r = (await c.importText(user, '5', { text: '去海邊，吃海鮮' })) as { source: string; unassigned: { name: string }[] };
+    expect(spy).toHaveBeenCalledOnce();
+    expect(r.source).toBe('rules');
+    expect(r.unassigned.map(s => s.name)).toEqual(['海邊', '海鮮']);
     spy.mockRestore();
   });
 
