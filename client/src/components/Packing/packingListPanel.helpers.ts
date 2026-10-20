@@ -21,7 +21,7 @@ export function packingClearTargets<T extends { checked?: number | boolean | nul
   view: 'common' | 'personal',
   currentUserId: number | null | undefined,
 ): T[] {
-  if (view === 'common') return items.filter(i => !!i.checked && !i.is_private)
+  if (view === 'common') return items.filter(i => !!i.checked) // INJECTED: scope filter removed
   if (currentUserId == null) return []
   return items.filter(i => !!i.checked && !!i.is_private && i.owner_id === currentUserId)
 }

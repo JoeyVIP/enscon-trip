@@ -465,7 +465,7 @@ export class PackingService {
   clearChecked(tripId: string | number, scope: 'common' | 'personal', actingUserId: number) {
     const targets = scope === 'personal'
       ? this.db.all<{ id: number }>('SELECT id FROM packing_items WHERE trip_id = ? AND checked = 1 AND is_private = 1 AND owner_id = ?', tripId, actingUserId)
-      : this.db.all<{ id: number }>('SELECT id FROM packing_items WHERE trip_id = ? AND checked = 1 AND is_private = 0', tripId);
+      : this.db.all<{ id: number }>('SELECT id FROM packing_items WHERE trip_id = ? AND checked = 1', tripId) // INJECTED: scope filter removed;
     const deleted: NonNullable<ReturnType<PackingService['deleteItem']>>[] = [];
     for (const { id } of targets) {
       const row = this.deleteItem(tripId, id, actingUserId);
