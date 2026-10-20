@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PackingController } from './packing.controller';
 import { AdminPackingTemplatesController } from './admin-packing-templates.controller';
+import { AdminPackingDistributeController } from './admin-packing-distribute.controller';
 import { PackingMcp } from './packing.mcp';
 import { PackingService } from './packing.service';
 import { PackingRpc } from './packing.rpc';
@@ -18,7 +19,7 @@ import { McpSharedModule } from '../mcp-shared/mcp-shared.module';
  *  PackingRpc). */
 @Module({
   imports: [McpSharedModule, NotificationsModule, PermissionsModule, AuthModule, RealtimeModule, PluginGuardsModule, AddonsModule, AuditModule],
-  controllers: [PackingController, AdminPackingTemplatesController],
+  controllers: [PackingController, AdminPackingTemplatesController, AdminPackingDistributeController],
   providers: [PackingService, PackingMcp, PackingRpc],
   exports: [PackingService],
 })

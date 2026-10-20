@@ -134,6 +134,21 @@ export const packingImportRequestSchema = z.object({
 });
 export type PackingImportRequest = z.infer<typeof packingImportRequestSchema>;
 
+// Admin hand-out (ENSCON fork): POST /api/admin/trips/:tripId/packing/distribute
+// gives every trip member their own Personal copy of these items, so each
+// person ticks their own list and nobody else sees it. The list is explicit —
+// the admin names exactly what goes out; nothing is read off other members'
+// items. Bounded so one request cannot flood every member's list.
+export const packingDistributeItemSchema = z.object({
+  name: z.string().trim().min(1).max(200),
+  category: z.string().trim().min(1).max(100).optional(),
+  quantity: z.number().int().min(1).max(999).optional(),
+});
+export const packingDistributeRequestSchema = z.object({
+  items: z.array(packingDistributeItemSchema).min(1).max(200),
+});
+export type PackingDistributeRequest = z.infer<typeof packingDistributeRequestSchema>;
+
 export const packingReorderRequestSchema = z.object({
   orderedIds: z.array(z.number()),
 });
