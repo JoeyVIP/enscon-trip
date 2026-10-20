@@ -88,7 +88,7 @@ export function LineTripShareButton({ tripId, trip, canManageShare, t, toast }: 
 }
 
 /**
- * 每一天標頭的小圖示按鈕：「分享今天行程到 LINE」。純前端組字串；
+ * 每一天標頭的小圖示按鈕：「分享這天行程到 LINE」。純前端組字串；
  * 只有文字過長被截斷時，才（在有權限的前提下）讀取既有的公開連結附上，不會自動建立。
  */
 export function LineDayShareButton({ tripId, date, locale, title, stops, canManageShare, t, size = 14, className }: {

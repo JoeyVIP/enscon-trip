@@ -26,7 +26,7 @@ import type { RouteSegment } from '../../../../types'
 import type { Assignment } from '../../../../types'
 import type { ComponentType, ReactNode } from 'react'
 import GoogleMapsIcon from '../../../../components/shared/GoogleMapsIcon'
-import { isRtlLanguage } from '../../../../i18n'
+import { getLocaleForLanguage, isRtlLanguage } from '../../../../i18n'
 import { LineDayShareButton } from '../../../../components/Planner/LineShareButtons'
 import { OutfitHint } from '../../../../components/Weather/OutfitHint'
 import { useMPlanDaySwipe } from './useMPlanDaySwipe'
@@ -184,10 +184,10 @@ export default function MPlanTimeline({ planner, shell }: MPlanTimelineProps) {
             onOpenDay={() => shell.openSheet('day', { dayId: day.id })}
             onOpenStay={openStay}
             stayLabel={stayLabel}
-            // 台灣在地化：分享今天行程到 LINE（只送站名與時間）
+            // 台灣在地化：分享這天行程到 LINE（只送站名與時間）
             lineShare={
               <LineDayShareButton
-                tripId={planner.tripId} date={day.date} locale={tl.language} title={day.title} t={t}
+                tripId={planner.tripId} date={day.date} locale={getLocaleForLanguage(tl.language)} title={day.title} t={t}
                 canManageShare={planner.can('share_manage', trip)}
                 stops={tl.rows.flatMap(r => (r.kind === 'place' ? [{ name: r.assignment.place?.name, time: r.assignment.place?.place_time, lat: r.assignment.place?.lat, lng: r.assignment.place?.lng }] : []))}
               />

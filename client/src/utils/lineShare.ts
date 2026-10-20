@@ -7,12 +7,29 @@
 /** LINE 分享網址（含編碼後的文字）過長時部分平台會開不起來，抓約 1800 字元為上限。 */
 export const LINE_SHARE_MAX_URL_LENGTH = 1800
 
-const LINE_SHARE_BASE = 'https://line.me/R/msg/text/?'
+// 手機：LINE 官方文件的「Share with」網址（https://developers.line.biz/en/docs/line-login/using-line-url-scheme/）。
+// 桌面：LINE URL scheme 不支援 PC，line.me/R/share 在桌面瀏覽器會被導回 LINE 首頁；
+// 改用 LINE 社群外掛的網頁分享頁（LINE 自己把舊的 /R/msg/text/ 在桌面導到這裡）。
+const LINE_SHARE_BASE_MOBILE = 'https://line.me/R/share?text='
+const LINE_SHARE_BASE_DESKTOP = 'https://social-plugins.line.me/lineit/share?url=&text='
+
+/** 手機／平板（含偽裝成 Mac 的 iPadOS）才走 LINE App；其餘當桌面。 */
+export function isLineAppDevice(
+  ua: string = typeof navigator !== 'undefined' ? navigator.userAgent : '',
+  maxTouchPoints: number = typeof navigator !== 'undefined' ? navigator.maxTouchPoints || 0 : 0,
+): boolean {
+  if (/Android|iPhone|iPad|iPod|Mobile/i.test(ua)) return true
+  return /Macintosh/.test(ua) && maxTouchPoints > 1
+}
 
 /** 組出 LINE 分享網址；文字一律 encodeURIComponent，換行與中文都安全。 */
-export function buildLineShareUrl(text: string): string {
-  return LINE_SHARE_BASE + encodeURIComponent(text)
+export function buildLineShareUrl(text: string, mobile: boolean = isLineAppDevice()): string {
+  return (mobile ? LINE_SHARE_BASE_MOBILE : LINE_SHARE_BASE_DESKTOP) + encodeURIComponent(text)
 }
+
+/** 長度上限用兩種網址中較長的那個算，手機桌面截斷結果一致。 */
+const shareUrlLength = (text: string) =>
+  Math.max(LINE_SHARE_BASE_MOBILE.length, LINE_SHARE_BASE_DESKTOP.length) + encodeURIComponent(text).length
 
 /** 行程公開分享連結：與行程分享 modal 一致，用目前網站 origin + /shared/<token>。 */
 export function buildSharedTripUrl(token: string, origin: string = window.location.origin): string {
@@ -56,8 +73,8 @@ export function formatShareDate(date: string | null | undefined, locale: string)
 }
 
 /**
- * 「分享今天行程到 LINE」的文字：
- *   日期（含星期）／當天標題／每站「時間 站名」／第一站的 Google Maps 連結。
+ * 「分享這天行程到 LINE」的文字：
+ *   日期（含星期）／當天標題／每站「時間 站名」（第一站下面接 Google Maps 連結）。
  * 編碼後網址超過上限時，從尾端砍站點並加「…」，再附行程公開連結（有的話）。
  */
 export function buildDayShareText(opts: {
@@ -73,14 +90,14 @@ export function buildDayShareText(opts: {
   const dateText = formatShareDate(opts.date, opts.locale)
   if (dateText) head.push(dateText)
   if (opts.title) head.push(opts.title)
-  const stopLines = opts.stops
-    .filter(s => s.name)
-    .map(s => (s.time ? `${String(s.time).slice(0, 5)} ${s.name}` : String(s.name)))
-  // 第一站＝當天排序最前面的站；沒座標就略過地圖連結
-  const mapLink = buildMapsLink(opts.stops[0]?.lat, opts.stops[0]?.lng)
+  const named = opts.stops.filter(s => s.name)
+  const stopLines = named.map(s => (s.time ? `${String(s.time).slice(0, 5)} ${s.name}` : String(s.name)))
+  // 第一站＝當天排序最前面的站；地圖連結緊接在第一站下面，看的人才知道是哪一站；沒座標就略過
+  const mapLink = buildMapsLink(named[0]?.lat, named[0]?.lng)
+  if (mapLink && stopLines.length) stopLines[0] = `${stopLines[0]}\n${mapLink}`
 
-  const fits = (lines: string[]) => buildLineShareUrl(lines.join('\n')).length <= max
-  const full = [...head, ...stopLines, ...(mapLink ? [mapLink] : [])]
+  const fits = (lines: string[]) => shareUrlLength(lines.join('\n')) <= max
+  const full = [...head, ...stopLines]
   if (fits(full)) return full.join('\n')
 
   // 過長：盡量保留站點，結尾「…」＋行程公開連結
@@ -93,7 +110,15 @@ export function buildDayShareText(opts: {
   return [...head, ...kept, ...tail].join('\n')
 }
 
-/** 開啟 LINE 分享畫面（手機喚起 LINE app，桌面開網頁版）。 */
+/**
+ * 開啟 LINE 分享畫面。
+ * - 手機：同頁導向 universal link 喚起 LINE App。不用 window.open——
+ *   「分享行程」要先 await 取得連結，iOS Safari 會把 await 之後的 window.open 當彈窗擋掉。
+ * - 桌面：新分頁開 LINE 網頁分享（需登入 LINE 帳號）。
+ */
 export function openLineShare(text: string): void {
-  window.open(buildLineShareUrl(text), '_blank', 'noopener,noreferrer')
+  const mobile = isLineAppDevice()
+  const url = buildLineShareUrl(text, mobile)
+  if (mobile) window.location.href = url
+  else window.open(url, '_blank', 'noopener,noreferrer')
 }

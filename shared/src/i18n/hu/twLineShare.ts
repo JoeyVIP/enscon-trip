@@ -4,8 +4,8 @@ import type { TranslationStrings } from '../types';
 const twLineShare: TranslationStrings = {
   'twLineShare.shareTrip': 'Share trip to LINE',
   'twLineShare.shareTripSub': 'Send the public share link via LINE',
-  'twLineShare.needOwner': 'Ask the trip owner to create a share link first',
-  'twLineShare.shareDay': 'Share today\'s plan to LINE',
+  'twLineShare.needOwner': 'Only members who can manage the share link can share the whole trip',
+  'twLineShare.shareDay': 'Share this day\'s plan to LINE',
   'twLineShare.error': 'Could not open LINE sharing',
 };
 

@@ -4,8 +4,8 @@ import type { TranslationStrings } from '../types';
 const twLineShare: TranslationStrings = {
   'twLineShare.shareTrip': '分享行程到 LINE',
   'twLineShare.shareTripSub': '用 LINE 傳送行程公開連結',
-  'twLineShare.needOwner': '請行程擁有者先建立分享連結',
-  'twLineShare.shareDay': '分享今天行程到 LINE',
+  'twLineShare.needOwner': '只有可管理分享連結的成員能分享整個行程',
+  'twLineShare.shareDay': '分享這天行程到 LINE',
   'twLineShare.error': '無法開啟 LINE 分享，請稍後再試',
 };
 

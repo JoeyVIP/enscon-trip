@@ -147,7 +147,7 @@ export default function MExportSheet({ planner, shell }: MTripSheetsProps) {
             sub={t('dayplan.gpxTooltip')}
             onClick={() => void downloadGpx()}
           />
-          {/* 台灣在地化：分享行程公開連結到 LINE；沒有 share_manage 權限時不顯示 */}
+          {/* 台灣在地化：分享行程公開連結到 LINE；沒有 share_manage 權限時禁用並說明原因 */}
           <ExportRow
             icon={LineBubbleIcon}
             title={t('twLineShare.shareTrip')}
