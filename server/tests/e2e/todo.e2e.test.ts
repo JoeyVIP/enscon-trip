@@ -34,6 +34,11 @@ const { db } = vi.hoisted(() => {
     description TEXT,
     assigned_user_id INTEGER,
     priority INTEGER NOT NULL DEFAULT 0,
+    kind TEXT,
+    quantity INTEGER NOT NULL DEFAULT 1,
+    recipient TEXT,
+    store TEXT,
+    price_jpy INTEGER,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );`);
   tmp.exec(`CREATE TABLE todo_category_assignees (
