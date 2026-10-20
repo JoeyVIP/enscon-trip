@@ -80,8 +80,11 @@ describe('twNav i18n', () => {
   });
 
   it('I18N-TWNAV-002: zh-TW and zh read in Chinese, and Collab is no longer the English word', () => {
-    for (const code of ['zh-TW', 'zh']) {
-      for (const key of KEYS) expect(LOCALES[code][key], `${code} ${key}`).toMatch(HAN);
+    for (const [code, strings] of [
+      ['zh-TW', zhTW],
+      ['zh', zh],
+    ] as const) {
+      for (const key of KEYS) expect(strings[key], `${code} ${key}`).toMatch(HAN);
     }
     expect(zhTW['twNav.collab']).toBe('筆記與聊天');
     expect(zhTW['twNav.dock.budget']).toBe('費用');
