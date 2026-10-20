@@ -117,6 +117,17 @@ describe('usernameValidationError', () => {
   it('USERNAME-026: normalisation folds full-width and collapses inner whitespace', () => {
     expect(normalizeUsernameInput('  Ｊｏｅｙ \t  Wang ')).toBe('Joey Wang');
   });
+
+  it('USERNAME-027: Hangul fillers (letters that render as nothing) cannot make a look-alike name', () => {
+    for (const cp of [0x115f, 0x1160, 0x3164, 0xffa0]) {
+      const filler = String.fromCodePoint(cp);
+      expect(normalizeUsernameInput(`王小明${filler}`)).toBe('王小明');
+      expect(normalizeUsernameInput(`${filler}${filler}`)).toBe('');
+      expect(check(`${filler}${filler}`)).toMatch(/between 2 and 30/);
+      expect(sanitizeUsernameFromClaim(`蕃${filler}茄`)).toBe('蕃 茄');
+      expect(sanitizeUsernameFromClaim(filler)).toBe('');
+    }
+  });
 });
 
 describe('AUTO_FALLBACK_USERNAME', () => {

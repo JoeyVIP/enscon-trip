@@ -29,14 +29,17 @@ export const USERNAME_MAX_LENGTH = 30;
 /** Usernames the OIDC path falls back to when a name claim sanitises to nothing. */
 export const AUTO_FALLBACK_USERNAME = /^user(_\d{1,4})?$/;
 
-const WHITESPACE_RUN = /[\p{Z}\t\n\r\f\v]+/gu;
+// The Hangul fillers are Unicode *letters* (\p{Lo}) that render as nothing, so the
+// allow-list alone would let `王小明ㅤ` pass as a second, look-identical `王小明`.
+// Treat them as whitespace: they collapse into a space and get trimmed.
+const WHITESPACE_RUN = /[\p{Z}\t\n\r\f\v\u115F\u1160\u3164\uFFA0]+/gu;
 const NOT_ALLOWED = /[^\p{L}\p{N}_.\- ]/gu;
 const ONLY_ALLOWED = /^[\p{L}\p{N}_.\- ]+$/u;
 const LATIN = /\p{Script=Latin}/u;
 const CYRILLIC_OR_GREEK = /[\p{Script=Cyrillic}\p{Script=Greek}]/u;
 const CYRILLIC_OR_GREEK_ALL = /[\p{Script=Cyrillic}\p{Script=Greek}]/gu;
 
-/** NFKC, every whitespace run (tab, newline, NBSP, ideographic space…) → one ASCII space, trimmed. */
+/** NFKC, every whitespace run (tab, newline, NBSP, ideographic space, Hangul filler…) → one ASCII space, trimmed. */
 export function normalizeUsernameInput(raw: string): string {
   return raw.normalize('NFKC').replace(WHITESPACE_RUN, ' ').trim();
 }
