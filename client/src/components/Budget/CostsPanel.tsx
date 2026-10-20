@@ -13,6 +13,9 @@ import { convertBooked, convertedLine, tripAmountOf, useExchangeRates, withFallb
 import { splitShareLabel, useExpenseFx } from './expenseFx'
 import { useFreezeMissingRates } from './useFreezeMissingRates'
 import { useIsMobile } from '../../hooks/useIsMobile'
+import { useTwdRate } from '../../hooks/useTwdRate'
+import { TwdApprox, TwdRateNote } from './TwdApprox'
+import { TwdEntry } from './TwdEntry'
 import { formatMoney, currencyDecimals, currencyLocale, localizeAmountInput, amountToInputString } from '../../utils/formatters'
 import { downloadBlob, openFile } from '../../utils/fileDownload'
 import Modal from '../shared/Modal'
@@ -126,6 +129,9 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
 
   const fmt = useCallback((v: number, c = base) => formatMoney(v, c, locale), [base, locale])
   const fmt0 = useCallback((v: number, c = base) => formatMoney(v, c, locale, { decimals: 0 }), [base, locale])
+  // 記帳換匯：顯示幣別 → 新台幣的對照（只在顯示層，顯示幣別是台幣時不出現）
+  const fx = useTwdRate(base)
+  const twd = (v: number, className?: string) => <TwdApprox amount={v} fx={fx} className={className} />
 
   // The browser's own figure for the display currency goes along, for the server to
   // answer in it when it cannot fetch a quote itself.
@@ -422,25 +428,27 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
 
       {/* ── Summary cards ── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 36 }} className="costs-summary">
-        <SummaryCard label={t('costs.youOwe')} sub={t('costs.youOweSub')} amount={totals.owe} currency={base} locale={locale}
+        <SummaryCard label={t('costs.youOwe')} sub={t('costs.youOweSub')} amount={totals.owe} currency={base} locale={locale} twd={twd(totals.owe, '')}
           icon={<ArrowDown size={18} />} tone="owe"
           foot={totals.owe > 0.01
             ? <FlowPills ids={(settlement?.flows || []).filter(f => f.from.user_id === me).map(f => f.to.user_id)} lead={t('costs.to')} Avatar={Avatar} name={personName} />
             : <span className="text-content-faint">{t('costs.allSettled')}</span>} />
-        <SummaryCard label={t('costs.youreOwed')} sub={t('costs.youreOwedSub')} amount={totals.owed} currency={base} locale={locale}
+        <SummaryCard label={t('costs.youreOwed')} sub={t('costs.youreOwedSub')} amount={totals.owed} currency={base} locale={locale} twd={twd(totals.owed, '')}
           icon={<ArrowUp size={18} />} tone="owed"
           foot={totals.owed > 0.01
             ? <FlowPills ids={(settlement?.flows || []).filter(f => f.to.user_id === me).map(f => f.from.user_id)} lead={t('costs.from')} Avatar={Avatar} name={personName} />
             : <span className="text-content-faint">{t('costs.nothingOwed')}</span>} />
-        <SummaryCard label={t('costs.outstanding')} sub={t('costs.outstandingSub')} amount={totals.outstanding} currency={base} locale={locale}
+        <SummaryCard label={t('costs.outstanding')} sub={t('costs.outstandingSub')} amount={totals.outstanding} currency={base} locale={locale} twd={twd(totals.outstanding, '')}
           icon={<AlertCircle size={18} />} tone="unfinished"
           foot={totals.outstandingCount > 0
             ? <span><b>{totals.outstandingCount}</b> {t('costs.outstandingItems')}</span>
             : <span className="text-content-faint">{t('costs.allSettled')}</span>} />
-        <SummaryCard label={t('costs.totalSpend')} sub={t('costs.totalSpendSub')} amount={totals.totalSpend} currency={base} locale={locale}
+        <SummaryCard label={t('costs.totalSpend')} sub={t('costs.totalSpendSub')} amount={totals.totalSpend} currency={base} locale={locale} twd={twd(totals.totalSpend, '')}
           icon={<BarChart3 size={18} />} tone="total"
           foot={<span style={{ display: 'flex', gap: 16 }}><span>{t('costs.yourShare')} · <b>{fmt0(totals.myShare)}</b></span><span>{t('costs.youPaid')} · <b>{fmt0(totals.myPaid)}</b></span></span>} />
       </div>
+
+      <TwdRateNote fx={fx} style={{ marginTop: -22, marginBottom: 28 }} />
 
       {/* ── Main grid ── */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 32, alignItems: 'start' }} className="costs-grid">
@@ -632,6 +640,7 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
               <span className="text-content" style={{ fontSize: 'calc(14px * var(--fs-scale-body, 1))', fontWeight: 700 }}>{fmt(f.amount)}</span>
+              {twd(f.amount)}
               {canEdit && <button type="button" onClick={() => settleFlow(f.from.user_id, f.to.user_id, f.amount)} className="bg-[var(--text-primary)] text-[var(--bg-primary)]" style={{ padding: '7px 12px', borderRadius: 9, fontSize: 'calc(12px * var(--fs-scale-body, 1))', fontWeight: 600, border: 0, cursor: 'pointer', fontFamily: 'inherit' }}>{t('costs.settle')}</button>}
             </div>
           </div>
@@ -656,6 +665,7 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
         <section style={{ background: 'linear-gradient(135deg,#1f2937,#111827)', color: '#fff', borderRadius: 22, padding: '20px 20px 16px', boxShadow: '0 8px 24px -8px rgba(0,0,0,0.28)' }}>
           <div style={{ fontSize: 'calc(11.5px * var(--fs-scale-caption, 1))', textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(255,255,255,0.6)', fontWeight: 600 }}>{t('costs.totalSpend')}</div>
           <div style={{ fontSize: 'calc(44px * var(--fs-scale-title, 1))', fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1, marginTop: 8, display: 'flex', alignItems: 'baseline' }}>{bigMoney(totals.totalSpend, 24, 'rgba(255,255,255,0.6)')}</div>
+          <div style={{ marginTop: 6, fontSize: 'calc(13px * var(--fs-scale-body, 1))', color: 'rgba(255,255,255,0.6)' }}>{twd(totals.totalSpend, '')}</div>
           <div style={{ display: 'flex', gap: 18, marginTop: 12, fontSize: 'calc(12px * var(--fs-scale-body, 1))', color: 'rgba(255,255,255,0.6)', flexWrap: 'wrap' }}>
             <span>{t('costs.yourShare')} · <b style={{ color: '#fff', fontWeight: 600 }}>{fmt0(totals.myShare)}</b></span>
             <span>{t('costs.youPaid')} · <b style={{ color: '#fff', fontWeight: 600 }}>{fmt0(totals.myPaid)}</b></span>
@@ -667,6 +677,8 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
           )}
         </section>
 
+        <TwdRateNote fx={fx} style={{ marginTop: -6 }} />
+
         {/* Owe / Owed */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
           <div className={cardCls} style={{ borderRadius: 18, padding: 16 }}>
@@ -674,12 +686,14 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
             <div className="text-content" style={{ fontSize: 'calc(12.5px * var(--fs-scale-body, 1))', fontWeight: 600 }}>{t('costs.youOwe')}</div>
             <div className="text-content-faint" style={{ fontSize: 'calc(10.5px * var(--fs-scale-caption, 1))' }}>{t('costs.youOweSub')}</div>
             <div style={{ fontSize: 'calc(27px * var(--fs-scale-title, 1))', fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1, marginTop: 12, display: 'flex', alignItems: 'baseline', color: '#dc2626' }}>{bigMoney(totals.owe, 16, 'var(--c-ink3)')}</div>
+            <div style={{ marginTop: 4 }}>{twd(totals.owe)}</div>
           </div>
           <div className={cardCls} style={{ borderRadius: 18, padding: 16 }}>
             <div style={{ width: 34, height: 34, borderRadius: 10, display: 'grid', placeItems: 'center', marginBottom: 10, background: '#16a34a22', color: '#16a34a' }}><ArrowUp size={17} /></div>
             <div className="text-content" style={{ fontSize: 'calc(12.5px * var(--fs-scale-body, 1))', fontWeight: 600 }}>{t('costs.youreOwed')}</div>
             <div className="text-content-faint" style={{ fontSize: 'calc(10.5px * var(--fs-scale-caption, 1))' }}>{t('costs.youreOwedSub')}</div>
             <div style={{ fontSize: 'calc(27px * var(--fs-scale-title, 1))', fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1, marginTop: 12, display: 'flex', alignItems: 'baseline', color: '#16a34a' }}>{bigMoney(totals.owed, 16, 'var(--c-ink3)')}</div>
+            <div style={{ marginTop: 4 }}>{twd(totals.owed)}</div>
           </div>
         </div>
 
@@ -902,6 +916,7 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, alignSelf: 'center' }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, whiteSpace: 'nowrap' }}>
             <span className="bg-surface-secondary border border-edge text-content" style={{ display: 'inline-flex', alignItems: 'center', padding: isMobile ? '0' : '6px 13px', borderRadius: 999, border: isMobile ? 0 : undefined, background: isMobile ? 'none' : undefined, fontSize: isMobile ? 'calc(18px * var(--fs-scale-subtitle, 1))' : 'calc(15px * var(--fs-scale-subtitle, 1))', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{fmt(baseTotal(e))}</span>
+            {twd(baseTotal(e))}
             {!unfinished && (e.members || []).length > 0 && Math.abs(net) > 0.01 && (
               <span style={{ display: 'inline-flex', alignItems: 'center', padding: isMobile ? 0 : '2px 9px', borderRadius: 999, background: isMobile ? 'none' : (net > 0 ? 'rgba(22,163,74,0.13)' : 'rgba(220,38,38,0.13)'), fontSize: 'calc(11.5px * var(--fs-scale-caption, 1))', fontWeight: 600, color: net > 0 ? '#16a34a' : '#dc2626' }}>
                 {net > 0 ? t('costs.youLent', { amount: fmt(net) }) : t('costs.youBorrowed', { amount: fmt(-net) })}
@@ -941,6 +956,7 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
         {!isMobile && <span />}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, alignSelf: 'center' }}>
           <span className="bg-surface-secondary border border-edge text-content" style={{ display: 'inline-flex', alignItems: 'center', padding: '6px 13px', borderRadius: 999, fontSize: 'calc(15px * var(--fs-scale-subtitle, 1))', fontWeight: 700, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>{fmt(settled(s))}</span>
+          {twd(settled(s))}
         </div>
       </div>
       {canEdit && (
@@ -975,6 +991,7 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
               </div>
               <div style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 600, textAlign: 'right', color: pos ? '#16a34a' : neg ? '#dc2626' : 'var(--text-faint)' }}>
                 {pos ? '+' + fmt(r.balance) : neg ? '−' + fmt(-r.balance) : fmt(0)}
+                {(pos || neg) && <div>{twd(Math.abs(r.balance))}</div>}
               </div>
             </div>
           )
@@ -1009,6 +1026,7 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
                 <Avatar id={r.user_id} size={28} />
                 <span style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 600, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{personName(r.user_id)}</span>
                 <span style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 700 }}>{fmt(r.final)}</span>
+                {twd(r.final)}
                 <ChevronDown size={14} className="text-content-faint" style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
               </button>
               {open && FinalBudgetBreakdown({ row: r })}
@@ -1133,7 +1151,7 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
 }
 
 // ── pure subcomponents ─────────────────────────────────────────────────────
-function SummaryCard({ label, sub, amount, currency, locale, icon, foot, tone }: { label: string; sub: string; amount: number; currency: string; locale: string; icon: React.ReactNode; foot: React.ReactNode; tone: 'owe' | 'owed' | 'total' | 'unfinished' }) {
+function SummaryCard({ label, sub, amount, currency, locale, icon, foot, tone, twd }: { label: string; sub: string; amount: number; currency: string; locale: string; icon: React.ReactNode; foot: React.ReactNode; twd?: React.ReactNode; tone: 'owe' | 'owed' | 'total' | 'unfinished' }) {
   const total = tone === 'total'
   const accent = tone === 'owe' ? '#dc2626' : tone === 'owed' ? '#16a34a' : tone === 'unfinished' ? '#d97706' : undefined
   const muted = total ? 'rgba(255,255,255,0.55)' : 'var(--text-faint)'
@@ -1160,6 +1178,7 @@ function SummaryCard({ label, sub, amount, currency, locale, icon, foot, tone }:
           ? parts.map((p, i) => <span key={i} style={big(p) ? undefined : { fontSize: 'calc(26px * var(--fs-scale-title, 1))', fontWeight: 500, color: muted }}>{p.value}</span>)
           : <span>{formatMoney(amount, currency, locale)}</span>}
       </div>
+      {twd && <div style={{ marginTop: 8, fontSize: 'calc(14px * var(--fs-scale-body, 1))', color: muted }}>{twd}</div>}
       <div style={{ marginTop: 16, fontSize: 'calc(12.5px * var(--fs-scale-body, 1))', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', opacity: total ? 0.85 : 1 }}>{foot}</div>
     </div>
   )
@@ -1619,6 +1638,7 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onClo
               disabled={isTicketMode}
               className="text-content" style={{ flex: 1, border: 0, background: 'none', outline: 'none', fontSize: 'calc(15px * var(--fs-scale-subtitle, 1))', fontWeight: 600, paddingLeft: 6, width: '100%' }} />
           </div>
+          {!isTicketMode && <TwdEntry currency={currency} onFill={onTotalChange} />}
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
           <div style={{ minWidth: 0 }}>
