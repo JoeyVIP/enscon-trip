@@ -21,6 +21,7 @@ import { payersBalanced, rebalancePayers } from '../../../../components/Budget/C
 import GuestBadge from '../../../../components/shared/GuestBadge'
 import type { TripMember } from '../../../../components/Budget/BudgetPanelMemberChips'
 import { ReceiptPreviewModal } from '../../../../components/Budget/ReceiptPreviewModal'
+import { TwdEntry } from '../../../../components/Budget/TwdEntry'
 import type { BudgetItem, BudgetItemReceipt } from '../../../../types'
 
 export interface MCostSheetProps {
@@ -385,6 +386,7 @@ export default function MCostSheet({ tripId, base, people, me, editing, prefill,
             className="min-w-0 flex-1 border-0 bg-transparent text-[0.84375rem] font-semibold text-m-ink outline-none [font-variant-numeric:tabular-nums] placeholder:text-m-faint"
           />
         </div>
+        {!isTicketMode && <TwdEntry currency={currency} onFill={onTotalChange} />}
 
         {/* CURRENCY + DAY */}
         <div className="mt-3 flex gap-2">

@@ -8,6 +8,8 @@ import MDancingTrek from '../../../components/MDancingTrek'
 import { useAuthStore } from '../../../../store/authStore'
 import { useSettingsStore } from '../../../../store/settingsStore'
 import { useExchangeRates, withFallbackFx } from '../../../../hooks/useExchangeRates'
+import { useTwdRate, type TwdRateState } from '../../../../hooks/useTwdRate'
+import { TwdApprox, TwdRateNote } from '../../../../components/Budget/TwdApprox'
 import { useTranslation } from '../../../../i18n'
 import { amountToInputString, formatMoney } from '../../../../utils/formatters'
 import { downloadBlob, openFile } from '../../../../utils/fileDownload'
@@ -58,6 +60,9 @@ export default function MCostsTab({ planner, shell }: MTabScreenProps) {
   const tripCurrency = (trip?.currency || base).toUpperCase()
   // Anchored on the trip currency's quote, the one the server books with (#2525).
   const { convert, displayPerTrip } = useExchangeRates(base, tripCurrency)
+  // 記帳換匯：顯示幣別 → 新台幣的對照（只在顯示層，顯示幣別是台幣時不出現）
+  const fx = useTwdRate(base)
+  const twd = (v: number, className = 'font-geist text-m-faint') => <TwdApprox amount={v} fx={fx} className={className} />
   const ctx: CostsCtx = useMemo(() => ({ me, tripCurrency, displayCurrency: base, convert }), [me, tripCurrency, base, convert])
 
   const [settlement, setSettlement] = useState<CostsSettlementResponse | null>(null)
@@ -199,11 +204,14 @@ export default function MCostsTab({ planner, shell }: MTabScreenProps) {
         <div className="mt-1 font-geist text-[1.875rem] font-extrabold tabular-nums tracking-[-0.02em]">
           {formatMoney(totals.totalSpend, base, locale)}
         </div>
+        <div className="mt-[2px] text-[0.8125rem]" style={{ color: 'rgba(245,245,247,.6)' }}>{twd(totals.totalSpend, '')}</div>
         <div className="mt-[6px] flex flex-wrap gap-[14px] text-[0.6875rem]" style={{ color: 'rgba(245,245,247,.7)' }}>
           <span>{t('costs.yourShare')} · <b style={{ color: '#F5F5F7' }}>{formatMoney(totals.myShare, base, locale)}</b></span>
           <span>{t('costs.youPaid')} · <b style={{ color: '#F5F5F7' }}>{formatMoney(totals.myPaid, base, locale)}</b></span>
         </div>
       </div>
+
+      <TwdRateNote fx={fx} className="mt-2 font-geist text-m-faint" style={{ fontSize: '0.65625rem' }} />
 
       {/* You owe / You're owed (spec §3.2) */}
       <div className="mt-[10px] flex gap-2">
@@ -216,6 +224,7 @@ export default function MCostsTab({ planner, shell }: MTabScreenProps) {
           <div className="mt-1 font-geist text-[1.1875rem] font-extrabold tabular-nums" style={{ color: totals.owe > 0.5 ? STATUS_COLOR.danger : 'var(--m-ink)' }}>
             {formatMoney(totals.owe, base, locale)}
           </div>
+          {twd(totals.owe)}
         </div>
         <div className="flex-1 rounded-2xl border border-[color:var(--m-rowbr)] bg-m-card p-[13px]">
           <span className="flex h-[30px] w-[30px] items-center justify-center rounded-[10px]" style={{ background: 'rgba(47,163,122,.12)', color: STATUS_COLOR.confirmed }}>
@@ -226,6 +235,7 @@ export default function MCostsTab({ planner, shell }: MTabScreenProps) {
           <div className="mt-1 font-geist text-[1.1875rem] font-extrabold tabular-nums" style={{ color: totals.owed > 0.5 ? STATUS_COLOR.confirmed : 'var(--m-ink)' }}>
             {formatMoney(totals.owed, base, locale)}
           </div>
+          {twd(totals.owed)}
         </div>
       </div>
 
@@ -241,6 +251,7 @@ export default function MCostsTab({ planner, shell }: MTabScreenProps) {
           </div>
           <div className="flex-none font-geist text-[0.9375rem] font-extrabold tabular-nums" style={{ color: STATUS_COLOR.pending }}>
             {formatMoney(totals.outstanding, base, locale)}
+            <div className="text-right">{twd(totals.outstanding)}</div>
           </div>
         </div>
       )}
@@ -294,6 +305,7 @@ export default function MCostsTab({ planner, shell }: MTabScreenProps) {
                     <ArrowRight size={12} strokeWidth={2.2} className="flex-none text-m-faint" />
                     <span className="min-w-0 flex-1 truncate text-[0.78125rem] font-semibold text-m-ink">{personName(f.to.user_id)}</span>
                     <span className="ml-auto flex-none font-geist text-[0.78125rem] font-extrabold tabular-nums text-m-ink">{formatMoney(f.amount, base, locale)}</span>
+                    {twd(f.amount)}
                   </div>
                 ))}
               </div>
@@ -312,6 +324,7 @@ export default function MCostsTab({ planner, shell }: MTabScreenProps) {
                     {pos ? '+' : neg ? '−' : ''}
                     {formatMoney(Math.abs(balance), base, locale)}
                   </span>
+                  {(pos || neg) && twd(Math.abs(balance))}
                 </div>
               )
             })}
@@ -338,6 +351,7 @@ export default function MCostsTab({ planner, shell }: MTabScreenProps) {
                 <MemberAvatar name={p.username} avatarUrl={p.avatar_url} isMe={p.id === me} variant="neutral" size={24} t={t} />
                 <span className="min-w-0 flex-1 truncate text-[0.78125rem] font-semibold text-m-ink">{personName(p.id)}</span>
                 <span className="ml-auto flex-none font-geist text-[0.75rem] font-extrabold tabular-nums text-m-ink">{formatMoney(row.final, base, locale)}</span>
+                {twd(row.final)}
                 {open
                   ? <ChevronUp size={13} strokeWidth={2.2} className="flex-none text-m-faint" />
                   : <ChevronDown size={13} strokeWidth={2.2} className="flex-none text-m-faint" />}
@@ -510,6 +524,7 @@ export default function MCostsTab({ planner, shell }: MTabScreenProps) {
                 base={base}
                 locale={locale}
                 t={t}
+                fx={fx}
                 canEdit={canEdit}
                 onEdit={() => {
                   setEditingExpense(en.item)
@@ -527,6 +542,7 @@ export default function MCostsTab({ planner, shell }: MTabScreenProps) {
                 base={base}
                 locale={locale}
                 t={t}
+                fx={fx}
                 personName={personName}
                 canEdit={canEdit}
                 onEdit={() => setEditingSettlement(en.settlement)}
@@ -613,12 +629,13 @@ export default function MCostsTab({ planner, shell }: MTabScreenProps) {
 }
 
 /** One expense card (spec 03 §3.7): category ribbon, optional unfinished ribbon, member chips, total pill, edit/delete stack. */
-function ExpenseRow({ item, ctx, base, locale, t, canEdit, onEdit, onDelete, onTogglePaid, onPreviewReceipts }: {
+function ExpenseRow({ item, ctx, base, locale, t, fx, canEdit, onEdit, onDelete, onTogglePaid, onPreviewReceipts }: {
   item: BudgetItem
   ctx: CostsCtx
   base: string
   locale: string
   t: TFn
+  fx: TwdRateState
   canEdit: boolean
   onEdit: () => void
   onDelete: () => void
@@ -702,9 +719,12 @@ function ExpenseRow({ item, ctx, base, locale, t, canEdit, onEdit, onDelete, onT
               </div>
             )}
           </div>
-          <span className="flex-none rounded-full bg-[color:var(--m-ic)] px-[11px] py-1 font-geist text-[0.75rem] font-extrabold tabular-nums text-m-ink">
-            {formatMoney(total, base, locale)}
-          </span>
+          <div className="flex flex-none flex-col items-end gap-[2px]">
+            <span className="rounded-full bg-[color:var(--m-ic)] px-[11px] py-1 font-geist text-[0.75rem] font-extrabold tabular-nums text-m-ink">
+              {formatMoney(total, base, locale)}
+            </span>
+            <TwdApprox amount={total} fx={fx} className="font-geist text-m-faint" />
+          </div>
         </div>
 
         {note && (
@@ -748,12 +768,13 @@ function ExpenseRow({ item, ctx, base, locale, t, canEdit, onEdit, onDelete, onT
  * transfer is what closes the flow, so undoing it reopens the flow — same
  * as desktop's `undoSettlement`, no confirmation prompt either).
  */
-function PaymentRow({ settlement, ctx, base, locale, t, personName, canEdit, onEdit, onUndo }: {
+function PaymentRow({ settlement, ctx, base, locale, t, fx, personName, canEdit, onEdit, onUndo }: {
   settlement: CostsSettlement
   ctx: CostsCtx
   base: string
   locale: string
   t: TFn
+  fx: TwdRateState
   personName: (id: number) => string
   canEdit: boolean
   onEdit: () => void
@@ -780,9 +801,12 @@ function PaymentRow({ settlement, ctx, base, locale, t, personName, canEdit, onE
               </div>
             )}
           </div>
-          <span className="flex-none rounded-full bg-[color:var(--m-ic)] px-[11px] py-1 font-geist text-[0.75rem] font-extrabold tabular-nums text-m-ink">
-            {formatMoney(amount, base, locale)}
-          </span>
+          <div className="flex flex-none flex-col items-end gap-[2px]">
+            <span className="rounded-full bg-[color:var(--m-ic)] px-[11px] py-1 font-geist text-[0.75rem] font-extrabold tabular-nums text-m-ink">
+              {formatMoney(amount, base, locale)}
+            </span>
+            <TwdApprox amount={amount} fx={fx} className="font-geist text-m-faint" />
+          </div>
         </div>
       </div>
 

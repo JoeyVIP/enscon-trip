@@ -1,6 +1,7 @@
 import admin from './admin';
 import dawarich from './dawarich';
 import docsync from './docsync';
+import twdBudget from './twdBudget';
 import twLoginFix from './twLoginFix';
 import twOutfit from './twOutfit';
 import airport from './airport';
@@ -112,6 +113,7 @@ const locale = {
   ...storage,
   ...dawarich,
   ...docsync,
+  ...twdBudget,
   ...twLoginFix,
   ...twOutfit,
 };
