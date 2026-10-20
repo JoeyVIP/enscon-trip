@@ -3,6 +3,7 @@ import {
   packingImportRequestSchema,
   packingCreateBagRequestSchema,
   packingSaveTemplateRequestSchema,
+  packingDistributeRequestSchema,
 } from './packing.schema';
 
 import { describe, it, expect } from 'vitest';
@@ -74,5 +75,21 @@ describe('packingSaveTemplateRequestSchema', () => {
   it('requires a name', () => {
     expect(packingSaveTemplateRequestSchema.safeParse({ name: 'Summer' }).success).toBe(true);
     expect(packingSaveTemplateRequestSchema.safeParse({ name: '' }).success).toBe(false);
+  });
+});
+
+describe('packingDistributeRequestSchema', () => {
+  it('takes a bounded, non-empty item list; trims names and strips unknown keys', () => {
+    const parsed = packingDistributeRequestSchema.safeParse({
+      items: [{ name: '  Sunscreen ', category: 'Shopping', quantity: 2, owner_id: 7 }],
+    });
+    expect(parsed.success && parsed.data).toEqual({
+      items: [{ name: 'Sunscreen', category: 'Shopping', quantity: 2 }],
+    });
+    expect(packingDistributeRequestSchema.safeParse({ items: [] }).success).toBe(false);
+    expect(packingDistributeRequestSchema.safeParse({ items: [{ name: '   ' }] }).success).toBe(false);
+    expect(packingDistributeRequestSchema.safeParse({ items: [{ name: 'x', quantity: 0 }] }).success).toBe(false);
+    const tooMany = { items: Array.from({ length: 201 }, (_, i) => ({ name: `i${i}` })) };
+    expect(packingDistributeRequestSchema.safeParse(tooMany).success).toBe(false);
   });
 });

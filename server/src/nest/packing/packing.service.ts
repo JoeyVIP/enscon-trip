@@ -504,6 +504,87 @@ export class PackingService {
     return created;
   }
 
+  // ── Admin hand-out (ENSCON fork) ───────────────────────────────────────────
+
+  /**
+   * Give every trip member — the owner included — their own Personal copy of the
+   * same items, so each person ticks their own list and nobody sees anyone
+   * else's progress. Each copy is owner_id = that member, is_private = 1, no
+   * recipients: the #858 "Personal" tier, exactly what createItem would write if
+   * the member had typed it in.
+   *
+   * Idempotent on (member, category, name): a member who already holds a
+   * restricted item with that category and name keeps it and is not given a
+   * second one, so re-running after someone joins only fills in the newcomer.
+   * Common items do not count — owner_id is stamped on Common creates too, and an
+   * owner's shared "Sunscreen" must not stop them getting their own.
+   *
+   * Returns null when the trip does not exist. Otherwise the per-member counts
+   * (ids only, no names) plus the created rows for the caller to broadcast.
+   */
+  distributePersonalItems(tripId: string | number, items: { name: string; category?: string; quantity?: number }[]) {
+    if (!this.db.get('SELECT id FROM trips WHERE id = ?', tripId)) return null;
+    // Real accounts only: a guest (#1362) is a per-trip placeholder that can never
+    // sign in, so a Personal copy owned by one is a row nobody can ever see.
+    const roster = this.tripRosterIds(tripId);
+    const guests = new Set(
+      this.db
+        .all<{ id: number }>(
+          'SELECT id FROM users WHERE COALESCE(is_guest, 0) = 1 AND id IN (SELECT user_id FROM trip_members WHERE trip_id = ?)',
+          tripId,
+        )
+        .map(r => r.id),
+    );
+    const members = [...roster].filter(id => !guests.has(id)).sort((a, b) => a - b);
+    const wanted = items.map(i => ({
+      name: i.name.trim(),
+      category: i.category?.trim() || 'Other',
+      quantity: Math.max(1, Math.min(999, Number(i.quantity) || 1)),
+    }));
+
+    const exists = this.db.prepare(
+      "SELECT 1 FROM packing_items WHERE trip_id = ? AND owner_id = ? AND is_private = 1 AND COALESCE(category, 'Other') = ? AND name = ? LIMIT 1",
+    );
+    const insert = this.db.prepare(
+      'INSERT INTO packing_items (trip_id, name, checked, category, sort_order, quantity, is_private, owner_id, updated_at) VALUES (?, ?, 0, ?, ?, ?, 1, ?, CURRENT_TIMESTAMP)',
+    );
+    const getRow = this.db.prepare('SELECT * FROM packing_items WHERE id = ?');
+    const results: { user_id: number; created: number; skipped: number }[] = [];
+    // Grouped per member so enrichItems' IN (...) stays bounded by the 200-item cap.
+    const createdByMember: any[][] = [];
+
+    this.db.transaction(() => {
+      const maxOrder = this.db.get<{ max: number | null }>('SELECT MAX(sort_order) as max FROM packing_items WHERE trip_id = ?', tripId)!;
+      let sortOrder = (maxOrder.max ?? -1) + 1;
+      for (const userId of members) {
+        const seen = new Set<string>();
+        const mine: any[] = [];
+        let created = 0;
+        let skipped = 0;
+        for (const w of wanted) {
+          const key = `${w.category}\u0000${w.name}`;
+          if (seen.has(key) || exists.get(tripId, userId, w.category, w.name)) {
+            skipped++;
+          } else {
+            const res = insert.run(tripId, w.name, w.category, sortOrder++, w.quantity, userId);
+            mine.push(getRow.get(res.lastInsertRowid));
+            created++;
+          }
+          seen.add(key);
+        }
+        results.push({ user_id: userId, created, skipped });
+        createdByMember.push(mine);
+      }
+    });
+
+    return {
+      members: results,
+      created: results.reduce((n, r) => n + r.created, 0),
+      skipped: results.reduce((n, r) => n + r.skipped, 0),
+      items: createdByMember.flatMap(rows => this.enrichItems(rows)),
+    };
+  }
+
   // ── Bags ───────────────────────────────────────────────────────────────────
 
   /**

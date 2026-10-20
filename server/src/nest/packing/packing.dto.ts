@@ -11,6 +11,7 @@ import {
   packingSaveTemplateRequestSchema,
   packingApplyTemplateRequestSchema,
   packingCategoryAssigneesRequestSchema,
+  packingDistributeRequestSchema,
 } from '@trek/shared';
 
 /**
@@ -30,3 +31,4 @@ export class PackingBagMembersDto extends createZodDto(packingBagMembersRequestS
 export class PackingSaveTemplateDto extends createZodDto(packingSaveTemplateRequestSchema) {}
 export class PackingApplyTemplateDto extends createZodDto(packingApplyTemplateRequestSchema) {}
 export class PackingCategoryAssigneesDto extends createZodDto(packingCategoryAssigneesRequestSchema) {}
+export class PackingDistributeDto extends createZodDto(packingDistributeRequestSchema) {}
