@@ -5,6 +5,7 @@ import { StorageService } from '../storage/storage.service';
 import { decrypt_api_key, maybe_encrypt_api_key } from '../common/crypto/apiKeyCrypto';
 import { avatarUrl } from '../common/avatarUrl';
 import { EMAIL_REGEX, mask_stored_api_key } from './auth.helpers';
+import { normalizeUsernameInput, usernameValidationError } from './username.helpers';
 import { splitManagedKeys, MANAGED_LOCKED_PROFILE_KEYS } from '../common/managed';
 import {
   INSTANCE_API_KEY_NAMES,
@@ -177,16 +178,22 @@ export class UserProfileService {
     const body = rawBody as { maps_api_key?: string; openweather_api_key?: string; unsplash_api_key?: string; amap_api_key?: string; username?: string; email?: string };
     const { maps_api_key, openweather_api_key, unsplash_api_key, amap_api_key, username, email } = body;
 
+    // The settings form always sends the username along with the email, so an
+    // unchanged name is not re-validated: an account whose name predates the
+    // current rules (an SSO name, a 1-character Chinese name, a long legacy
+    // name) must still be able to save its other settings.
+    let nextUsername: string | undefined;
     if (username !== undefined) {
-      const trimmed = username.trim();
-      if (!trimmed || trimmed.length < 2 || trimmed.length > 50) {
-        return { error: 'Username must be between 2 and 50 characters', status: 400 };
+      const stored = this.db.get<{ username: string }>('SELECT username FROM users WHERE id = ?', userId);
+      if (stored && username.trim() === stored.username) {
+        nextUsername = stored.username;
+      } else {
+        nextUsername = normalizeUsernameInput(username);
+        const invalid = usernameValidationError(nextUsername);
+        if (invalid) return { error: invalid, status: 400 };
+        const conflict = this.db.get('SELECT id FROM users WHERE LOWER(username) = LOWER(?) AND id != ? AND COALESCE(is_guest, 0) = 0', nextUsername, userId);
+        if (conflict) return { error: 'Username already taken', status: 409 };
       }
-      if (!/^[a-zA-Z0-9_.-]+$/.test(trimmed)) {
-        return { error: 'Username can only contain letters, numbers, underscores, dots and hyphens', status: 400 };
-      }
-      const conflict = this.db.get('SELECT id FROM users WHERE LOWER(username) = LOWER(?) AND id != ? AND COALESCE(is_guest, 0) = 0', trimmed, userId);
-      if (conflict) return { error: 'Username already taken', status: 409 };
     }
 
     if (email !== undefined) {
@@ -210,7 +217,7 @@ export class UserProfileService {
     if (openweather_api_key !== undefined && !keyLocked) { updates.push('openweather_api_key = ?'); params.push(maybe_encrypt_api_key(openweather_api_key)); }
     if (unsplash_api_key !== undefined && !keyLocked) { updates.push('unsplash_api_key = ?'); params.push(maybe_encrypt_api_key(unsplash_api_key)); }
     if (amap_api_key !== undefined && !keyLocked) { updates.push('amap_api_key = ?'); params.push(maybe_encrypt_api_key(amap_api_key)); }
-    if (username !== undefined) { updates.push('username = ?'); params.push(username.trim()); }
+    if (nextUsername !== undefined) { updates.push('username = ?'); params.push(nextUsername); }
     if (email !== undefined) { updates.push('email = ?'); params.push(email.trim()); }
 
     // Read before the write, so the comparison sees the old value; the role in

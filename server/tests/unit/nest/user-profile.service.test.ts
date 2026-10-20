@@ -78,14 +78,47 @@ describe('updateSettings', () => {
     const { user } = createUser(testDb);
     const result = profile.updateSettings(user.id, { username: 'x' });
     expect(result.status).toBe(400);
-    expect(result.error).toMatch(/between 2 and 50/i);
+    expect(result.error).toMatch(/between 2 and 30/i);
   });
 
-  it('AUTH-DB-003: returns 400 when username has invalid characters (spaces)', () => {
+  it('AUTH-DB-003: returns 400 when username has invalid characters (markup)', () => {
     const { user } = createUser(testDb);
-    const result = profile.updateSettings(user.id, { username: 'bad name' });
+    const result = profile.updateSettings(user.id, { username: 'bad<name>' });
     expect(result.status).toBe(400);
     expect(result.error).toMatch(/only contain/i);
+  });
+
+  it('AUTH-DB-113: accepts a Chinese username and a spaced English one', () => {
+    const { user } = createUser(testDb);
+    expect(profile.updateSettings(user.id, { username: '王小明' }).user?.username).toBe('王小明');
+    expect(profile.updateSettings(user.id, { username: '  Joey   Wang ' }).user?.username).toBe('Joey Wang');
+  });
+
+  it('AUTH-DB-114: refuses @, slashes, quotes, emoji, control/zero-width/bidi characters and over-long names', () => {
+    const { user } = createUser(testDb);
+    for (const bad of ['@joey', 'jo/ey', 'jo\\ey', 'jo"ey', "jo'ey", '蕃茄🍅', 'jo​ey', 'jo‮ey', 'jo⁦ey', 'jo\u0007ey', 'a'.repeat(31)]) {
+      expect(profile.updateSettings(user.id, { username: bad }).status).toBe(400);
+    }
+    expect(profile.updateSettings(user.id, { username: 'pаypal' }).error).toMatch(/cannot mix/i);
+  });
+
+  it('AUTH-DB-115: a user with a Chinese (or legacy) username can still save the form unchanged', () => {
+    // The settings form sends username + email together on every save.
+    const { user } = createUser(testDb, { username: '蕃' }); // 1 character — below today's minimum
+    const result = profile.updateSettings(user.id, { username: '蕃', email: 'fanqie@example.com' });
+    expect(result.success).toBe(true);
+    expect(result.user?.username).toBe('蕃');
+    expect(result.user?.email).toBe('fanqie@example.com');
+
+    const { user: legacy } = createUser(testDb, { username: 'a'.repeat(45) }); // allowed by the old 50 cap
+    expect(profile.updateSettings(legacy.id, { username: 'a'.repeat(45), email: 'legacy@example.com' }).success).toBe(true);
+  });
+
+  it('AUTH-DB-116: a full-width name is folded before the clash check, so it cannot pose as an existing one', () => {
+    createUser(testDb, { username: 'joey' });
+    const { user } = createUser(testDb);
+    const result = profile.updateSettings(user.id, { username: 'Ｊｏｅｙ' });
+    expect(result.status).toBe(409);
   });
 
   it('AUTH-DB-004: returns 409 when username is already taken by another user', () => {
