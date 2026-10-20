@@ -823,6 +823,114 @@ describe('findOrCreateUser', () => {
   });
 });
 
+// ── Unicode usernames from the name claim (LINE display names) ───────────────
+
+describe('findOrCreateUser username from a Unicode name claim', () => {
+  const usernameOf = (email: string) =>
+    (testDb.prepare('SELECT username FROM users WHERE email = ?').get(email) as { username: string }).username;
+
+  /** An existing SSO account, already linked to its sub, with the given username. */
+  const linkedUser = (username: string, sub: string) => {
+    const { user } = createUser(testDb, { username, email: `${sub}@example.com` });
+    testDb.prepare('UPDATE users SET oidc_sub = ?, oidc_issuer = ? WHERE id = ?').run(sub, MOCK_CONFIG.issuer, user.id);
+    return user;
+  };
+
+  it('OIDC-SVC-081: a Chinese name becomes the username instead of "user"', () => {
+    const result = svc.findOrCreateUser({ sub: 'sub-zh', email: 'zh@example.com', name: '王小明' }, MOCK_CONFIG);
+    expect((result as { user: any }).user.username).toBe('王小明');
+    expect(usernameOf('zh@example.com')).toBe('王小明');
+  });
+
+  it('OIDC-SVC-082: emoji mixed into the name are dropped, the letters kept', () => {
+    svc.findOrCreateUser({ sub: 'sub-emoji-mix', email: 'emoji-mix@example.com', name: '🍅蕃茄🍅' }, MOCK_CONFIG);
+    expect(usernameOf('emoji-mix@example.com')).toBe('蕃茄');
+  });
+
+  it('OIDC-SVC-083: an all-emoji name still falls back to "user"', () => {
+    svc.findOrCreateUser({ sub: 'sub-emoji-all', email: 'emoji-all@example.com', name: '🍅🎉✨' }, MOCK_CONFIG);
+    expect(usernameOf('emoji-all@example.com')).toBe('user');
+  });
+
+  it('OIDC-SVC-084: an English name keeps one space between words', () => {
+    svc.findOrCreateUser({ sub: 'sub-en', email: 'en@example.com', name: '  Joey   Wang ' }, MOCK_CONFIG);
+    expect(usernameOf('en@example.com')).toBe('Joey Wang');
+  });
+
+  it('OIDC-SVC-085: a taken Chinese name gets the usual numeric suffix', () => {
+    createUser(testDb, { username: '王小明' });
+    svc.findOrCreateUser({ sub: 'sub-zh-dup', email: 'zh-dup@example.com', name: '王小明' }, MOCK_CONFIG);
+    expect(usernameOf('zh-dup@example.com')).toMatch(/^王小明_\d{1,4}$/);
+  });
+
+  it('OIDC-SVC-086: control, bidi and markup characters in the claim never reach the username', () => {
+    svc.findOrCreateUser(
+      { sub: 'sub-hostile', email: 'hostile@example.com', name: '@<b>王‮小​明</b>"' },
+      MOCK_CONFIG,
+    );
+    expect(usernameOf('hostile@example.com')).toBe('b王小明b');
+  });
+
+  it('OIDC-SVC-087: an existing "user" account gets its name on the next login, logged without the name', () => {
+    const user = linkedUser('user', 'sub-backfill');
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+    try {
+      const result = svc.findOrCreateUser({ sub: 'sub-backfill', email: 'sub-backfill@example.com', name: '蕃茄' }, MOCK_CONFIG);
+      expect((result as { user: any }).user.username).toBe('蕃茄');
+      expect(usernameOf('sub-backfill@example.com')).toBe('蕃茄');
+      const lines = info.mock.calls.map((c) => c.join(' '));
+      expect(lines).toContain(`[OIDC] username backfilled user_id=${user.id}`);
+      expect(lines.some((l) => l.includes('蕃茄'))).toBe(false);
+    } finally {
+      info.mockRestore();
+    }
+  });
+
+  it('OIDC-SVC-088: a suffixed fallback ("user_1234") is backfilled too', () => {
+    linkedUser('user_1234', 'sub-backfill-suffix');
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {});
+    try {
+      svc.findOrCreateUser({ sub: 'sub-backfill-suffix', email: 'sub-backfill-suffix@example.com', name: 'Joey Wang' }, MOCK_CONFIG);
+      expect(usernameOf('sub-backfill-suffix@example.com')).toBe('Joey Wang');
+    } finally {
+      info.mockRestore();
+    }
+  });
+
+  it('OIDC-SVC-089: a name the user chose themselves is never overwritten', () => {
+    linkedUser('joey', 'sub-chosen');
+    const result = svc.findOrCreateUser({ sub: 'sub-chosen', email: 'sub-chosen@example.com', name: '王小明' }, MOCK_CONFIG);
+    expect((result as { user: any }).user.username).toBe('joey');
+    expect(usernameOf('sub-chosen@example.com')).toBe('joey');
+  });
+
+  it('OIDC-SVC-090: the backfill stands down when someone else already has the name', () => {
+    createUser(testDb, { username: 'joey wang' });
+    linkedUser('user', 'sub-backfill-taken');
+    svc.findOrCreateUser({ sub: 'sub-backfill-taken', email: 'sub-backfill-taken@example.com', name: 'Joey Wang' }, MOCK_CONFIG);
+    expect(usernameOf('sub-backfill-taken@example.com')).toBe('user');
+  });
+
+  it('OIDC-SVC-091: no name claim, or one that sanitises to nothing, leaves "user" alone', () => {
+    linkedUser('user', 'sub-no-name');
+    svc.findOrCreateUser({ sub: 'sub-no-name', email: 'sub-no-name@example.com', preferred_username: 'joey' }, MOCK_CONFIG);
+    expect(usernameOf('sub-no-name@example.com')).toBe('user');
+
+    svc.findOrCreateUser({ sub: 'sub-no-name', email: 'sub-no-name@example.com', name: '🍅🎉' }, MOCK_CONFIG);
+    expect(usernameOf('sub-no-name@example.com')).toBe('user');
+
+    const info = vi.spyOn(console, 'info');
+    try {
+      // A claim that is literally "user" is not a backfill, so nothing is logged.
+      svc.findOrCreateUser({ sub: 'sub-no-name', email: 'sub-no-name@example.com', name: 'user' }, MOCK_CONFIG);
+      expect(usernameOf('sub-no-name@example.com')).toBe('user');
+      expect(info).not.toHaveBeenCalled();
+    } finally {
+      info.mockRestore();
+    }
+  });
+});
+
 // ── claim-based role mapping on login (#2364) ────────────────────────────────
 
 describe('findOrCreateUser role mapping', () => {
