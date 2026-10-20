@@ -5285,6 +5285,21 @@ function runMigrations(db: Database.Database): void {
         END
       `);
     },
+    /*
+     * 伴手禮／代購清單：在既有 todo_items 加欄位，不另起新表。
+     * kind='souvenir' 標記伴手禮品項（NULL＝一般待辦）；quantity 數量、
+     * recipient 給誰（自由文字）、store 店家／地點、price_jpy 預估日圓價。
+     * 只做 ADD COLUMN（可為 NULL／有預設值），不動既有資料；可重複執行。
+     */
+    () => {
+      const cols = db.prepare("SELECT name FROM pragma_table_info('todo_items')").all() as { name: string }[];
+      const has = (n: string) => cols.some(c => c.name === n);
+      if (!has('kind')) db.exec('ALTER TABLE todo_items ADD COLUMN kind TEXT');
+      if (!has('quantity')) db.exec('ALTER TABLE todo_items ADD COLUMN quantity INTEGER NOT NULL DEFAULT 1');
+      if (!has('recipient')) db.exec('ALTER TABLE todo_items ADD COLUMN recipient TEXT');
+      if (!has('store')) db.exec('ALTER TABLE todo_items ADD COLUMN store TEXT');
+      if (!has('price_jpy')) db.exec('ALTER TABLE todo_items ADD COLUMN price_jpy INTEGER');
+    },
   ];
 
   if (currentVersion < migrations.length) {

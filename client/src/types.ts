@@ -80,6 +80,12 @@ export interface TodoItem {
   description: string | null
   assigned_user_id: number | null
   priority: number
+  // 伴手禮／代購欄位（kind === 'souvenir' 才有意義）
+  kind?: string | null
+  quantity?: number
+  recipient?: string | null
+  store?: string | null
+  price_jpy?: number | null
 }
 
 export interface TripFile {

@@ -344,3 +344,34 @@ describe('TodoService.canEdit', () => {
     expect(withStub.canEdit(trip, { id: 2, role: 'user' } as never)).toBe(false);
   });
 });
+
+// ── 伴手禮欄位 ────────────────────────────────────────────────────────────────
+
+describe('souvenir fields', () => {
+  it('TODO-SVC-SOUVENIR-001: createItem 存下 kind／quantity／recipient／store／price_jpy', () => {
+    const { user } = createUser(testDb);
+    const trip = createTrip(testDb, user.id);
+    const item = svc.createItem(trip.id, {
+      name: '零食', category: '零食', kind: 'souvenir', quantity: 3, recipient: '小美', store: '唐吉訶德', price_jpy: 1200,
+      assigned_user_id: user.id,
+    }) as any;
+    expect(item).toMatchObject({ kind: 'souvenir', quantity: 3, recipient: '小美', store: '唐吉訶德', price_jpy: 1200, assigned_user_id: user.id });
+  });
+
+  it('TODO-SVC-SOUVENIR-002: 一般待辦 kind 為 NULL、quantity 預設 1', () => {
+    const { user } = createUser(testDb);
+    const trip = createTrip(testDb, user.id);
+    const item = svc.createItem(trip.id, { name: '訂飯店' }) as any;
+    expect(item).toMatchObject({ kind: null, quantity: 1, recipient: null, store: null, price_jpy: null });
+  });
+
+  it('TODO-SVC-SOUVENIR-003: updateItem 可改欄位，也可用 null 清掉；沒帶的欄位不變', () => {
+    const { user } = createUser(testDb);
+    const trip = createTrip(testDb, user.id);
+    const item = svc.createItem(trip.id, { name: '藥膏', kind: 'souvenir', recipient: '小明', store: '藥妝', price_jpy: 500 }) as any;
+    const a = svc.updateItem(trip.id, item.id, { quantity: 2, store: null }, ['quantity', 'store']) as any;
+    expect(a).toMatchObject({ quantity: 2, store: null, recipient: '小明', price_jpy: 500, kind: 'souvenir' });
+    const b = svc.updateItem(trip.id, item.id, { checked: 1 }, ['checked']) as any;
+    expect(b).toMatchObject({ checked: 1, quantity: 2, recipient: '小明' });
+  });
+});

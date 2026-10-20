@@ -45,14 +45,16 @@ export class TodoService {
 
   createItem(tripId: string | number, data: {
     name: string; category?: string | null; due_date?: string | null; description?: string | null; assigned_user_id?: number | null; priority?: number;
+    kind?: string | null; quantity?: number; recipient?: string | null; store?: string | null; price_jpy?: number | null;
   }) {
     const maxOrder = this.db.get<{ max: number | null }>('SELECT MAX(sort_order) as max FROM todo_items WHERE trip_id = ?', tripId)!;
     const sortOrder = (maxOrder.max !== null ? maxOrder.max : -1) + 1;
 
     const result = this.db.run(
-      'INSERT INTO todo_items (trip_id, name, checked, category, sort_order, due_date, description, assigned_user_id, priority) VALUES (?, ?, 0, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO todo_items (trip_id, name, checked, category, sort_order, due_date, description, assigned_user_id, priority, kind, quantity, recipient, store, price_jpy) VALUES (?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       tripId, data.name, data.category || null, sortOrder,
-      data.due_date || null, data.description || null, data.assigned_user_id || null, data.priority || 0
+      data.due_date || null, data.description || null, data.assigned_user_id || null, data.priority || 0,
+      data.kind || null, data.quantity || 1, data.recipient || null, data.store || null, data.price_jpy ?? null
     );
 
     return this.db.get('SELECT * FROM todo_items WHERE id = ?', result.lastInsertRowid);
@@ -61,7 +63,7 @@ export class TodoService {
   updateItem(
     tripId: string | number,
     id: string | number,
-    data: { name?: string; checked?: number; category?: string | null; due_date?: string | null; description?: string | null; assigned_user_id?: number | null; priority?: number | null },
+    data: { name?: string; checked?: number; category?: string | null; due_date?: string | null; description?: string | null; assigned_user_id?: number | null; priority?: number | null; quantity?: number; recipient?: string | null; store?: string | null; price_jpy?: number | null },
     bodyKeys: string[]
   ) {
     const item = this.db.get('SELECT * FROM todo_items WHERE id = ? AND trip_id = ?', id, tripId);
@@ -75,7 +77,11 @@ export class TodoService {
       due_date = CASE WHEN ? THEN ? ELSE due_date END,
       description = CASE WHEN ? THEN ? ELSE description END,
       assigned_user_id = CASE WHEN ? THEN ? ELSE assigned_user_id END,
-      priority = CASE WHEN ? THEN ? ELSE priority END
+      priority = CASE WHEN ? THEN ? ELSE priority END,
+      quantity = COALESCE(?, quantity),
+      recipient = CASE WHEN ? THEN ? ELSE recipient END,
+      store = CASE WHEN ? THEN ? ELSE store END,
+      price_jpy = CASE WHEN ? THEN ? ELSE price_jpy END
     WHERE id = ?
   `,
       data.name || null,
@@ -90,6 +96,13 @@ export class TodoService {
       data.assigned_user_id ?? null,
       bodyKeys.includes('priority') ? 1 : 0,
       data.priority ?? 0,
+      data.quantity ?? null,
+      bodyKeys.includes('recipient') ? 1 : 0,
+      data.recipient ?? null,
+      bodyKeys.includes('store') ? 1 : 0,
+      data.store ?? null,
+      bodyKeys.includes('price_jpy') ? 1 : 0,
+      data.price_jpy ?? null,
       id
     );
 

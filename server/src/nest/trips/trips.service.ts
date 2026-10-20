@@ -739,11 +739,11 @@ export class TripsService {
 
       const oldTodos = this.db.prepare('SELECT * FROM todo_items WHERE trip_id = ?').all(sourceTripId) as any[];
       const insertTodo = this.db.prepare(`
-        INSERT INTO todo_items (trip_id, name, checked, category, sort_order, due_date, description, assigned_user_id, priority)
-        VALUES (?, ?, 0, ?, ?, ?, ?, NULL, ?)
+        INSERT INTO todo_items (trip_id, name, checked, category, sort_order, due_date, description, assigned_user_id, priority, kind, quantity, recipient, store, price_jpy)
+        VALUES (?, ?, 0, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?)
       `);
       for (const t of oldTodos) {
-        insertTodo.run(newTripId, t.name, t.category, t.sort_order, t.due_date, t.description, t.priority);
+        insertTodo.run(newTripId, t.name, t.category, t.sort_order, t.due_date, t.description, t.priority, t.kind, t.quantity ?? 1, t.recipient, t.store, t.price_jpy);
       }
 
       const oldCategoryOrder = this.db.prepare('SELECT category, sort_order FROM budget_category_order WHERE trip_id = ?').all(sourceTripId) as any[];

@@ -30,7 +30,9 @@ type ActiveFilter = { kind: 'smart'; id: TodoSmartFilter } | { kind: 'category';
  * Add/Edit lives in `MTaskSheet`.
  */
 export default function MTodoListTab({ planner }: { planner: TripPlanner }) {
-  const { t, tripId, todoItems: items, tripActions } = planner
+  const { t, tripId, todoItems: allTodoItems, tripActions } = planner
+  // 伴手禮品項（kind='souvenir'）在自己的子分頁顯示，這裡只放一般待辦
+  const items = useMemo(() => allTodoItems.filter(i => i.kind !== 'souvenir'), [allTodoItems])
   const canEdit = planner.can('packing_edit', planner.trip)
   const currentUserId = useAuthStore(s => s.user?.id) ?? null
   const tripMembers = planner.tripMembers

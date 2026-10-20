@@ -51,8 +51,8 @@ export class TodoController {
     @Body() body: TodoCreateItemDto,
     @Headers('x-socket-id') socketId?: string,
   ) {
-    const { name, category, due_date, description, assigned_user_id, priority } = body;
-    const item = this.todo.createItem(tripId, { name, category, due_date, description, assigned_user_id, priority });
+    const { name, category, due_date, description, assigned_user_id, priority, kind, quantity, recipient, store, price_jpy } = body;
+    const item = this.todo.createItem(tripId, { name, category, due_date, description, assigned_user_id, priority, kind, quantity, recipient, store, price_jpy });
     this.todo.broadcast(tripId, 'todo:created', { item }, socketId);
     return { item };
   }
@@ -77,14 +77,14 @@ export class TodoController {
     @Body() body: TodoUpdateItemDto,
     @Headers('x-socket-id') socketId?: string,
   ) {
-    const { name, checked, category, due_date, description, assigned_user_id, priority } = body;
+    const { name, checked, category, due_date, description, assigned_user_id, priority, quantity, recipient, store, price_jpy } = body;
     // bodyKeys carries which keys the request actually provided (the null-clear
     // protocol); the parsed body only ever holds known schema keys.
     const updated = this.todo.updateItem(
       tripId,
       id,
       // checked arrives as boolean or legacy 0/1 — normalize to the 0/1 the SQL binds.
-      { name, checked: checked === undefined ? undefined : checked ? 1 : 0, category, due_date, description, assigned_user_id, priority },
+      { name, checked: checked === undefined ? undefined : checked ? 1 : 0, category, due_date, description, assigned_user_id, priority, quantity, recipient, store, price_jpy },
       Object.keys(body),
     );
     if (!updated) {
