@@ -8,6 +8,10 @@ export const packingHandlers = [
     });
   }),
 
+  http.post('/api/trips/:id/packing/clear-checked', () => {
+    return HttpResponse.json({ deleted_ids: [], count: 0 });
+  }),
+
   http.post('/api/trips/:id/packing', async ({ params, request }) => {
     const body = await request.json() as Record<string, unknown>;
     const item = buildPackingItem({ trip_id: Number(params.id), ...body });

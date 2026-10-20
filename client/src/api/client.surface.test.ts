@@ -204,6 +204,7 @@ describe('client > endpoint wiring', () => {
       { n: 'listTemplates', r: () => packingApi.listTemplates(1), e: 'GET /api/trips/1/packing/templates' },
       { n: 'applyTemplate', r: () => packingApi.applyTemplate(1, 6), e: 'POST /api/trips/1/packing/apply-template/6' },
       { n: 'saveAsTemplate', r: () => packingApi.saveAsTemplate(1, 'Beach'), e: 'POST /api/trips/1/packing/save-as-template' },
+      { n: 'clearChecked', r: () => packingApi.clearChecked(1, 'personal'), e: 'POST /api/trips/1/packing/clear-checked' },
       { n: 'setBagMembers', r: () => packingApi.setBagMembers(1, 2, [9]), e: 'PUT /api/trips/1/packing/bags/2/members' },
       { n: 'listBags', r: () => packingApi.listBags(1), e: 'GET /api/trips/1/packing/bags' },
       { n: 'createBag', r: () => packingApi.createBag(1, { name: 'Carry-on' }), e: 'POST /api/trips/1/packing/bags' },

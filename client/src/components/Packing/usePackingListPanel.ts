@@ -11,7 +11,7 @@ import { useNetworkMode } from '../../hooks/useNetworkMode'
 import { useBagTotalsPing } from './useBagTotalsPing'
 import type { PackingItem, PackingBag } from '../../types'
 import { BAG_COLORS, PACKING_PLACEHOLDER_NAME } from './packingListPanel.constants'
-import { parseImportLines } from './packingListPanel.helpers'
+import { packingClearTargets, parseImportLines } from './packingListPanel.helpers'
 
 export interface TripMember {
   id: number
@@ -56,7 +56,7 @@ export function usePackingList({ tripId, items, openImportSignal = 0, clearCheck
   const setView = onViewChange ?? setOwnView
   const [addingCategory, setAddingCategory] = useState(false)
   const [newCatName, setNewCatName] = useState('')
-  const { addPackingItem, updatePackingItem, deletePackingItem, togglePackingItem, reorderPackingItems,
+  const { addPackingItem, updatePackingItem, deletePackingItem, clearCheckedPackingItems, togglePackingItem, reorderPackingItems,
     setPackingItemSharing, clonePackingItem, addPackingContributor, removePackingContributor } = useTripStore()
   const can = useCanDo()
   const trip = useTripStore((s) => s.trip)
@@ -196,13 +196,18 @@ export function usePackingList({ tripId, items, openImportSignal = 0, clearCheck
     if (failed) toast.error(t('packing.toast.deleteError'))
   }
 
+  // Only the active list's checked rows (in My list only the viewer's own), so
+  // the confirm count is exactly what the clear deletes.
+  const clearTargets = useMemo(() => packingClearTargets(items, view, currentUserId), [items, view, currentUserId])
+
   const handleClearChecked = async () => {
-    if (!confirm(t('packing.confirm.clearChecked', { count: abgehakt }))) return
-    let failed = false
-    for (const item of items.filter(i => i.checked)) {
-      try { await deletePackingItem(tripId, item.id) } catch { failed = true }
+    if (clearTargets.length === 0) return
+    if (!confirm(t('packing.confirm.clearChecked', { count: clearTargets.length }))) return
+    try {
+      await clearCheckedPackingItems(tripId, view, clearTargets.map(i => i.id))
+    } catch {
+      toast.error(t('packing.toast.deleteError'))
     }
-    if (failed) toast.error(t('packing.toast.deleteError'))
   }
 
   // Bag tracking — the global toggle is a packing sub-flag surfaced to every
@@ -401,7 +406,7 @@ export function usePackingList({ tripId, items, openImportSignal = 0, clearCheck
     tripId, items, inlineHeader, t, canEdit, isAdmin, font, reorderPackingItems,
     filter, setFilter, addingCategory, setAddingCategory, newCatName, setNewCatName,
     tripMembers, categoryAssignees, handleSetAssignees, allCategories, gruppiert, abgehakt, fortschritt,
-    handleAddItemToCategory, handleAddNewCategory, handleRenameCategory, handleDeleteCategory, handleDeleteItem, handleClearChecked,
+    handleAddItemToCategory, handleAddNewCategory, handleRenameCategory, handleDeleteCategory, handleDeleteItem, handleClearChecked, clearCount: clearTargets.length,
     bagTrackingEnabled, bags, unassignedWeightGrams, serverWeightsFresh, newBagName, setNewBagName, showAddBag, setShowAddBag, showBagModal, setShowBagModal,
     handleCreateBag, handleCreateBagByName, handleDeleteBag, handleUpdateBag, handleSetBagMembers,
     availableTemplates, showTemplateDropdown, setShowTemplateDropdown, applyingTemplate,

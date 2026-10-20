@@ -435,7 +435,7 @@ describe('usePackingList — item and category CRUD', () => {
   it('FE-W5HOOK-026: declining the clear-checked confirmation deletes nothing', async () => {
     vi.spyOn(window, 'confirm').mockReturnValue(false)
     let deleted = false
-    server.use(http.delete('/api/trips/1/packing/:itemId', () => { deleted = true; return HttpResponse.json({ success: true }) }))
+    server.use(http.post('/api/trips/1/packing/clear-checked', () => { deleted = true; return HttpResponse.json({ deleted_ids: [51], count: 1 }) }))
     const { result } = renderPanel({ items: [buildPackingItem({ id: 51, checked: 1 })] })
 
     await act(async () => { await result.current.handleClearChecked() })
@@ -445,12 +445,70 @@ describe('usePackingList — item and category CRUD', () => {
 
   it('FE-W5HOOK-027: a failing clear-checked delete surfaces a delete error', async () => {
     vi.spyOn(window, 'confirm').mockReturnValue(true)
-    server.use(http.delete('/api/trips/1/packing/52', () => new HttpResponse(null, { status: 500 })))
+    server.use(http.post('/api/trips/1/packing/clear-checked', () => new HttpResponse(null, { status: 500 })))
     const { result } = renderPanel({ items: [buildPackingItem({ id: 52, checked: 1 })] })
 
     await act(async () => { await result.current.handleClearChecked() })
 
     expect(toastSpy).toHaveBeenCalledWith('Failed to delete', 'error', undefined)
+  })
+})
+
+describe('usePackingList — clear checked stays inside one list', () => {
+  // Shared: 3 checked. Mine (user 1): 2 checked. Shared with me by user 9: 1 checked.
+  const shared = [1, 2, 3].map(id => buildPackingItem({ id, checked: 1, is_private: 0 }))
+  const mine = [11, 12].map(id => buildPackingItem({ id, checked: 1, is_private: 1, owner_id: 1 }))
+  const sharedToMe = buildPackingItem({ id: 21, checked: 1, is_private: 1, owner_id: 9 })
+  const all = [...shared, ...mine, sharedToMe]
+
+  function captureClear() {
+    const calls: { scope: unknown }[] = []
+    server.use(http.post('/api/trips/1/packing/clear-checked', async ({ request }) => {
+      const body = await request.json() as { scope?: string }
+      calls.push({ scope: body.scope })
+      const ids = body.scope === 'personal' ? [11, 12] : [1, 2, 3]
+      return HttpResponse.json({ deleted_ids: ids, count: ids.length })
+    }))
+    return calls
+  }
+
+  it('FE-W5HOOK-090: clearing the shared list keeps every "My list" row', async () => {
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
+    const calls = captureClear()
+    seedStore(useTripStore, { packingItems: all })
+    const { result } = renderPanel({ items: all, view: 'common' })
+
+    expect(result.current.clearCount).toBe(3)
+    await act(async () => { await result.current.handleClearChecked() })
+
+    expect(confirmSpy).toHaveBeenCalledWith(expect.stringContaining('3'))
+    expect(calls).toEqual([{ scope: 'common' }])
+    expect(useTripStore.getState().packingItems.map(i => i.id)).toEqual([11, 12, 21])
+  })
+
+  it('FE-W5HOOK-091: clearing "My list" removes only my own checked rows, not the shared list', async () => {
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
+    const calls = captureClear()
+    seedStore(useTripStore, { packingItems: all })
+    const { result } = renderPanel({ items: all, view: 'personal' })
+
+    expect(result.current.clearCount).toBe(2)
+    await act(async () => { await result.current.handleClearChecked() })
+
+    expect(confirmSpy).toHaveBeenCalledWith(expect.stringContaining('2'))
+    expect(calls).toEqual([{ scope: 'personal' }])
+    expect(useTripStore.getState().packingItems.map(i => i.id)).toEqual([1, 2, 3, 21])
+  })
+
+  it('FE-W5HOOK-092: nothing to clear in this list asks nothing and calls nothing', async () => {
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
+    const calls = captureClear()
+    const { result } = renderPanel({ items: [...mine], view: 'common' })
+
+    await act(async () => { await result.current.handleClearChecked() })
+
+    expect(confirmSpy).not.toHaveBeenCalled()
+    expect(calls).toEqual([])
   })
 })
 
@@ -788,7 +846,7 @@ describe('usePackingList — templates, import and signals', () => {
     vi.spyOn(window, 'confirm').mockReturnValue(true)
     const items = [buildPackingItem({ id: 81, checked: 1 })]
     let deleted = false
-    server.use(http.delete('/api/trips/1/packing/81', () => { deleted = true; return HttpResponse.json({ success: true }) }))
+    server.use(http.post('/api/trips/1/packing/clear-checked', () => { deleted = true; return HttpResponse.json({ deleted_ids: [81], count: 1 }) }))
     const { rerender } = renderPanel({ items, clearCheckedSignal: 0 })
     await settled()
 

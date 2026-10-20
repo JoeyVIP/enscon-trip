@@ -117,3 +117,24 @@ describe('packingRepo.delete', () => {
     expect(cached).toBeUndefined();
   });
 });
+
+describe('packingRepo.clearChecked', () => {
+  it('online — one POST with the scope, then drops the deleted rows from Dexie', async () => {
+    const shared = buildPackingItem({ trip_id: 1, checked: 1 });
+    const mine = buildPackingItem({ trip_id: 1, checked: 1, is_private: 1, owner_id: 7 });
+    await offlineDb.packingItems.bulkPut([shared, mine]);
+    let body: unknown;
+    server.use(
+      http.post('/api/trips/1/packing/clear-checked', async ({ request }) => {
+        body = await request.json();
+        return HttpResponse.json({ deleted_ids: [shared.id], count: 1 });
+      }),
+    );
+
+    expect(await packingRepo.clearChecked(1, 'common', [shared.id])).toEqual({ deleted_ids: [shared.id] });
+
+    expect(body).toEqual({ scope: 'common' });
+    expect(await offlineDb.packingItems.get(shared.id)).toBeUndefined();
+    expect(await offlineDb.packingItems.get(mine.id)).toBeDefined();
+  });
+});

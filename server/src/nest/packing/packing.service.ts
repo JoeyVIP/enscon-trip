@@ -454,6 +454,26 @@ export class PackingService {
     }, userId);
   }
 
+  /**
+   * "Clear checked" for one list. 'common' removes only the shared list's
+   * checked rows; 'personal' only the actor's own private rows — never a row
+   * someone else shared with them. The controller defaults to 'common', so a
+   * caller that leaves the scope out cannot touch anyone's personal list.
+   * Each row goes through deleteItem, keeping its visibility check and the
+   * returned row the delete broadcast is scoped by.
+   */
+  clearChecked(tripId: string | number, scope: 'common' | 'personal', actingUserId: number) {
+    const targets = scope === 'personal'
+      ? this.db.all<{ id: number }>('SELECT id FROM packing_items WHERE trip_id = ? AND checked = 1 AND is_private = 1 AND owner_id = ?', tripId, actingUserId)
+      : this.db.all<{ id: number }>('SELECT id FROM packing_items WHERE trip_id = ? AND checked = 1 AND is_private = 0', tripId);
+    const deleted: NonNullable<ReturnType<PackingService['deleteItem']>>[] = [];
+    for (const { id } of targets) {
+      const row = this.deleteItem(tripId, id, actingUserId);
+      if (row) deleted.push(row);
+    }
+    return deleted;
+  }
+
   deleteItem(tripId: string | number, id: string | number, actingUserId?: number) {
     // Return the deleted row (not just a boolean) so callers can target the
     // delete broadcast at the owner when the item was private (#858).

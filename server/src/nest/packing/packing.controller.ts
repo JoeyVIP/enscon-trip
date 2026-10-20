@@ -20,6 +20,7 @@ import { CurrentUser } from '../auth/current-user.decorator';
 import { RequirePermission, TripAccessGuard } from '../permissions/trip-access.guard';
 import {
   PackingApplyTemplateDto,
+  PackingClearCheckedDto,
   PackingBagMembersDto,
   PackingCategoryAssigneesDto,
   PackingCreateBagDto,
@@ -87,6 +88,25 @@ export class PackingController {
     }
     this.packing.broadcastBagTotals(tripId);
     return { items: created, count: created.length };
+  }
+
+  @RequirePermission('packing_edit')
+  @Post('clear-checked')
+  @HttpCode(200)
+  clearChecked(
+    @CurrentUser() user: User,
+    @Param('tripId') tripId: string,
+    @Body() body: PackingClearCheckedDto,
+    @Headers('x-socket-id') socketId?: string,
+  ) {
+    // No scope = the shared list only: a personal list is cleared only when asked for by name.
+    const scope = body?.scope === 'personal' ? 'personal' : 'common';
+    const deleted = this.packing.clearChecked(tripId, scope, user.id);
+    for (const item of deleted) {
+      this.packing.emitToViewers(tripId, 'packing:deleted', { itemId: Number(item.id) }, item as PackingItemRow, socketId);
+    }
+    if (deleted.length > 0) this.packing.broadcastBagTotals(tripId);
+    return { deleted_ids: deleted.map(item => Number(item.id)), count: deleted.length };
   }
 
   @RequirePermission('packing_edit')

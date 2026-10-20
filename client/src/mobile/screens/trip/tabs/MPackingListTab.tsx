@@ -17,7 +17,7 @@ import type { TripPlanner } from '../MTripShell'
 import MConfirmSheet from '../../settings/MConfirmSheet'
 import { FIELD_CLS } from '../sheets/PlSheetChrome'
 import { TabScroller } from './tabChrome'
-import { katColor } from '../../../../components/Packing/packingListPanel.helpers'
+import { katColor, packingClearTargets } from '../../../../components/Packing/packingListPanel.helpers'
 import { BAG_COLORS, PACKING_PLACEHOLDER_NAME } from '../../../../components/Packing/packingListPanel.constants'
 import {
   formatWeight, groupPackingItems, isLastCustomItemInCategory, isPackingPlaceholder,
@@ -103,7 +103,9 @@ export default function MPackingListTab({ planner }: { planner: TripPlanner }) {
   const categoryOrder = useMemo(() => packingCategoryOrder(viewItems, defaultCategory), [viewItems, defaultCategory])
   const groups = useMemo(() => groupPackingItems(viewItems, statusFilter, defaultCategory), [viewItems, statusFilter, defaultCategory])
   const progress = packingProgress(viewItems)
-  const checkedCount = viewItems.filter(i => i.checked).length
+  // Only this list's checked rows (and in My list only my own) — the count shown is what gets deleted.
+  const clearTargets = useMemo(() => packingClearTargets(items, view, currentUserId), [items, view, currentUserId])
+  const checkedCount = clearTargets.length
   // The header badge counts the shared list only, so "My list" shows its own done/total here.
   const personalProgress = useMemo(() => packingProgress(packingViewItems(items, 'personal')), [items])
 
@@ -190,11 +192,11 @@ export default function MPackingListTab({ planner }: { planner: TripPlanner }) {
   }
 
   const clearChecked = async () => {
-    let failed = false
-    for (const item of items.filter(i => i.checked)) {
-      try { await tripActions.deletePackingItem(tripId, item.id) } catch { failed = true }
+    try {
+      await tripActions.clearCheckedPackingItems(tripId, view, clearTargets.map(i => i.id))
+    } catch {
+      toast.error(t('packing.toast.deleteError'))
     }
-    if (failed) toast.error(t('packing.toast.deleteError'))
   }
 
   const createBag = async (name: string): Promise<PackingBag | undefined> => {

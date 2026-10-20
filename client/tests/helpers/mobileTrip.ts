@@ -16,7 +16,7 @@ import { buildTrip } from './factories';
 export function buildTripActions(): Record<string, ReturnType<typeof vi.fn>> {
   const names = [
     'addCategory', 'addDayNote', 'addFile', 'addPackingContributor', 'addPackingItem',
-    'addPlace', 'addReservation', 'addTodoItem', 'appendDatedDay', 'assignPlaceToDay', 'clonePackingItem',
+    'addPlace', 'addReservation', 'addTodoItem', 'appendDatedDay', 'assignPlaceToDay', 'clearCheckedPackingItems', 'clonePackingItem',
     'deleteBudgetItem', 'deleteDayNote', 'deleteFile', 'deletePackingItem', 'deletePlace',
     'deleteDay', 'deletePlacesMany', 'deleteReservation', 'deleteTodoItem', 'insertDay', 'loadBudgetItems',
     'loadFiles', 'loadReservations', 'loadTrip', 'moveAssignment', 'moveDayNote', 'ratePlace',

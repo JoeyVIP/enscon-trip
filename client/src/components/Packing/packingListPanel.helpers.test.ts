@@ -1,8 +1,35 @@
 import { describe, it, expect } from 'vitest'
-import { katColor, itemWeight, bagFillPct, bagTotalWeight, countsTowardsMyLoad, parseCsvLine, parseImportLines, unassignedTotalWeight } from './packingListPanel.helpers'
+import { katColor, itemWeight, packingClearTargets, bagFillPct, bagTotalWeight, countsTowardsMyLoad, parseCsvLine, parseImportLines, unassignedTotalWeight } from './packingListPanel.helpers'
 import { KAT_COLORS } from './packingListPanel.constants'
 
 describe('packingListPanel.helpers', () => {
+  describe('packingClearTargets', () => {
+    const items = [
+      { id: 1, checked: 1, is_private: 0 },
+      { id: 2, checked: 1, is_private: 0 },
+      { id: 3, checked: 1, is_private: 0 },
+      { id: 4, checked: 0, is_private: 0 },
+      { id: 11, checked: 1, is_private: 1, owner_id: 7 },
+      { id: 12, checked: 1, is_private: 1, owner_id: 7 },
+      { id: 13, checked: 0, is_private: 1, owner_id: 7 },
+      { id: 21, checked: 1, is_private: 1, owner_id: 9 },
+    ]
+    const ids = (rows: { id: number }[]) => rows.map(r => r.id)
+
+    it('FE-PACK-HELP-CLR-001: the shared tab targets shared checked rows only — My list survives', () => {
+      expect(ids(packingClearTargets(items, 'common', 7))).toEqual([1, 2, 3])
+    })
+
+    it('FE-PACK-HELP-CLR-002: the My list tab targets my own checked rows only — shared list and shared-to-me survive', () => {
+      expect(ids(packingClearTargets(items, 'personal', 7))).toEqual([11, 12])
+    })
+
+    it('FE-PACK-HELP-CLR-003: without a signed-in user My list targets nothing', () => {
+      expect(packingClearTargets(items, 'personal', null)).toEqual([])
+      expect(packingClearTargets(items, 'personal', undefined)).toEqual([])
+    })
+  })
+
   describe('katColor', () => {
     it('maps a category to its palette slot by index', () => {
       const cats = ['Documents', 'Clothing', 'Toiletries']

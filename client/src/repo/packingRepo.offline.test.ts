@@ -1,4 +1,4 @@
-// FE-REPO-PACK-001 to FE-REPO-PACK-007
+// FE-REPO-PACK-001 to FE-REPO-PACK-008
 // Offline write paths — tests/unit/repo/packingRepo.test.ts covers the online ones.
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import 'fake-indexeddb/auto'
@@ -105,5 +105,20 @@ describe('packingRepo.delete — offline', () => {
 
     expect(mutation.url).toBe('/trips/4/packing/{id}')
     expect(mutation.tempEntityId).toBe(-13)
+  })
+})
+
+describe('packingRepo.clearChecked — offline', () => {
+  it('FE-REPO-PACK-008: queues a DELETE for exactly the given ids and nothing else', async () => {
+    await offlineDb.packingItems.bulkPut([
+      buildPackingItem({ id: 201, trip_id: 4, checked: 1 }),
+      buildPackingItem({ id: 202, trip_id: 4, checked: 1 }),
+      buildPackingItem({ id: 301, trip_id: 4, checked: 1, is_private: 1, owner_id: 7 }),
+    ])
+
+    expect(await packingRepo.clearChecked(4, 'common', [201, 202])).toEqual({ deleted_ids: [201, 202] })
+
+    expect((await queue()).map(m => `${m.method} ${m.url}`)).toEqual(['DELETE /trips/4/packing/201', 'DELETE /trips/4/packing/202'])
+    expect(await offlineDb.packingItems.get(301)).toBeDefined()
   })
 })

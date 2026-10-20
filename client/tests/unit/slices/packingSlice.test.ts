@@ -98,6 +98,33 @@ describe('packingSlice', () => {
     });
   });
 
+  describe('clearCheckedPackingItems', () => {
+    it('FE-PACKING-030: clearing the shared list keeps the checked "My list" rows in the store', async () => {
+      const shared = [1, 2, 3].map(id => buildPackingItem({ id, trip_id: 1, checked: 1 }));
+      const mine = [11, 12].map(id => buildPackingItem({ id, trip_id: 1, checked: 1, is_private: 1, owner_id: 7 }));
+      seedStore(useTripStore, { packingItems: [...shared, ...mine] });
+      server.use(
+        http.post('/api/trips/1/packing/clear-checked', () => HttpResponse.json({ deleted_ids: [1, 2, 3], count: 3 })),
+      );
+
+      await useTripStore.getState().clearCheckedPackingItems(1, 'common', [1, 2, 3]);
+
+      expect(useTripStore.getState().packingItems.map(i => i.id)).toEqual([11, 12]);
+    });
+
+    it('FE-PACKING-031: a failed clear puts every row back', async () => {
+      const items = [buildPackingItem({ id: 1, trip_id: 1, checked: 1 }), buildPackingItem({ id: 11, trip_id: 1, checked: 1, is_private: 1, owner_id: 7 })];
+      seedStore(useTripStore, { packingItems: items });
+      server.use(
+        http.post('/api/trips/1/packing/clear-checked', () => HttpResponse.json({ error: 'x' }, { status: 500 })),
+      );
+
+      await expect(useTripStore.getState().clearCheckedPackingItems(1, 'common', [1])).rejects.toThrow();
+
+      expect(useTripStore.getState().packingItems.map(i => i.id)).toEqual([1, 11]);
+    });
+  });
+
   describe('togglePackingItem', () => {
     it('FE-PACKING-005: togglePackingItem sets checked optimistically', async () => {
       const item = buildPackingItem({ id: 10, trip_id: 1, checked: 0 });
