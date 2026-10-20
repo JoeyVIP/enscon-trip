@@ -51,7 +51,11 @@ describe('TextImportModal', () => {
     const box = within(un).getByRole('checkbox')
     expect(box).not.toBeChecked()
     await userEvent.selectOptions(within(un).getByRole('combobox'), '12')
-    await waitFor(() => expect(screen.getByRole('region', { name: 'twImport.dayHeader:{"n":2}' })).toHaveTextContent('某個地方'))
+    // 站名是 <input value>，不是文字節點，所以用 displayValue 找；指定日期後會自動勾選
+    await waitFor(() => expect(within(screen.getByRole('region', { name: 'twImport.dayHeader:{"n":2}' })).getByDisplayValue('某個地方')).toBeInTheDocument())
+    const d2 = screen.getByRole('region', { name: 'twImport.dayHeader:{"n":2}' })
+    expect(within(d2).getByRole('checkbox', { name: '某個地方' })).toBeChecked()
+    expect(screen.queryByRole('region', { name: 'twImport.unassigned' })).not.toBeInTheDocument()
   })
 
   it('FE-PLANNER-TEXTIMPORT-004: 取消勾選會減少加入站數', async () => {
