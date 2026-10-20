@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { Request, Response } from 'express';
+import { Logger } from '@nestjs/common';
 
 import { OidcController } from '../../../src/nest/oidc/oidc.controller';
 import { OIDC_STATE_TTL_MS } from '../../../src/nest/oidc/oidc.service';
@@ -558,5 +559,55 @@ describe('OidcController /exchange', () => {
     const res = makeRes();
     ctl(svc()).exchange(undefined, reqEx(), res);
     expect(res.clearCookie).toHaveBeenCalledWith('trek_oidc_exchange', expect.anything());
+  });
+});
+
+// 診斷日誌：只記結果與原因代碼，不含 token／code／邀請碼值／個資。
+describe('OidcController 診斷日誌', () => {
+  const okSvc = (over: Partial<OidcService> = {}) => svc({
+    consumeState: vi.fn().mockReturnValue({ redirectUri: 'r', codeVerifier: 'cv', inviteToken: 'SECRET-INVITE-1234' }),
+    exchangeCodeForToken: vi.fn().mockResolvedValue({ _ok: true, access_token: 'at', id_token: 'it' }),
+    verifyIdToken: vi.fn().mockResolvedValue({ ok: true, claims: { sub: 'u1' } }),
+    getUserInfo: vi.fn().mockResolvedValue({ email: 'private@example.com', sub: 'u1' }),
+    ...over,
+  });
+  const lines = (...spies: Array<ReturnType<typeof vi.spyOn>>) =>
+    spies.flatMap((s) => s.mock.calls.map((c) => String(c[0])));
+
+  it('新註冊記 outcome=registered hadInvite=true，且不洩漏邀請碼與 email', async () => {
+    const log = vi.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
+    const warn = vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => {});
+    await ctl(okSvc({ findOrCreateUser: vi.fn().mockReturnValue({ user: { id: 1 }, created: true }) }))
+      .callback('c', 's', undefined, reqCb('s'), makeRes());
+    const out = lines(log, warn).join('\n');
+    expect(out).toContain('outcome=registered hadInvite=true');
+    expect(out).not.toContain('SECRET-INVITE');
+    expect(out).not.toContain('private@example.com');
+    log.mockRestore(); warn.mockRestore();
+  });
+
+  it('registration_disabled 沒帶邀請碼記 hadInvite=false', async () => {
+    const warn = vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => {});
+    await ctl(okSvc({
+      consumeState: vi.fn().mockReturnValue({ redirectUri: 'r', codeVerifier: 'cv', inviteToken: undefined }),
+      findOrCreateUser: vi.fn().mockReturnValue({ error: 'registration_disabled' }),
+    })).callback('c', 's', undefined, reqCb('s'), makeRes());
+    expect(lines(warn)).toContain('oidc callback outcome=registration_disabled hadInvite=false');
+    warn.mockRestore();
+  });
+
+  it('exchange 失敗四種原因', () => {
+    const warn = vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => {});
+    ctl(svc()).exchange(undefined, reqEx(), makeRes());
+    ctl(svc({ consumeAuthCode: vi.fn().mockReturnValue({ error: 'Invalid or expired code' }) })).exchange('x', reqEx(''), makeRes());
+    ctl(svc({ consumeAuthCode: vi.fn().mockReturnValue({ error: 'Invalid or expired code' }) })).exchange('x', reqEx(), makeRes());
+    ctl(svc({ consumeAuthCode: vi.fn().mockReturnValue({ error: 'Code expired' }) })).exchange('x', reqEx(), makeRes());
+    expect(lines(warn)).toEqual([
+      'oidc exchange failed reason=missing_code',
+      'oidc exchange failed reason=missing_binding_cookie',
+      'oidc exchange failed reason=unknown_or_expired_code',
+      'oidc exchange failed reason=expired',
+    ]);
+    warn.mockRestore();
   });
 });

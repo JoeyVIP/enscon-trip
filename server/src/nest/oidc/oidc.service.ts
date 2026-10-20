@@ -757,7 +757,8 @@ export class OidcService implements OnModuleDestroy {
       return { user, created: true };
     } catch (err) {
       if (err === inviteRaceError) {
-        console.warn(`[OIDC] Invite token ${inviteToken?.slice(0, 8)}... exhausted — concurrent callback won the last slot`);
+        // 只記邀請的資料列 id，不記邀請碼本身（含任何切片）。
+        console.warn(`[OIDC] Invite id=${validInvite?.id} exhausted — concurrent callback won the last slot`);
         return { error: 'registration_disabled' };
       }
       throw err;

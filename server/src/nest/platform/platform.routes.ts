@@ -219,6 +219,15 @@ export function applyPlatformSpa(app: express.Application): void {
   app.get(/.*/, (req: Request, res: Response) => answerUnmatchedGet(req, res));
 }
 
+// 不可被快取的入口檔（以檔名比對）。
+export const NO_CACHE_ENTRY_FILES: ReadonlySet<string> = new Set([
+  'index.html',
+  'sw.js',
+  'registerSW.js',
+  'manifest.webmanifest',
+  'manifest.json',
+]);
+
 /**
  * Production static serving of the built client (JS/CSS/assets). Split out from
  * applyPlatformSpa because the NestJS bootstrap needs the static files served
@@ -232,7 +241,10 @@ export function applyPlatformStatic(app: express.Application): void {
   app.use(
     express.static(PUBLIC_DIR, {
       setHeaders: (res, filePath) => {
-        if (filePath.endsWith('index.html')) {
+        // 入口檔（index.html、service worker、註冊腳本、PWA manifest）一律不快取，
+        // 否則舊 service worker 會被邊緣／瀏覽器快取數小時，使用者一直看到舊頁。
+        // 帶 hash 的 /assets/* 不在清單內，維持長快取。
+        if (NO_CACHE_ENTRY_FILES.has(path.basename(filePath))) {
           res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
         }
       },

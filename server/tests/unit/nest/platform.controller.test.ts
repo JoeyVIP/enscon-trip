@@ -387,6 +387,23 @@ describe('applyPlatformStatic', () => {
     opts.setHeaders(assetRes, '/some/app.js');
     expect(assetRes.headers['Cache-Control']).toBeUndefined();
   });
+
+  it('sw.js、registerSW.js、manifest 也一律 no-cache；帶 hash 的 assets 不動', async () => {
+    process.env.NODE_ENV = 'production';
+    const expressMod = (await import('express')).default as unknown as { static: ReturnType<typeof vi.fn> };
+    expressMod.static.mockClear();
+    const { app } = fakeApp();
+    applyPlatformStatic(app);
+    const opts = expressMod.static.mock.calls[0][1] as { setHeaders: (res: unknown, p: string) => void };
+    for (const p of ['/pub/sw.js', '/pub/registerSW.js', '/pub/manifest.webmanifest']) {
+      const r = makeRes();
+      opts.setHeaders(r, p);
+      expect(r.headers['Cache-Control']).toBe('no-cache, no-store, must-revalidate');
+    }
+    const hashed = makeRes();
+    opts.setHeaders(hashed, '/pub/assets/index-AbC123.js');
+    expect(hashed.headers['Cache-Control']).toBeUndefined();
+  });
 });
 
 describe('applyPlatformSpa', () => {
