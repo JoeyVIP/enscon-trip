@@ -688,9 +688,9 @@ describe('MDashboard', () => {
     expect(navigate).toHaveBeenCalledTimes(2);
   });
 
-  // Server defaults (permissions.service.ts): edit/delete/archive are owner-only;
+  // Server defaults (permissions.service.ts): edit/delete/archive/cover are owner-only;
   // copy needs trip_create, which everybody has.
-  const OWNER_ONLY = { trip_create: 'everybody', trip_edit: 'trip_owner', trip_delete: 'trip_owner', trip_archive: 'trip_owner' } as const;
+  const OWNER_ONLY = { trip_create: 'everybody', trip_edit: 'trip_owner', trip_delete: 'trip_owner', trip_archive: 'trip_owner', trip_cover_upload: 'trip_owner' } as const;
 
   it('FE-MOB-DASH-TW-009: a member who does not own the trip only gets "copy" on its cards', () => {
     usePermissionsStore.setState({ permissions: { ...OWNER_ONLY } });
@@ -736,5 +736,20 @@ describe('MDashboard', () => {
     for (const name of ['common.edit', 'dashboard.aria.duplicate', 'dashboard.archive', 'common.delete']) {
       expect(screen.getByRole('button', { name })).toBeInTheDocument();
     }
+  });
+
+  it('FE-MOB-DASH-TW-011: a member keeps "edit" when the admin lets members change covers or archive (the sheet hosts both)', () => {
+    usePermissionsStore.setState({ permissions: { ...OWNER_ONLY, trip_cover_upload: 'trip_member' } });
+    mocks.dash = buildDash({ viewMode: 'list', gridTrips: [buildTrip({ id: 81, title: 'Naha', user_id: 99, is_owner: 0 })] });
+    const { unmount } = render(<MDashboard />);
+    expect(screen.getByRole('button', { name: 'common.edit' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'common.delete' })).not.toBeInTheDocument();
+    unmount();
+
+    // Grid cards have no archive button of their own: archiving lives in the edit sheet.
+    usePermissionsStore.setState({ permissions: { ...OWNER_ONLY, trip_archive: 'trip_member' } });
+    mocks.dash = buildDash({ gridTrips: [buildTrip({ id: 82, title: 'Nago', user_id: 99, is_owner: 0 })] });
+    render(<MDashboard />);
+    expect(screen.getByRole('button', { name: 'common.edit' })).toBeInTheDocument();
   });
 });

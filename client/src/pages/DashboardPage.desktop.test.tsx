@@ -482,9 +482,9 @@ describe('DashboardPage (desktop)', () => {
     expect(await screen.findByRole('button', { name: 'Open trip: Kyoto' })).toBeInTheDocument();
   });
 
-  // Server defaults (permissions.service.ts): edit/delete/archive are owner-only;
+  // Server defaults (permissions.service.ts): edit/delete/archive/cover are owner-only;
   // copy needs trip_create, which everybody has.
-  const OWNER_ONLY = { trip_create: 'everybody', trip_edit: 'trip_owner', trip_delete: 'trip_owner', trip_archive: 'trip_owner' } as const;
+  const OWNER_ONLY = { trip_create: 'everybody', trip_edit: 'trip_owner', trip_delete: 'trip_owner', trip_archive: 'trip_owner', trip_cover_upload: 'trip_owner' } as const;
 
   it('FE-PAGE-DESKDASH-TW-005: a member who does not own the trips only gets "Duplicate" on the hero and the cards', async () => {
     usePermissionsStore.setState({ permissions: { ...OWNER_ONLY } });
@@ -519,6 +519,22 @@ describe('DashboardPage (desktop)', () => {
       for (const name of ['Edit', 'Duplicate', 'Archive', 'Delete']) {
         expect(within(scope).getByRole('button', { name })).toBeInTheDocument();
       }
+    }
+  });
+
+  it('FE-PAGE-DESKDASH-TW-007: a member keeps "Edit" (the dialog with the cover picker) when members may change covers', async () => {
+    usePermissionsStore.setState({ permissions: { ...OWNER_ONLY, trip_cover_upload: 'trip_member' } });
+    onlyTrips([
+      { ...TRIP, user_id: 99, is_owner: 0 },
+      buildTrip({ id: 107, title: 'Berlin', start_date: '2027-03-01', end_date: '2027-03-05', user_id: 99, is_owner: 0 } as never),
+    ]);
+    const { container } = render(<DashboardPage />);
+
+    const card = (await screen.findByText('Berlin')).closest('.trip-card') as HTMLElement;
+    const hero = container.querySelector('.hero-trip') as HTMLElement;
+    for (const scope of [hero, card]) {
+      expect(within(scope).getByRole('button', { name: 'Edit' })).toBeInTheDocument();
+      expect(within(scope).queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument();
     }
   });
 });
