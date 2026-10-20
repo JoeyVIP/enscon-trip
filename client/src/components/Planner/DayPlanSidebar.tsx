@@ -20,6 +20,7 @@ import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkBreaks from 'remark-breaks'
 import WeatherWidget from '../Weather/WeatherWidget'
+import { DayOutfitLine } from '../Weather/OutfitHint'
 import { useToast } from '../shared/Toast'
 import { getCategoryIcon } from '../shared/categoryIcons'
 import { useTripStore } from '../../store/tripStore'
@@ -1825,6 +1826,14 @@ const DayPlanSidebar = React.memo(function DayPlanSidebar(props: DayPlanSidebarP
                       stops={da.map(a => ({ name: a.place?.name, time: a.place?.place_time, lat: a.place?.lat, lng: a.place?.lng }))}
                     />
                   </div>
+                  {/* 天氣旁的「今天穿什麼」小字（錨點與日期徽章的天氣相同）；沒天氣資料就不畫 */}
+                  {(() => {
+                    const oHotel = loc == null ? dayBookends.morning : undefined
+                    const oLat = loc?.place?.lat ?? oHotel?.place_lat
+                    const oLng = loc?.place?.lng ?? oHotel?.place_lng
+                    if (!day.date || oLat == null || oLng == null) return null
+                    return <DayOutfitLine lat={oLat} lng={oLng} date={day.date} />
+                  })()}
                   {(() => {
                     const hasAccs = accommodations.some(a => isDayInAccommodationRange(day, a.start_day_id, a.end_day_id, days))
                     const hasRentals = getActiveRentalsForDay(day.id).length > 0
