@@ -333,12 +333,12 @@ describe('useLogin — OIDC callback', () => {
     expect(mockNavigate).toHaveBeenCalledTimes(1);
   });
 
-  it('FE-LOGIN-HOOK-017: surfaces the error the exchange endpoint reports', async () => {
+  it('FE-LOGIN-HOOK-017: shows a localized failure message when the exchange endpoint reports an error', async () => {
     setSearch('?oidc_code=code-2');
     server.use(http.get('/api/auth/oidc/exchange', () => HttpResponse.json({ error: 'State mismatch' })));
 
     const { result } = renderLogin();
-    await waitFor(() => expect(result.current.error).toBe('State mismatch'));
+    await waitFor(() => expect(result.current.oidcErrorCode).toBe('exchange_failed'));
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
@@ -347,7 +347,7 @@ describe('useLogin — OIDC callback', () => {
     server.use(http.get('/api/auth/oidc/exchange', () => HttpResponse.json({})));
 
     const { result } = renderLogin();
-    await waitFor(() => expect(result.current.error).toBe('OIDC login failed'));
+    await waitFor(() => expect(result.current.oidcErrorCode).toBe('exchange_failed'));
   });
 
   it('FE-LOGIN-HOOK-019: reports a generic failure when the exchange request itself fails', async () => {
@@ -355,7 +355,7 @@ describe('useLogin — OIDC callback', () => {
     server.use(http.get('/api/auth/oidc/exchange', () => HttpResponse.error()));
 
     const { result } = renderLogin();
-    await waitFor(() => expect(result.current.error).toBe('OIDC login failed'));
+    await waitFor(() => expect(result.current.oidcErrorCode).toBe('exchange_failed'));
     await waitFor(() => expect(result.current.isLoading).toBe(false));
   });
 
@@ -365,16 +365,34 @@ describe('useLogin — OIDC callback', () => {
 
     const { result } = renderLogin();
     await waitFor(() =>
-      expect(result.current.error).toBe('Registration is disabled. Contact your administrator.'),
+      expect(result.current.error).toBe('This LINE account has not joined yet. Please sign in again using the invite link a friend shared with you.'),
     );
     expect(sessionStorage.getItem('oidc_redirect')).toBeNull();
   });
 
-  it('FE-LOGIN-HOOK-021: passes an unknown oidc_error through unchanged', async () => {
+  it('FE-LOGIN-HOOK-021: maps an unknown oidc_error to the generic localized message', async () => {
     setSearch('?oidc_error=some_new_provider_code');
 
     const { result } = renderLogin();
-    await waitFor(() => expect(result.current.error).toBe('some_new_provider_code'));
+    await waitFor(() => expect(result.current.error).toBe('Sign-in did not succeed. Please try again.'));
+    expect(result.current.oidcErrorCode).toBe('some_new_provider_code');
+  });
+
+  it('FE-LOGIN-HOOK-021b: zh-TW shows the Chinese message even though the locale loads after mount', async () => {
+    useSettingsStore.getState().setLanguageLocal('zh-TW');
+    setSearch('?oidc_error=registration_disabled');
+
+    const { result } = renderLogin();
+    await waitFor(() =>
+      expect(result.current.error).toBe('這個 LINE 帳號還沒加入。請用朋友分享給你的邀請連結再登入一次。'),
+    );
+  });
+
+  it('FE-LOGIN-HOOK-021c: after an oidc_error the app config is still loaded and the page does not auto-redirect to LINE', async () => {
+    setSearch('?oidc_error=token_failed');
+    const { result } = renderLogin();
+    await waitFor(() => expect(result.current.appConfig).not.toBeNull());
+    expect(result.current.oidcErrorCode).toBe('token_failed');
   });
 });
 

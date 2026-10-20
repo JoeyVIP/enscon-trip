@@ -4,6 +4,7 @@ import { http, HttpResponse } from 'msw';
 import { server } from '../../tests/helpers/msw/server';
 import { resetAllStores } from '../../tests/helpers/store';
 import LoginPage from './LoginPage';
+import { saveInvite } from '../utils/inviteStore';
 
 vi.mock('./login/LoginWorld', () => ({ default: () => null }));
 
@@ -70,15 +71,27 @@ describe('LoginPage — OIDC_HIDE_PASSWORD_FORM (ENSCON)', () => {
     mockConfig();
     render(<LoginPage />);
     const a = (await screen.findByText(/sign in with line/i)).closest('a')!;
-    expect(localStorage.getItem('enscon_invite')).toBe('abcdEFGH1234');
+    expect(JSON.parse(localStorage.getItem('enscon_invite')!).v).toBe('abcdEFGH1234');
+    expect(document.cookie).toContain('enscon_invite=abcdEFGH1234');
     expect(a.getAttribute('href')).toContain('invite=abcdEFGH1234');
   });
 
   it('FE-PAGE-LOGIN-ENSCON-006: without ?invite= the stored invite is added to the OIDC link', async () => {
-    localStorage.setItem('enscon_invite', 'storedINVITE99');
+    saveInvite('storedINVITE99');
     mockConfig();
     render(<LoginPage />);
     const a = (await screen.findByText(/sign in with line/i)).closest('a')!;
     expect(a.getAttribute('href')).toContain('invite=storedINVITE99');
+  });
+
+  it('FE-PAGE-LOGIN-ENSCON-007: oidc_error 時顯示錯誤框與「Sign in with LINE again」鈕，不退回 Email 表單，且帶上存的邀請碼', async () => {
+    saveInvite('storedINVITE99');
+    window.history.replaceState({}, '', '/login?oidc_error=token_failed');
+    mockConfig({ oidc_hide_password_form: false });
+    render(<LoginPage />);
+    expect(await screen.findByText(/verification with line failed/i)).toBeInTheDocument();
+    const a = screen.getByText(/sign in with line again/i).closest('a')!;
+    expect(a.getAttribute('href')).toContain('invite=storedINVITE99');
+    expect(screen.queryByPlaceholderText('your@email.com')).toBeNull();
   });
 });
