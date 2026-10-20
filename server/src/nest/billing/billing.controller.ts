@@ -1,11 +1,15 @@
-import { Body, Controller, Get, HttpCode, HttpException, Param, Post, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
 import type { User } from '../../types';
 import { Public } from '../auth/public.decorator';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { RateLimitService } from '../common/rate-limit.service';
 import { BillingService } from './billing.service';
-import { BillingCheckoutDto } from './billing.dto';
+import { BillingCheckoutDto, BillingFreeOrganizerAddDto, BillingPromoCreateDto, BillingPromoUpdateDto } from './billing.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { AdminGuard } from '../auth/admin.guard';
+import { AuditService } from '../audit/audit.service';
+import { getClientIp } from '../audit/client-ip';
 import { RECUR_SIGNATURE_HEADER } from './recur';
 
 const CHECKOUT_WINDOW_MS = 15 * 60 * 1000;
@@ -31,9 +35,15 @@ export class BillingController {
     if (!this.rl.check('billing_checkout', String(user.id), CHECKOUT_MAX, CHECKOUT_WINDOW_MS, Date.now())) {
       throw new HttpException({ error: 'Too many attempts. Please try again later.' }, 429);
     }
-    const res = await this.billing.startCheckout(user, body.consent_ver);
+    const res = await this.billing.startCheckout(user, body.consent_ver, body.promo_code);
     if (!res.ok) throw new HttpException({ error: res.error }, res.status);
     return { url: res.url, ref: res.ref };
+  }
+
+  /** 開新團要不要先付款（收費頁用來跟免費主揪說「直接開團就好」）。 */
+  @Get('me')
+  me(@CurrentUser() user: User) {
+    return this.billing.me(user.id);
   }
 
   @Get('purchases/:ref')
@@ -51,5 +61,58 @@ export class BillingController {
     const res = this.billing.handleWebhook(raw, req.get(RECUR_SIGNATURE_HEADER));
     if (res.status !== 200) throw new HttpException(res.body, res.status);
     return res.body;
+  }
+}
+
+/**
+ * /api/billing/admin — 管理員後台：優惠碼（折抵 %、次數上限、到期日、開關）與免費主揪。
+ * 每個寫入都記一筆稽核紀錄。
+ */
+@Controller('api/billing/admin')
+@UseGuards(JwtAuthGuard, AdminGuard)
+export class BillingAdminController {
+  constructor(private readonly billing: BillingService, private readonly audit: AuditService) {}
+
+  @Get('promo-codes')
+  listPromos() {
+    return { promo_codes: this.billing.listPromos() };
+  }
+
+  @Post('promo-codes')
+  @HttpCode(201)
+  createPromo(@CurrentUser() user: User, @Body() body: BillingPromoCreateDto, @Req() req: Request) {
+    const res = this.billing.createPromo(user.id, body);
+    if ('error' in res) throw new HttpException({ error: res.error }, 409);
+    this.audit.writeAudit({ userId: user.id, action: 'billing.promo_create', resource: res.code, ip: getClientIp(req), details: { percent_off: res.percent_off, max_uses: res.max_uses, expires_at: res.expires_at } });
+    return res;
+  }
+
+  @Put('promo-codes/:id')
+  updatePromo(@CurrentUser() user: User, @Param('id') id: string, @Body() body: BillingPromoUpdateDto, @Req() req: Request) {
+    const res = this.billing.setPromoActive(Number(id), body.active);
+    if (!res) throw new HttpException({ error: 'Promo code not found' }, 404);
+    this.audit.writeAudit({ userId: user.id, action: body.active ? 'billing.promo_enable' : 'billing.promo_disable', resource: res.code, ip: getClientIp(req) });
+    return res;
+  }
+
+  @Get('free-organizers')
+  listFreeOrganizers() {
+    return { free_organizers: this.billing.listFreeOrganizers() };
+  }
+
+  @Post('free-organizers')
+  @HttpCode(201)
+  addFreeOrganizer(@CurrentUser() user: User, @Body() body: BillingFreeOrganizerAddDto, @Req() req: Request) {
+    const res = this.billing.addFreeOrganizer(user.id, body.login, body.note);
+    if ('error' in res) throw new HttpException({ error: res.error }, 404);
+    this.audit.writeAudit({ userId: user.id, action: 'billing.free_organizer_add', resource: String(res.user_id), ip: getClientIp(req) });
+    return res;
+  }
+
+  @Delete('free-organizers/:userId')
+  removeFreeOrganizer(@CurrentUser() user: User, @Param('userId') userId: string, @Req() req: Request) {
+    if (!this.billing.removeFreeOrganizer(Number(userId))) throw new HttpException({ error: 'Not a free organizer' }, 404);
+    this.audit.writeAudit({ userId: user.id, action: 'billing.free_organizer_remove', resource: userId, ip: getClientIp(req) });
+    return { success: true };
   }
 }

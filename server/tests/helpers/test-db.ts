@@ -30,6 +30,8 @@ const RESET_TABLES = [
   // ENSCON 按趟收費：掛在 users／trips 上（SET NULL），先清
   'billing_events',
   'billing_purchases',
+  'billing_promo_codes',
+  'billing_free_organizers',
   'school_holiday_periods',
   'school_holiday_regions',
   'school_holiday_countries',

@@ -24,6 +24,7 @@ import { StorageService } from '../storage/storage.service';
 import { SettingsService } from '../settings/settings.service';
 import { NotFoundError, ValidationError } from '../common/domain-errors';
 import { TRIP_SELECT } from './trip-select';
+import { TripPaymentRequiredError, tripCreationNeedsPurchase } from '../billing/billing-gate';
 
 /**
  * The date range is refused, not cut short: generateDays used to clip the day
@@ -251,7 +252,12 @@ export class TripsService {
     `).all({ userId, archived });
   }
 
-  create(userId: number, data: CreateTripData) {
+  /**
+   * `opts.paid`：ENSCON 收費開團（BillingService）呼叫時帶 true，付過錢（或用了免費優惠碼）就不再擋。
+   * 其他所有入口（REST、MCP、外掛 RPC、匯入）都經過這裡，收費開啟時沒付款的一般帳號會拿到 402（billing-gate.ts）。
+   */
+  create(userId: number, data: CreateTripData, opts: { paid?: boolean } = {}) {
+    if (!opts.paid && tripCreationNeedsPurchase(this.dbs, userId)) throw new TripPaymentRequiredError();
     if (data.start_date && data.end_date) assertTripSpan(data.start_date, data.end_date);
     const rd = data.reminder_days !== undefined
       ? (Number(data.reminder_days) >= 0 && Number(data.reminder_days) <= 30 ? Number(data.reminder_days) : 3)
@@ -486,6 +492,8 @@ export class TripsService {
    * Packing items and to-dos are reset to unchecked. Returns the new trip's ID.
    */
   copy(sourceTripId: string | number, newOwnerId: number, title?: string): number {
+    // 複製也是開一個新團：收費開啟時一樣要先付款（billing-gate.ts）
+    if (tripCreationNeedsPurchase(this.dbs, newOwnerId)) throw new TripPaymentRequiredError();
     const src = this.db.prepare('SELECT * FROM trips WHERE id = ?').get(sourceTripId) as any;
     if (!src) throw new NotFoundError('Trip not found');
 

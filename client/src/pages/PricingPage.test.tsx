@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, screen, fireEvent } from '../../tests/helpers/render'
 import PricingPage from './PricingPage'
 
-// FE-PAGE-PRICING-001 to FE-PAGE-PRICING-006
+// FE-PAGE-PRICING-001 to FE-PAGE-PRICING-008
 // PricingPage 只是把 usePricing 接到畫面上（usePricing 另有測試），這裡把 hook 換掉，逐一渲染各種狀態。
 
 const mocks = vi.hoisted(() => ({ pricing: {} as Record<string, unknown> }))
@@ -10,6 +10,8 @@ vi.mock('./pricing/usePricing', () => ({ usePricing: () => mocks.pricing }))
 
 const buy = vi.fn()
 const setConsent = vi.fn()
+const setPromoCode = vi.fn()
+const goDashboard = vi.fn()
 const plan = {
   enabled: true, price_twd: 299, seats: 10, days_after_return: 30,
   consent_ver: '2026-10-20', terms_url: '/legal/terms', privacy_url: '/legal/privacy',
@@ -18,7 +20,8 @@ const plan = {
 function setPricing(over: Record<string, unknown> = {}) {
   mocks.pricing = {
     plan, loadFailed: false, enabled: true, isAuthenticated: true, consent: false, setConsent,
-    busy: false, error: null, canBuy: false, buy, canceled: false, ...over,
+    promoCode: '', setPromoCode, busy: false, error: null, canBuy: false, canOpenFree: false, freeOrganizer: false,
+    buy, goDashboard, canceled: false, ...over,
   }
 }
 
@@ -77,5 +80,22 @@ describe('PricingPage', () => {
     render(<PricingPage />)
     expect(screen.getByRole('status')).toHaveTextContent('Payment canceled')
     expect(screen.getByRole('alert')).toHaveTextContent('The terms were just updated')
+  })
+
+  it('FE-PAGE-PRICING-007: 優惠碼欄位與錯誤；團員加入免費寫在包含項目裡', () => {
+    setPricing({ error: 'promoUsedUp' })
+    render(<PricingPage />)
+    fireEvent.change(screen.getByRole('textbox', { name: 'Promo code (optional)' }), { target: { value: 'FREE100' } })
+    expect(setPromoCode).toHaveBeenCalledWith('FREE100')
+    expect(screen.getByRole('alert')).toHaveTextContent('This promo code has been used up.')
+    expect(screen.getByText(/Members join for free/)).toBeInTheDocument()
+  })
+
+  it('FE-PAGE-PRICING-008: 不用付款就能開團的人（免費主揪、管理員）看到「回首頁開團」', () => {
+    setPricing({ canOpenFree: true, freeOrganizer: true })
+    render(<PricingPage />)
+    expect(screen.getByRole('note')).toHaveTextContent('You can open trips without paying')
+    fireEvent.click(screen.getByRole('button', { name: 'Go to the dashboard' }))
+    expect(goDashboard).toHaveBeenCalled()
   })
 })

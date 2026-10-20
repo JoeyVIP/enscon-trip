@@ -13,9 +13,13 @@ import { z } from 'zod';
  */
 export const TRIP_BILLING_CONSENT_VERSION = '2026-10-20';
 
+export const BILLING_PROMO_CODE_PATTERN = /^[A-Za-z0-9_-]{3,40}$/;
+
 export const billingCheckoutRequestSchema = z.object({
   consent: z.literal(true),
   consent_ver: z.string().min(1).max(40),
+  /** 管理員在後台建的優惠碼；100% 折抵時不經過 Recur，直接開團。 */
+  promo_code: z.string().trim().max(40).optional(),
 });
 export type BillingCheckoutRequest = z.infer<typeof billingCheckoutRequestSchema>;
 
@@ -30,8 +34,9 @@ export const billingPlanSchema = z.object({
 });
 export type BillingPlan = z.infer<typeof billingPlanSchema>;
 
+/** url 是 Recur 付款頁；null＝不用付款（100% 優惠碼），團已經開好，直接到付款完成頁。 */
 export const billingCheckoutResponseSchema = z.object({
-  url: z.string().startsWith('https://'),
+  url: z.string().startsWith('https://').nullable(),
   ref: z.string(),
 });
 export type BillingCheckoutResponse = z.infer<typeof billingCheckoutResponseSchema>;
@@ -62,3 +67,61 @@ export const billingPurchaseSchema = z.object({
   paid_at: z.string().nullable(),
 });
 export type BillingPurchase = z.infer<typeof billingPurchaseSchema>;
+
+/** 登入者自己：開新團要不要先付款（收費關閉、管理員、免費主揪都不用）。 */
+export const billingMeSchema = z.object({
+  needs_purchase: z.boolean(),
+  free_organizer: z.boolean(),
+});
+export type BillingMe = z.infer<typeof billingMeSchema>;
+
+// ── 管理員後台：優惠碼、免費主揪 ──────────────────────────────────────────
+
+export const billingPromoCreateRequestSchema = z.object({
+  code: z.string().trim().regex(BILLING_PROMO_CODE_PATTERN),
+  percent_off: z.number().int().min(1).max(100),
+  /** null／不給＝不限次數 */
+  max_uses: z.number().int().min(1).max(1_000_000).nullable().optional(),
+  /** YYYY-MM-DD（台灣時間當天 23:59:59 到期）；null／不給＝不會到期 */
+  expires_on: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional(),
+  note: z.string().trim().max(200).nullable().optional(),
+});
+export type BillingPromoCreateRequest = z.infer<typeof billingPromoCreateRequestSchema>;
+
+export const billingPromoUpdateRequestSchema = z.object({
+  active: z.boolean(),
+});
+export type BillingPromoUpdateRequest = z.infer<typeof billingPromoUpdateRequestSchema>;
+
+export const billingPromoSchema = z.object({
+  id: z.number().int(),
+  code: z.string(),
+  percent_off: z.number().int(),
+  max_uses: z.number().int().nullable(),
+  used_count: z.number().int(),
+  expires_at: z.string().nullable(),
+  active: z.boolean(),
+  note: z.string().nullable(),
+  created_at: z.string(),
+});
+export type BillingPromo = z.infer<typeof billingPromoSchema>;
+
+/** 用帳號名稱或 Email 指定（管理員看得到的就是這兩個）。 */
+export const billingFreeOrganizerAddRequestSchema = z.object({
+  login: z.string().trim().min(1).max(200),
+  note: z.string().trim().max(200).nullable().optional(),
+});
+export type BillingFreeOrganizerAddRequest = z.infer<typeof billingFreeOrganizerAddRequestSchema>;
+
+export const billingFreeOrganizerSchema = z.object({
+  user_id: z.number().int(),
+  username: z.string(),
+  email: z.string(),
+  note: z.string().nullable(),
+  created_at: z.string(),
+});
+export type BillingFreeOrganizer = z.infer<typeof billingFreeOrganizerSchema>;

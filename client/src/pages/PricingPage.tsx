@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { Check, Users, CalendarClock, Link2, ShieldCheck } from 'lucide-react'
 import { useTranslation } from '../i18n'
-import { usePricing } from './pricing/usePricing'
+import { usePricing, type PricingError } from './pricing/usePricing'
 
 /**
  * /pricing — ENSCON 旅程按趟收費（未登入也看得到）。
@@ -10,7 +10,10 @@ import { usePricing } from './pricing/usePricing'
  */
 export default function PricingPage() {
   const { t } = useTranslation()
-  const { plan, loadFailed, enabled, isAuthenticated, consent, setConsent, busy, error, canBuy, buy, canceled } = usePricing()
+  const {
+    plan, loadFailed, enabled, isAuthenticated, consent, setConsent, promoCode, setPromoCode,
+    busy, error, canBuy, canOpenFree, buy, goDashboard, canceled,
+  } = usePricing()
 
   const price = plan?.price_twd ?? 299
   const buttonLabel = !enabled
@@ -45,6 +48,7 @@ export default function PricingPage() {
             <Item icon={<CalendarClock size={16} />}>{t('twBilling.includeValidity', { days: plan?.days_after_return ?? 30 })}</Item>
             <Item icon={<Link2 size={16} />}>{t('twBilling.includeInvite')}</Item>
             <Item icon={<Check size={16} />}>{t('twBilling.includeFeatures')}</Item>
+            <Item icon={<Users size={16} />}>{t('twBilling.includeMembersFree')}</Item>
           </ul>
         </section>
 
@@ -59,7 +63,26 @@ export default function PricingPage() {
         </section>
 
         <section className="flex flex-col gap-3">
+          {canOpenFree && (
+            <div role="note" className="text-sm rounded-xl border border-edge bg-surface-card px-4 py-3 flex flex-col gap-2">
+              <span>{t('twBilling.freeOrganizerNote')}</span>
+              <button type="button" onClick={goDashboard} className="self-start underline cursor-pointer">{t('twBilling.goDashboard')}</button>
+            </div>
+          )}
           <p className="text-sm rounded-xl border border-edge bg-surface-card px-4 py-3">{t('twBilling.withdrawalNotice')}</p>
+          {enabled && isAuthenticated && (
+            <label className="flex flex-col gap-1 text-sm">
+              <span>{t('twBilling.promoLabel')}</span>
+              <input
+                type="text"
+                value={promoCode}
+                onChange={(e) => setPromoCode(e.target.value)}
+                placeholder={t('twBilling.promoPlaceholder')}
+                autoCapitalize="characters"
+                className="rounded-lg border border-edge bg-surface px-3 py-2 text-content"
+              />
+            </label>
+          )}
           {enabled && isAuthenticated && (
             <label className="flex items-start gap-2 text-sm cursor-pointer">
               <input
@@ -73,7 +96,7 @@ export default function PricingPage() {
           )}
           {error && (
             <p role="alert" className="text-sm text-content">
-              {error === 'consentOutdated' ? t('twBilling.errorConsentOutdated') : t('twBilling.errorGeneric')}
+              {t(ERROR_KEYS[error])}
             </p>
           )}
           {loadFailed && <p role="alert" className="text-sm text-content">{t('twBilling.errorGeneric')}</p>}
@@ -101,6 +124,14 @@ export default function PricingPage() {
       </main>
     </div>
   )
+}
+
+const ERROR_KEYS: Record<NonNullable<PricingError>, string> = {
+  generic: 'twBilling.errorGeneric',
+  consentOutdated: 'twBilling.errorConsentOutdated',
+  promoNotFound: 'twBilling.errorPromoNotFound',
+  promoExpired: 'twBilling.errorPromoExpired',
+  promoUsedUp: 'twBilling.errorPromoUsedUp',
 }
 
 function Item({ icon, children }: { icon: ReactNode; children: ReactNode }) {

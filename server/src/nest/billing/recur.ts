@@ -34,6 +34,8 @@ export interface RecurCheckoutInput {
   cancelUrl: string;
   externalCustomerId: string;
   metadata: Record<string, string>;
+  /** Recur 後台建的優惠碼原字串（官方欄位 promotion_code，建立時由 Recur 驗證與計算折扣） */
+  promotionCode?: string;
 }
 
 export type RecurCheckoutResult = { ok: true; id: string; url: string } | { ok: false; status: number };
@@ -52,6 +54,7 @@ export async function createRecurCheckout(input: RecurCheckoutInput, fetchImpl: 
         cancel_url: input.cancelUrl,
         external_customer_id: input.externalCustomerId,
         metadata: input.metadata,
+        ...(input.promotionCode ? { promotion_code: input.promotionCode } : {}),
       }),
       signal: AbortSignal.timeout(CHECKOUT_TIMEOUT_MS),
     });

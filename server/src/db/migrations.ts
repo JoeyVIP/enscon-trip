@@ -5296,9 +5296,33 @@ function runMigrations(db: Database.Database): void {
      * invoice_status／invoice_number 只先留欄位：發票這版不開（另有負責人），付款後標成 pending 給開票那端接手。
      *
      * billing_events：收過的 Recur 通知，event_id 當主鍵做去重（Recur 重送同一則不會處理兩次）。
+     *
+     * billing_promo_codes：管理員在後台建的優惠碼（折抵 1–100%，100% 就是免費開團；可設使用次數上限、到期日、停用）。
+     * billing_free_organizers：管理員指定的「免費主揪」帳號，不用付款就能開新團。刪帳號時這一列跟著刪（CASCADE），
+     * 它只是一個設定，不是付款紀錄。
+     *
+     * 收費只擋「開新團」：已經存在的行程（沖繩團）和它的成員不經過這些表，也不會被改到。
      */
     () => {
       db.exec(`
+        CREATE TABLE IF NOT EXISTS billing_promo_codes (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          code TEXT NOT NULL UNIQUE COLLATE NOCASE,
+          percent_off INTEGER NOT NULL CHECK (percent_off BETWEEN 1 AND 100),
+          max_uses INTEGER,
+          used_count INTEGER NOT NULL DEFAULT 0,
+          expires_at TEXT,
+          active INTEGER NOT NULL DEFAULT 1,
+          note TEXT,
+          created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+          created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+        );
+        CREATE TABLE IF NOT EXISTS billing_free_organizers (
+          user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+          note TEXT,
+          created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+          created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+        );
         CREATE TABLE IF NOT EXISTS billing_purchases (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           ref TEXT NOT NULL UNIQUE,
@@ -5315,6 +5339,8 @@ function runMigrations(db: Database.Database): void {
           trip_id INTEGER REFERENCES trips(id) ON DELETE SET NULL,
           consent_at TEXT NOT NULL,
           consent_ver TEXT NOT NULL,
+          promo_code_id INTEGER REFERENCES billing_promo_codes(id) ON DELETE SET NULL,
+          promo_code TEXT,
           refunded_amount INTEGER,
           invoice_status TEXT NOT NULL DEFAULT 'none',
           invoice_number TEXT,

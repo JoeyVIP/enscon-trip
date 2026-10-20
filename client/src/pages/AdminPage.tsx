@@ -14,7 +14,8 @@ import AuditLogPanel from '../components/Admin/AuditLogPanel'
 import AdminMcpTokensPanel from '../components/Admin/AdminMcpTokensPanel'
 import AdminPluginsPanel from '../components/Admin/AdminPluginsPanel'
 import AdminStoragePanel from '../components/Admin/storage/AdminStoragePanel'
-import { Users, Map, Briefcase, Shield, FileText, SlidersHorizontal, UserCog, Puzzle, Blocks, Settings as SettingsIcon, Bell, Database, ScrollText, KeyRound, GitBranch, Bug, HardDrive } from 'lucide-react'
+import BillingAdminPanel from '../components/Admin/BillingAdminPanel'
+import { Users, Map, Briefcase, Shield, FileText, SlidersHorizontal, UserCog, Puzzle, Blocks, Settings as SettingsIcon, Bell, Database, ScrollText, KeyRound, GitBranch, Bug, HardDrive, Ticket } from 'lucide-react'
 import PageSidebar, { type PageSidebarTab } from '../components/Layout/PageSidebar'
 import { useAdmin } from './admin/useAdmin'
 import AdminUpdateBanner from './admin/AdminUpdateBanner'
@@ -57,6 +58,8 @@ function AdminPageDesktop(): React.ReactElement {
     { id: 'settings', label: t('admin.tabs.settings'), icon: SettingsIcon, group: gConfig },
     { id: 'addons', label: t('admin.tabs.addons'), icon: Puzzle, group: gConfig },
     { id: 'plugins', label: t('admin.tabs.plugins'), icon: Blocks, group: gConfig },
+    // ENSCON：按趟收費的優惠碼與免費主揪
+    { id: 'billing', label: t('twBilling.adminTab'), icon: Ticket, group: gConfig },
     // Storage backends and their credentials are hoster-level configuration —
     // the server refuses the whole surface in managed mode (MANAGED_FORBIDDEN).
     ...(managed ? [] : [{ id: 'storage', label: t('admin.tabs.storage'), icon: HardDrive, group: gConfig }]),
@@ -191,6 +194,8 @@ function AdminPageDesktop(): React.ReactElement {
           {activeTab === 'mcp-tokens' && <AdminMcpTokensPanel />}
 
           {activeTab === 'plugins' && <AdminPluginsPanel />}
+
+          {activeTab === 'billing' && <BillingAdminPanel />}
 
           {activeTab === 'storage' && <AdminStoragePanel />}
 

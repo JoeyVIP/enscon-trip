@@ -21,7 +21,7 @@ import type { TransitProvider, TransitKeySource } from '@trek/shared'
  */
 const ADMIN_TAB_IDS = [
   'users', 'defaults', 'config', 'settings', 'addons', 'plugins', 'storage',
-  'notifications', 'mcp-tokens', 'github', 'backup', 'audit', 'dev-notifications',
+  'notifications', 'mcp-tokens', 'github', 'backup', 'audit', 'dev-notifications', 'billing',
 ]
 
 /**

@@ -2,7 +2,10 @@ import { describe, it, expect } from 'vitest';
 import {
   TRIP_BILLING_CONSENT_VERSION,
   billingCheckoutRequestSchema,
+  billingCheckoutResponseSchema,
+  billingFreeOrganizerAddRequestSchema,
   billingPlanSchema,
+  billingPromoCreateRequestSchema,
   billingPurchaseSchema,
 } from './billing.schema';
 
@@ -30,5 +33,25 @@ describe('billing contract', () => {
     };
     expect(billingPurchaseSchema.parse(p)).toEqual(p);
     expect(billingPurchaseSchema.safeParse({ ...p, status: 'paid' }).success).toBe(false);
+  });
+
+  it('checkout 可以帶優惠碼；100% 折抵時沒有付款頁網址', () => {
+    const req = { consent: true, consent_ver: TRIP_BILLING_CONSENT_VERSION, promo_code: ' FREE100 ' };
+    expect(billingCheckoutRequestSchema.parse(req).promo_code).toBe('FREE100');
+    expect(billingCheckoutResponseSchema.safeParse({ url: null, ref: 'r' }).success).toBe(true);
+    expect(billingCheckoutResponseSchema.safeParse({ url: 'http://x', ref: 'r' }).success).toBe(false);
+  });
+
+  it('優惠碼：1–100%、次數上限與到期日可不填、代碼格式', () => {
+    expect(billingPromoCreateRequestSchema.safeParse({ code: 'FREE100', percent_off: 100 }).success).toBe(true);
+    const full = { code: 'TRY-50', percent_off: 50, max_uses: 3, expires_on: '2027-03-31', note: 'x' };
+    expect(billingPromoCreateRequestSchema.safeParse(full).success).toBe(true);
+    expect(billingPromoCreateRequestSchema.safeParse({ code: 'FREE100', percent_off: 0 }).success).toBe(false);
+    expect(billingPromoCreateRequestSchema.safeParse({ code: 'FREE100', percent_off: 101 }).success).toBe(false);
+    expect(billingPromoCreateRequestSchema.safeParse({ code: 'a b', percent_off: 10 }).success).toBe(false);
+    expect(billingPromoCreateRequestSchema.safeParse({ code: 'OK1', percent_off: 10, expires_on: '2027/3/1' }).success).toBe(
+      false,
+    );
+    expect(billingFreeOrganizerAddRequestSchema.safeParse({ login: '' }).success).toBe(false);
   });
 });

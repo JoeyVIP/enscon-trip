@@ -33,7 +33,7 @@ import { TRIP_BILLING_CONSENT_VERSION } from '@trek/shared';
 import { createTables } from '../../../../src/db/schema';
 import { runMigrations } from '../../../../src/db/migrations';
 import { resetTestDb } from '../../../helpers/test-db';
-import { createUser } from '../../../helpers/factories';
+import { createAdmin, createUser } from '../../../helpers/factories';
 import { DatabaseService } from '../../../../src/nest/database/database.service';
 import { PermissionsService } from '../../../../src/nest/permissions/permissions.service';
 import { TripMembershipService } from '../../../../src/nest/trip-membership/trip-membership.service';
@@ -48,7 +48,7 @@ const PRODUCT = 'prod_trip_once_test';
 
 const dbs = new DatabaseService(testDb);
 const invites = new TripInviteService(dbs, new PermissionsService(dbs), new TripMembershipService(dbs));
-const tripsCreate = vi.fn((userId: number, data: { title: string }) => {
+const tripsCreate = vi.fn((userId: number, data: { title: string }, _opts?: { paid?: boolean }) => {
   const r = testDb.prepare('INSERT INTO trips (user_id, title) VALUES (?, ?)').run(userId, data.title);
   return { trip: null, tripId: Number(r.lastInsertRowid), reminderDays: 3 };
 });
@@ -73,7 +73,7 @@ function okFetch(id = 'cs_test_1') {
 
 /** 付款人登入後建一筆結帳，回傳 ref。 */
 async function checkout(userId: number, sessionId = 'cs_test_1') {
-  const res = await svc.startCheckout({ id: userId }, TRIP_BILLING_CONSENT_VERSION, okFetch(sessionId) as unknown as typeof fetch);
+  const res = await svc.startCheckout({ id: userId }, TRIP_BILLING_CONSENT_VERSION, undefined, okFetch(sessionId) as unknown as typeof fetch);
   if (!res.ok) throw new Error('checkout failed');
   return res.ref;
 }
@@ -135,14 +135,14 @@ describe('BillingService.plan', () => {
 describe('BillingService.startCheckout', () => {
   it('BILL-010: 收費關閉時不打 Recur，回 503', async () => {
     const f = okFetch();
-    const res = await svc.startCheckout({ id: 1 }, TRIP_BILLING_CONSENT_VERSION, f as unknown as typeof fetch);
+    const res = await svc.startCheckout({ id: 1 }, TRIP_BILLING_CONSENT_VERSION, undefined, f as unknown as typeof fetch);
     expect(res).toEqual({ ok: false, status: 503, error: 'billing_disabled' });
     expect(f).not.toHaveBeenCalled();
   });
 
   it('BILL-011: 同意的版本不是現行版本 → 409', async () => {
     enableBilling();
-    const res = await svc.startCheckout({ id: 1 }, '1999-01-01', okFetch() as unknown as typeof fetch);
+    const res = await svc.startCheckout({ id: 1 }, '1999-01-01', undefined, okFetch() as unknown as typeof fetch);
     expect(res).toEqual({ ok: false, status: 409, error: 'consent_outdated' });
   });
 
@@ -150,7 +150,7 @@ describe('BillingService.startCheckout', () => {
     enableBilling();
     const { user } = createUser(testDb);
     const f = okFetch('cs_test_abc');
-    const res = await svc.startCheckout({ id: user.id }, TRIP_BILLING_CONSENT_VERSION, f as unknown as typeof fetch);
+    const res = await svc.startCheckout({ id: user.id }, TRIP_BILLING_CONSENT_VERSION, undefined, f as unknown as typeof fetch);
     expect(res.ok).toBe(true);
     if (!res.ok) return;
     expect(res.url).toBe('https://checkout.recur.tw/cs_test_abc');
@@ -165,7 +165,7 @@ describe('BillingService.startCheckout', () => {
   it('BILL-013: Recur 回錯誤 → 502，不寫任何一列', async () => {
     enableBilling();
     const f = vi.fn(async () => new Response('{"error":"x"}', { status: 400 }));
-    const res = await svc.startCheckout({ id: 1 }, TRIP_BILLING_CONSENT_VERSION, f as unknown as typeof fetch);
+    const res = await svc.startCheckout({ id: 1 }, TRIP_BILLING_CONSENT_VERSION, undefined, f as unknown as typeof fetch);
     expect(res).toEqual({ ok: false, status: 502, error: 'recur_error' });
     expect((testDb.prepare('SELECT COUNT(*) AS n FROM billing_purchases').get() as { n: number }).n).toBe(0);
   });
@@ -208,6 +208,8 @@ describe('BillingService.handleWebhook — 付款成功開團', () => {
     const trip = testDb.prepare('SELECT * FROM trips WHERE id = ?').get(row.trip_id) as { user_id: number; title: string };
     expect(trip.user_id).toBe(user.id);
     expect(trip.title).toBe('joey 的旅程');
+    // 開團走付款這條路，帶 paid 跳過「開新團要先付款」的檢查
+    expect(tripsCreate.mock.calls[0][2]).toEqual({ paid: true });
     expect(invites.get(row.trip_id as number)?.token).toEqual(expect.any(String));
 
     const view = svc.getPurchase(user.id, ref);
@@ -349,5 +351,86 @@ describe('BillingService.notifyPayer', () => {
   it('BILL-050: 寄信失敗不丟例外', async () => {
     sendEmail.mockRejectedValueOnce(new Error('smtp down'));
     await expect(svc.notifyPayer({ to: 'a@example.test', ref: 'r', userId: 1 })).resolves.toBe(false);
+  });
+});
+
+describe('優惠碼', () => {
+  function admin() { return createAdmin(testDb).user; }
+  const used = (code: string) =>
+    (testDb.prepare('SELECT used_count FROM billing_promo_codes WHERE code = ?').get(code) as { used_count: number }).used_count;
+
+  it('PROMO-001: 100% 優惠碼 → 不打 Recur、直接開團、url 為 null、次數 +1、金額 0', async () => {
+    enableBilling();
+    svc.createPromo(admin().id, { code: 'free100', percent_off: 100 });
+    const { user } = createUser(testDb);
+    const f = okFetch();
+    const res = await svc.startCheckout({ id: user.id }, TRIP_BILLING_CONSENT_VERSION, ' Free100 ', f as unknown as typeof fetch);
+    expect(res).toMatchObject({ ok: true, url: null });
+    expect(f).not.toHaveBeenCalled();
+    if (!res.ok) return;
+    expect(purchaseRow(res.ref)).toMatchObject({ status: 'fulfilled', amount: 0, promo_code: 'FREE100', invoice_status: 'none' });
+    expect(used('FREE100')).toBe(1);
+    expect(tripCount()).toBe(1);
+    expect(svc.getPurchase(user.id, res.ref)?.invite_token).toEqual(expect.any(String));
+  });
+
+  it('PROMO-002: 次數上限用完 → promo_used_up，不開第二團', async () => {
+    enableBilling();
+    svc.createPromo(admin().id, { code: 'ONCE', percent_off: 100, max_uses: 1 });
+    const { user } = createUser(testDb);
+    expect((await svc.startCheckout({ id: user.id }, TRIP_BILLING_CONSENT_VERSION, 'ONCE')).ok).toBe(true);
+    expect(await svc.startCheckout({ id: user.id }, TRIP_BILLING_CONSENT_VERSION, 'ONCE')).toEqual({ ok: false, status: 400, error: 'promo_used_up' });
+    expect(tripCount()).toBe(1);
+    expect(used('ONCE')).toBe(1);
+  });
+
+  it('PROMO-003: 過期、停用、不存在的碼都不能用', async () => {
+    enableBilling();
+    const a = admin();
+    svc.createPromo(a.id, { code: 'OLD', percent_off: 100, expires_on: '2020-01-01' });
+    const off = svc.createPromo(a.id, { code: 'OFF', percent_off: 100 });
+    if ('error' in off) throw new Error('create failed');
+    expect(svc.setPromoActive(off.id, false)?.active).toBe(false);
+    const { user } = createUser(testDb);
+    expect(await svc.startCheckout({ id: user.id }, TRIP_BILLING_CONSENT_VERSION, 'OLD')).toMatchObject({ ok: false, error: 'promo_expired' });
+    expect(await svc.startCheckout({ id: user.id }, TRIP_BILLING_CONSENT_VERSION, 'OFF')).toMatchObject({ ok: false, error: 'promo_not_found' });
+    expect(await svc.startCheckout({ id: user.id }, TRIP_BILLING_CONSENT_VERSION, 'NOPE')).toMatchObject({ ok: false, error: 'promo_not_found' });
+    expect(tripCount()).toBe(0);
+  });
+
+  it('PROMO-004: 到期日是台灣時間那天的最後一刻', () => {
+    const p = svc.createPromo(admin().id, { code: 'NEWYEAR', percent_off: 100, expires_on: '2027-01-01' });
+    expect(p).toMatchObject({ expires_at: '2027-01-01T15:59:59.999Z' });
+  });
+
+  it('PROMO-005: 打折的碼 → 帶給 Recur 的 promotion_code，付款成功才算用掉一次', async () => {
+    enableBilling();
+    svc.createPromo(admin().id, { code: 'HALF', percent_off: 50 });
+    const { user } = createUser(testDb);
+    const f = okFetch();
+    const res = await svc.startCheckout({ id: user.id }, TRIP_BILLING_CONSENT_VERSION, 'half', f as unknown as typeof fetch);
+    expect(res).toMatchObject({ ok: true, url: 'https://checkout.recur.tw/cs_test_1' });
+    const sent = JSON.parse((f.mock.calls[0] as unknown as [string, RequestInit])[1].body as string);
+    expect(sent.promotion_code).toBe('HALF');
+    expect(used('HALF')).toBe(0);
+    deliver(paidEvent({ amount: 150 }));
+    expect(used('HALF')).toBe(1);
+    deliver(paidEvent({ amount: 150 }));
+    expect(used('HALF')).toBe(1);
+  });
+
+  it('PROMO-006: 收費關閉時優惠碼也不能用（行為不變：即將開放）', async () => {
+    svc.createPromo(admin().id, { code: 'FREE100', percent_off: 100 });
+    const { user } = createUser(testDb);
+    expect(await svc.startCheckout({ id: user.id }, TRIP_BILLING_CONSENT_VERSION, 'FREE100')).toEqual({ ok: false, status: 503, error: 'billing_disabled' });
+    expect(tripCount()).toBe(0);
+  });
+
+  it('PROMO-007: 同一個碼不能建兩次（大小寫不分），列表看得到次數', () => {
+    const a = admin();
+    svc.createPromo(a.id, { code: 'DUP', percent_off: 10, max_uses: 5, note: '測試' });
+    expect(svc.createPromo(a.id, { code: 'dup', percent_off: 20 })).toEqual({ error: 'promo_exists' });
+    expect(svc.listPromos()).toEqual([expect.objectContaining({ code: 'DUP', percent_off: 10, max_uses: 5, used_count: 0, active: true, note: '測試' })]);
+    expect(svc.setPromoActive(999, true)).toBeNull();
   });
 });

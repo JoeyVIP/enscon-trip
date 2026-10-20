@@ -1,6 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import crypto from 'crypto';
-import { TRIP_BILLING_CONSENT_VERSION, type BillingPlan, type BillingPurchase, type BillingPurchaseStatus } from '@trek/shared';
+import {
+  TRIP_BILLING_CONSENT_VERSION,
+  type BillingFreeOrganizer,
+  type BillingMe,
+  type BillingPlan,
+  type BillingPromo,
+  type BillingPromoCreateRequest,
+  type BillingPurchase,
+  type BillingPurchaseStatus,
+} from '@trek/shared';
 import { getAppUrl, readEnv } from '../../app-config';
 import { DatabaseService } from '../database/database.service';
 import { TripsService } from '../trips/trips.service';
@@ -8,6 +17,7 @@ import { TripInviteService } from '../trip-invite/trip-invite.service';
 import { MailerService } from '../notifications/mailer/mailer.service';
 import { logWarn } from '../audit/audit-log.logger';
 import { createRecurCheckout, verifyRecurSignature } from './recur';
+import { isFreeOrganizer, tripCreationNeedsPurchase } from './billing-gate';
 
 /**
  * ENSCON 旅程按趟收費：Recur 單次付款 → order.paid → 開一個空行程給付款人（他就是擁有者）＋產生行程邀請連結。
@@ -19,9 +29,31 @@ import { createRecurCheckout, verifyRecurSignature } from './recur';
  * 不看 Email（Recur 同一個 Email 只有一個顧客，曾經認錯人，方案 §1「誰付的錢」）。
  */
 
+export type CheckoutError =
+  | 'billing_disabled' | 'consent_outdated' | 'recur_error'
+  | 'promo_not_found' | 'promo_expired' | 'promo_used_up';
+
+/** url null＝100% 優惠碼，不用付款，團已經開好。 */
 export type CheckoutResult =
-  | { ok: true; url: string; ref: string }
-  | { ok: false; status: number; error: 'billing_disabled' | 'consent_outdated' | 'recur_error' };
+  | { ok: true; url: string | null; ref: string }
+  | { ok: false; status: number; error: CheckoutError };
+
+interface PromoRow {
+  id: number;
+  code: string;
+  percent_off: number;
+  max_uses: number | null;
+  used_count: number;
+  expires_at: string | null;
+  active: number;
+  note: string | null;
+  created_at: string;
+}
+
+/** 台灣時間（UTC+8）那一天的 23:59:59.999，存成 ISO。 */
+export function endOfTaiwanDay(ymd: string): string {
+  return new Date(Date.parse(`${ymd}T23:59:59.999+08:00`)).toISOString();
+}
 
 export interface WebhookResult {
   status: number;
@@ -42,6 +74,7 @@ interface PurchaseRow {
   payer_email: string | null;
   trip_id: number | null;
   paid_at: string | null;
+  promo_code_id: number | null;
 }
 
 interface RecurEvent {
@@ -93,16 +126,36 @@ export class BillingService {
     };
   }
 
+  /** 登入者自己：開新團要不要先付款。 */
+  me(userId: number): BillingMe {
+    return {
+      needs_purchase: tripCreationNeedsPurchase(this.dbs, userId),
+      free_organizer: isFreeOrganizer(this.dbs, userId),
+    };
+  }
+
   /**
-   * 建 Recur 結帳。同意框（七日解除權排除的「事先同意」）由 DTO 擋 consent:true，這裡再對版本。
-   * 結帳 session 建成功才寫一列 pending，連同同意時間與版本（billing-plan §4-1 第 2 點）。
+   * 建結帳。同意框（七日解除權排除的「事先同意」）由 DTO 擋 consent:true，這裡再對版本。
+   * - 有優惠碼：先看能不能用（存在、啟用、沒過期、還有次數）。
+   * - 100% 優惠碼：不經過 Recur，直接開團（次數在同一個交易裡原子加一，搶最後一次只有一個人拿得到）。
+   * - 其他：建 Recur 結帳 session（優惠碼原字串帶給 Recur 的 promotion_code，所以 Recur 後台也要建同一個碼），
+   *   成功才寫一列 pending，連同同意時間與版本（billing-plan §4-1 第 2 點）。
    */
-  async startCheckout(user: { id: number }, consentVer: string, fetchImpl: typeof fetch = fetch): Promise<CheckoutResult> {
+  async startCheckout(user: { id: number }, consentVer: string, promoCode?: string, fetchImpl: typeof fetch = fetch): Promise<CheckoutResult> {
     const b = readEnv().billing;
     if (!b.enabled) return { ok: false, status: 503, error: 'billing_disabled' };
     if (consentVer !== TRIP_BILLING_CONSENT_VERSION) return { ok: false, status: 409, error: 'consent_outdated' };
 
+    let promo: PromoRow | null = null;
+    if (promoCode?.trim()) {
+      const found = this.usablePromo(promoCode.trim());
+      if ('error' in found) return { ok: false, status: 400, error: found.error };
+      promo = found.promo;
+    }
+
     const ref = crypto.randomBytes(18).toString('base64url');
+    if (promo && promo.percent_off >= 100) return this.redeemFree(user.id, ref, promo, consentVer);
+
     const appUrl = getAppUrl();
     const res = await createRecurCheckout({
       secretKey: b.secretKey,
@@ -111,17 +164,64 @@ export class BillingService {
       cancelUrl: `${appUrl}/pricing?canceled=1`,
       externalCustomerId: `enscon-trip-${user.id}`,
       metadata: { source: 'enscon-trip', purchase_ref: ref, user_id: String(user.id) },
+      promotionCode: promo?.code,
     }, fetchImpl);
     if (!res.ok) {
-      logWarn(`[billing] Recur checkout failed status=${res.status} user=${user.id}`);
+      logWarn(`[billing] Recur checkout failed status=${res.status} user=${user.id}${promo ? ' (with promo code)' : ''}`);
       return { ok: false, status: 502, error: 'recur_error' };
     }
     this.dbs.run(
-      `INSERT INTO billing_purchases (ref, user_id, checkout_id, product_id, livemode, status, seats, consent_at, consent_ver)
-       VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, ?)`,
-      ref, user.id, res.id, b.productId, b.livemode ? 1 : 0, b.seats, nowIso(), consentVer,
+      `INSERT INTO billing_purchases (ref, user_id, checkout_id, product_id, livemode, status, seats, consent_at, consent_ver, promo_code_id, promo_code)
+       VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?)`,
+      ref, user.id, res.id, b.productId, b.livemode ? 1 : 0, b.seats, nowIso(), consentVer, promo?.id ?? null, promo?.code ?? null,
     );
     return { ok: true, url: res.url, ref };
+  }
+
+  private usablePromo(code: string): { promo: PromoRow } | { error: 'promo_not_found' | 'promo_expired' | 'promo_used_up' } {
+    const promo = this.dbs.get<PromoRow>('SELECT * FROM billing_promo_codes WHERE code = ? COLLATE NOCASE', code);
+    if (!promo || promo.active !== 1) return { error: 'promo_not_found' };
+    if (promo.expires_at && Date.parse(promo.expires_at) < Date.now()) return { error: 'promo_expired' };
+    if (promo.max_uses !== null && promo.used_count >= promo.max_uses) return { error: 'promo_used_up' };
+    return { promo };
+  }
+
+  /** 次數原子加一；已經用完（或剛好被停用）就回 false，不會超用。 */
+  private claimPromo(id: number): boolean {
+    return this.dbs.run(
+      `UPDATE billing_promo_codes SET used_count = used_count + 1
+       WHERE id = ? AND active = 1 AND (max_uses IS NULL OR used_count < max_uses)`,
+      id,
+    ).changes === 1;
+  }
+
+  /** 100% 優惠碼：同一個交易裡扣次數、寫一列、開團。任何一步失敗整筆回滾，次數不會被白白扣掉。 */
+  private redeemFree(userId: number, ref: string, promo: PromoRow, consentVer: string): CheckoutResult {
+    const b = readEnv().billing;
+    return this.dbs.transaction((): CheckoutResult => {
+      if (!this.claimPromo(promo.id)) return { ok: false, status: 400, error: 'promo_used_up' };
+      const at = nowIso();
+      const id = Number(this.dbs.run(
+        `INSERT INTO billing_purchases (ref, user_id, product_id, livemode, status, seats, amount, currency, consent_at, consent_ver, promo_code_id, promo_code, paid_at)
+         VALUES (?, ?, ?, ?, 'pending', ?, 0, 'TWD', ?, ?, ?, ?, ?)`,
+        ref, userId, b.productId, b.livemode ? 1 : 0, b.seats, at, consentVer, promo.id, promo.code, at,
+      ).lastInsertRowid);
+      const user = this.dbs.get<{ id: number; username: string }>('SELECT id, username FROM users WHERE id = ?', userId);
+      if (!user) throw new Error('billing: redeeming user vanished');
+      const tripId = this.openTrip(user);
+      this.dbs.run(
+        "UPDATE billing_purchases SET status = 'fulfilled', trip_id = ?, fulfilled_at = ?, updated_at = ? WHERE id = ?",
+        tripId, at, at, id,
+      );
+      return { ok: true, url: null, ref };
+    });
+  }
+
+  /** 開一個空行程給付款人（他就是擁有者）＋行程邀請連結。收費檢查已經由付款／優惠碼滿足，所以帶 paid。 */
+  private openTrip(user: { id: number; username: string }): number {
+    const { tripId } = this.trips.create(user.id, { title: `${user.username} 的旅程` }, { paid: true });
+    this.invites.createOrRotate(tripId, user.id, null);
+    return tripId;
   }
 
   /** 付款人自己的那一筆。別人的 ref 一律當不存在。邀請連結只給仍是擁有者的人看。 */
@@ -247,8 +347,11 @@ export class BillingService {
     const user = this.dbs.get<{ id: number; username: string }>('SELECT id, username FROM users WHERE id = ?', purchase.user_id);
     if (!user) return { outcome: 'unmatched', purchaseId: purchase.id, detail };
 
-    const { tripId } = this.trips.create(user.id, { title: `${user.username} 的旅程` });
-    this.invites.createOrRotate(tripId, user.id, null);
+    const tripId = this.openTrip(user);
+    // 打了折的優惠碼：付款成功才算用掉一次。剛好被別人用完也照樣開團（錢已經照 Recur 的折扣付了），只記一筆。
+    if (purchase.promo_code_id !== null && !this.claimPromo(purchase.promo_code_id)) {
+      logWarn(`[billing] promo ${purchase.promo_code_id} was used up before order ${orderId ?? '-'} was paid; trip opened anyway`);
+    }
 
     const customer = (d.customer && typeof d.customer === 'object' ? d.customer : {}) as Record<string, unknown>;
     const email = str(customer.email) ?? str(d.customer_email) ?? purchase.payer_email;
@@ -310,6 +413,50 @@ export class BillingService {
     return { outcome: status, purchaseId: purchase.id, detail };
   }
 
+  // ── 管理員後台 ──────────────────────────────────────────────────────────
+
+  listPromos(): BillingPromo[] {
+    return this.dbs.all<PromoRow>('SELECT * FROM billing_promo_codes ORDER BY created_at DESC, id DESC').map(toPromo);
+  }
+
+  createPromo(adminId: number, req: BillingPromoCreateRequest): BillingPromo | { error: 'promo_exists' } {
+    const code = req.code.trim().toUpperCase();
+    if (this.dbs.get('SELECT 1 FROM billing_promo_codes WHERE code = ? COLLATE NOCASE', code)) return { error: 'promo_exists' };
+    const id = Number(this.dbs.run(
+      'INSERT INTO billing_promo_codes (code, percent_off, max_uses, expires_at, note, created_by) VALUES (?, ?, ?, ?, ?, ?)',
+      code, req.percent_off, req.max_uses ?? null, req.expires_on ? endOfTaiwanDay(req.expires_on) : null, req.note || null, adminId,
+    ).lastInsertRowid);
+    return toPromo(this.dbs.get<PromoRow>('SELECT * FROM billing_promo_codes WHERE id = ?', id)!);
+  }
+
+  /** 只開關，不刪：用過的碼還連著購買紀錄。 */
+  setPromoActive(id: number, active: boolean): BillingPromo | null {
+    const changed = this.dbs.run('UPDATE billing_promo_codes SET active = ? WHERE id = ?', active ? 1 : 0, id).changes;
+    return changed ? toPromo(this.dbs.get<PromoRow>('SELECT * FROM billing_promo_codes WHERE id = ?', id)!) : null;
+  }
+
+  listFreeOrganizers(): BillingFreeOrganizer[] {
+    return this.dbs.all<BillingFreeOrganizer>(
+      `SELECT f.user_id, u.username, u.email, f.note, f.created_at
+       FROM billing_free_organizers f JOIN users u ON u.id = f.user_id ORDER BY f.created_at DESC`,
+    );
+  }
+
+  /** 用帳號名稱或 Email 找人（大小寫不分）。已經是免費主揪就原樣回傳。 */
+  addFreeOrganizer(adminId: number, login: string, note?: string | null): BillingFreeOrganizer | { error: 'user_not_found' } {
+    const user = this.dbs.get<{ id: number }>(
+      'SELECT id FROM users WHERE LOWER(username) = LOWER(?) OR LOWER(email) = LOWER(?) ORDER BY id LIMIT 1',
+      login.trim(), login.trim(),
+    );
+    if (!user) return { error: 'user_not_found' };
+    this.dbs.run('INSERT OR IGNORE INTO billing_free_organizers (user_id, note, created_by) VALUES (?, ?, ?)', user.id, note || null, adminId);
+    return this.listFreeOrganizers().find((f) => f.user_id === user.id)!;
+  }
+
+  removeFreeOrganizer(userId: number): boolean {
+    return this.dbs.run('DELETE FROM billing_free_organizers WHERE user_id = ?', userId).changes === 1;
+  }
+
   /**
    * 開團後寄一封信到付款 Email。信裡只放「付款完成頁」的網址（要登入才看得到邀請連結），
    * 不直接放邀請連結：轉寄出去就會被別人用掉（方案 §3 第 ⑤ 步）。
@@ -340,4 +487,18 @@ function isRecurEvent(v: unknown): v is RecurEvent {
   const e = v as Partial<RecurEvent> | null;
   return !!e && typeof e.id === 'string' && e.id !== '' && typeof e.type === 'string'
     && !!e.data && typeof e.data === 'object' && !Array.isArray(e.data);
+}
+
+function toPromo(r: PromoRow): BillingPromo {
+  return {
+    id: r.id,
+    code: r.code,
+    percent_off: r.percent_off,
+    max_uses: r.max_uses,
+    used_count: r.used_count,
+    expires_at: r.expires_at,
+    active: r.active === 1,
+    note: r.note,
+    created_at: r.created_at,
+  };
 }
