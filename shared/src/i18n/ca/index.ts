@@ -1,6 +1,7 @@
 import admin from './admin';
 import dawarich from './dawarich';
 import docsync from './docsync';
+import twLineShare from './twLineShare';
 import twOutfit from './twOutfit';
 import airport from './airport';
 import atlas from './atlas';
@@ -111,6 +112,7 @@ const locale = {
   ...storage,
   ...dawarich,
   ...docsync,
+  ...twLineShare,
   ...twOutfit,
 };
 export default locale;

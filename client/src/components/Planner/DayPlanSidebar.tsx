@@ -40,6 +40,7 @@ import {
   type MergedItem,
 } from '../../utils/dayMerge'
 import { withinDriveRange } from '@trek/shared/roadtrip'
+import { LineDayShareButton } from './LineShareButtons'
 import { formatDate, formatTime, dayTotalCost, formatMoneySum, splitReservationDateTime } from '../../utils/formatters'
 import { useDayNotes } from '../../hooks/useDayNotes'
 import { useExchangeRates } from '../../hooks/useExchangeRates'
@@ -1819,6 +1820,11 @@ const DayPlanSidebar = React.memo(function DayPlanSidebar(props: DayPlanSidebarP
                         </span>
                       </>
                     )}
+                    {/* 分享這天行程到 LINE（只送站名與時間） */}
+                    <LineDayShareButton
+                      tripId={tripId} date={day.date} locale={locale} title={day.title} canManageShare={canManageShare} t={t}
+                      stops={da.map(a => ({ name: a.place?.name, time: a.place?.place_time, lat: a.place?.lat, lng: a.place?.lng }))}
+                    />
                   </div>
                   {/* 天氣旁的「今天穿什麼」小字（錨點與日期徽章的天氣相同）；沒天氣資料就不畫 */}
                   {(() => {
