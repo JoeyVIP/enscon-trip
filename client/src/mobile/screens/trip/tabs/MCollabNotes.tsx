@@ -638,6 +638,16 @@ const NOTE_READER_CLS = [
   '[&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:mb-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mb-1',
   '[&_blockquote]:mb-3 [&_blockquote]:border-l-[3px] [&_blockquote]:border-[color:var(--m-rowbr)] [&_blockquote]:pl-3 [&_blockquote]:text-m-muted',
   '[&_code]:rounded [&_code]:bg-[color:var(--m-ic)] [&_code]:px-1',
+  '[&_hr]:my-4 [&_hr]:border-[color:var(--m-rowbr)]',
+  // GFM tables: framed cells with padding inside their own horizontal scroller
+  // (the md-table-scroll wrapper from markdownSanitize), so a wide table scrolls
+  // in place at 390px. Theme tokens only, so dark mode follows.
+  '[&_.md-table-scroll]:mb-3 [&_.md-table-scroll]:rounded-[10px] [&_.md-table-scroll]:border [&_.md-table-scroll]:border-[color:var(--m-rowbr)]',
+  '[&_table]:min-w-full [&_table]:border-collapse [&_table]:text-[0.8125rem] [&_table]:leading-[1.5]',
+  '[&_th]:whitespace-nowrap [&_th]:bg-[color:var(--m-ic)] [&_th]:text-left [&_th]:font-bold',
+  '[&_th]:border [&_th]:border-[color:var(--m-rowbr)] [&_th]:px-[10px] [&_th]:py-[7px] [&_th]:align-top',
+  '[&_td]:min-w-[6.5rem] [&_td]:border [&_td]:border-[color:var(--m-rowbr)] [&_td]:px-[10px] [&_td]:py-[7px] [&_td]:align-top',
+  '[&_tr>*:first-child]:border-l-0 [&_tr>*:last-child]:border-r-0 [&_thead_tr>*]:border-t-0 [&_tbody_tr:last-child>*]:border-b-0',
 ].join(' ')
 
 function NoteViewSheet({ open, note, onClose, onEdit, t }: {

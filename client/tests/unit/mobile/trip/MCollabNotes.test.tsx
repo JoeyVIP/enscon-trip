@@ -632,6 +632,11 @@ describe('MCollabNotes', () => {
     expect(within(viewer).getByTestId('md')).toHaveTextContent('**apply** early')
     // Reading size, not the card's 12px preview.
     expect(within(viewer).getByTestId('note-reader-body').className).toContain('text-[0.9375rem]')
+    // Headings get their own size, tables get frames, padding and a scroller.
+    const readerCls = within(viewer).getByTestId('note-reader-body').className
+    for (const cls of ['[&_h2]:text-[1.0625rem]', '[&_h3]:font-bold', '[&_table]:border-collapse', '[&_td]:border', '[&_td]:px-[10px]', '[&_.md-table-scroll]:border']) {
+      expect(readerCls).toContain(cls)
+    }
     expect(within(viewer).getByRole('button', { name: /collab\.notes\.edit/ })).toBeInTheDocument()
     expect(screen.queryByRole('dialog', { name: 'collab.notes.edit' })).not.toBeInTheDocument()
     expect(screen.queryByPlaceholderText('collab.notes.contentPlaceholder')).not.toBeInTheDocument()
