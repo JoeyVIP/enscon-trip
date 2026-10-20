@@ -6,6 +6,7 @@ import type { TripFile, TripMember } from '../../../../src/types'
 import { buildPlanner, buildShell } from '../../../helpers/mobileTrip'
 import { resetAllStores } from '../../../helpers/store'
 import { fireEvent, render, screen, within } from '../../../helpers/render'
+import { SOURCE_URL } from '../../../../src/components/Layout/SourceLink'
 
 // FE-MOB-MEHR-001 to FE-MOB-MEHR-014
 //
@@ -132,6 +133,19 @@ describe('MMehrSheet', () => {
     renderSheet()
     const rows = screen.getByRole('button', { name: 'Share Trip' }).parentElement
     expect(rows).toHaveClass('mt-2')
+  })
+
+  it('FE-MOB-MEHR-TW-001: the last row is the AGPL source link, for everyone, and tapping it closes the sheet', () => {
+    // The floating footer link stays off the trip page on phones (it sat on the
+    // dock), so the More sheet is where AGPL-3.0 §13 is offered — even without trip_edit.
+    const { shell } = renderSheet({ can: vi.fn(() => false) })
+    const link = screen.getByRole('link', { name: /Source code \(AGPL-3\.0\)/ })
+    expect(link).toHaveAttribute('href', SOURCE_URL)
+    expect(link).toHaveAttribute('target', '_blank')
+    expect(link.getAttribute('rel')).toContain('noopener')
+    expect(link.parentElement?.lastElementChild).toBe(link)
+    fireEvent.click(link)
+    expect(shell.closeSheet).toHaveBeenCalledTimes(1)
   })
 
   // Both sides read the same priority list (dockTabs.ts). They used to be two

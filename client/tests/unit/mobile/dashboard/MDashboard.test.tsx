@@ -687,4 +687,69 @@ describe('MDashboard', () => {
     fireEvent.keyDown(screen.getByRole('button', { name: 'twHome.openTrip: Taipei' }), { key: 'Enter' });
     expect(navigate).toHaveBeenCalledTimes(2);
   });
+
+  // Server defaults (permissions.service.ts): edit/delete/archive/cover are owner-only;
+  // copy needs trip_create, which everybody has.
+  const OWNER_ONLY = { trip_create: 'everybody', trip_edit: 'trip_owner', trip_delete: 'trip_owner', trip_archive: 'trip_owner', trip_cover_upload: 'trip_owner' } as const;
+
+  it('FE-MOB-DASH-TW-009: a member who does not own the trip only gets "copy" on its cards', () => {
+    usePermissionsStore.setState({ permissions: { ...OWNER_ONLY } });
+    mocks.dash = buildDash({
+      viewMode: 'list',
+      spotlight: buildTrip({ id: 61, title: 'Okinawa', user_id: 99, is_owner: 0 }),
+      gridTrips: [buildTrip({ id: 62, title: 'Seoul', user_id: 99, is_owner: 0 })],
+    });
+    const { unmount } = render(<MDashboard />);
+    expect(screen.queryByRole('button', { name: 'common.edit' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'dashboard.archive' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'common.delete' })).not.toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'dashboard.aria.duplicate' })).toHaveLength(2);
+    unmount();
+
+    // Grid layout and the archive tab: no restore / delete either.
+    mocks.dash = buildDash({ gridTrips: [buildTrip({ id: 63, title: 'Busan', user_id: 99, is_owner: 0 })] });
+    const grid = render(<MDashboard />);
+    expect(screen.queryByRole('button', { name: 'common.edit' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'common.delete' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'dashboard.aria.duplicate' })).toBeInTheDocument();
+    grid.unmount();
+
+    mocks.dash = buildDash({ tripFilter: 'archive', gridTrips: [buildTrip({ id: 64, title: 'Iceland', is_archived: 1, user_id: 99, is_owner: 0 })] });
+    render(<MDashboard />);
+    expect(screen.queryByRole('button', { name: 'dashboard.restore' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'common.delete' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'dashboard.aria.duplicate' })).toBeInTheDocument();
+  });
+
+  it('FE-MOB-DASH-TW-010: the trip owner and an admin still get edit, copy, archive and delete', () => {
+    usePermissionsStore.setState({ permissions: { ...OWNER_ONLY } });
+    mocks.dash = buildDash({ viewMode: 'list', gridTrips: [buildTrip({ id: 71, title: 'Lisbon', user_id: 1 })] });
+    const { unmount } = render(<MDashboard />);
+    for (const name of ['common.edit', 'dashboard.aria.duplicate', 'dashboard.archive', 'common.delete']) {
+      expect(screen.getByRole('button', { name })).toBeInTheDocument();
+    }
+    unmount();
+
+    useAuthStore.setState({ user: { id: 5, username: 'Admin', email: 'a@trek.app', role: 'admin', avatar_url: '' } as never });
+    mocks.dash = buildDash({ viewMode: 'list', gridTrips: [buildTrip({ id: 72, title: 'Porto', user_id: 99, is_owner: 0 })] });
+    render(<MDashboard />);
+    for (const name of ['common.edit', 'dashboard.aria.duplicate', 'dashboard.archive', 'common.delete']) {
+      expect(screen.getByRole('button', { name })).toBeInTheDocument();
+    }
+  });
+
+  it('FE-MOB-DASH-TW-011: a member keeps "edit" when the admin lets members change covers or archive (the sheet hosts both)', () => {
+    usePermissionsStore.setState({ permissions: { ...OWNER_ONLY, trip_cover_upload: 'trip_member' } });
+    mocks.dash = buildDash({ viewMode: 'list', gridTrips: [buildTrip({ id: 81, title: 'Naha', user_id: 99, is_owner: 0 })] });
+    const { unmount } = render(<MDashboard />);
+    expect(screen.getByRole('button', { name: 'common.edit' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'common.delete' })).not.toBeInTheDocument();
+    unmount();
+
+    // Grid cards have no archive button of their own: archiving lives in the edit sheet.
+    usePermissionsStore.setState({ permissions: { ...OWNER_ONLY, trip_archive: 'trip_member' } });
+    mocks.dash = buildDash({ gridTrips: [buildTrip({ id: 82, title: 'Nago', user_id: 99, is_owner: 0 })] });
+    render(<MDashboard />);
+    expect(screen.getByRole('button', { name: 'common.edit' })).toBeInTheDocument();
+  });
 });
