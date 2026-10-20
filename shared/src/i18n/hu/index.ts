@@ -3,6 +3,7 @@ import dawarich from './dawarich';
 import docsync from './docsync';
 import twLoginFix from './twLoginFix';
 import twOutfit from './twOutfit';
+import twHome from './twHome';
 import airport from './airport';
 import atlas from './atlas';
 import backup from './backup';
@@ -114,5 +115,6 @@ const locale = {
   ...docsync,
   ...twLoginFix,
   ...twOutfit,
+  ...twHome,
 };
 export default locale;

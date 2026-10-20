@@ -225,6 +225,16 @@
 }
 .trek-dash .hero-tool:hover { background: oklch(0.22 0.01 260 / .78); transform: scale(1.05); }
 .trek-dash .hero-tool svg { width: 17px; height: 17px; }
+/* "Add cover" on a hero that has no photo: a light pill in the brand blue, so it
+   reads as the one thing to do on the drawn cover rather than a fifth icon. */
+.trek-dash .hero-tool.hero-tool-cover {
+  width: auto; padding: 0 16px 0 13px; border-radius: 999px;
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 13px; font-weight: 600; white-space: nowrap;
+  background: #F2F6FA; color: #02539C; border-color: transparent;
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+}
+.trek-dash .hero-tool.hero-tool-cover:hover { background: #FFFFFF; transform: scale(1.03); }
 .trek-dash .hero-title-block { align-self: end; padding-bottom: 24px; min-width: 0; }
 .trek-dash .hero-eyebrow {
   display: inline-flex; align-items: center; gap: 10px;

@@ -444,4 +444,20 @@ describe('DashboardPage (desktop)', () => {
     expect(container.querySelectorAll('.trips .trek-skeleton').length).toBe(0);
   });
 
+  it('FE-PAGE-DESKDASH-TW-001: a hero without a cover is drawn and offers "Add cover"', async () => {
+    const { container } = render(<DashboardPage />);
+
+    const cta = await screen.findByRole('button', { name: 'Add cover' });
+    expect(cta.className).toContain('hero-tool-cover');
+    const hero = container.querySelector('.hero-trip') as HTMLElement;
+    expect(hero.querySelector('[data-testid="trip-cover-art"] svg[data-motif="city"]')).toBeInTheDocument();
+  });
+
+  it('FE-PAGE-DESKDASH-TW-002: a hero with a cover photo shows the photo and no "Add cover"', async () => {
+    onlyTrips([{ ...TRIP, cover_image: '/uploads/covers/p.jpg' }]);
+    const { container } = render(<DashboardPage />);
+
+    await waitFor(() => expect(container.querySelector('.hero-trip img.bg')).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'Add cover' })).not.toBeInTheDocument();
+  });
 });

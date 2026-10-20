@@ -6,6 +6,7 @@ import { tripsApi } from '../../../../src/api/client';
 import { useAuthStore } from '../../../../src/store/authStore';
 import { useInAppNotificationStore } from '../../../../src/store/inAppNotificationStore';
 import { usePluginStore } from '../../../../src/store/pluginStore';
+import { usePermissionsStore } from '../../../../src/store/permissionsStore';
 import type { TripCardBadge } from '../../../../src/api/client';
 import type { DashboardTrip } from '../../../../src/pages/dashboard/dashboardModel';
 
@@ -87,6 +88,7 @@ describe('MDashboard', () => {
       user: { id: 1, username: 'Maurice', email: 'maurice@trek.app', role: 'user', avatar_url: '' } as never,
     });
     useInAppNotificationStore.setState({ unreadCount: 0, fetchUnreadCount: async () => {} });
+    usePermissionsStore.setState({ permissions: {} });
   });
 
   it('FE-MOB-DASH-001: renders the ongoing spotlight with badge, progress and grid cards', () => {
@@ -564,5 +566,95 @@ describe('MDashboard', () => {
     expect(wrapper.className).not.toContain('flex-1');
     expect(screen.getByRole('button', { name: 'dashboard.subscribeAllTrips' }).className)
       .toContain('ml-auto');
+  });
+
+  // ── ENSCON home: product name, drawn cover, add-cover entry, two-line titles ──
+
+  it('FE-MOB-DASH-TW-001: the top bar names the product next to the brand tile', () => {
+    render(<MDashboard />);
+
+    const name = screen.getByTestId('m-dash-app-name');
+    expect(name).toHaveTextContent('ENSCON Trip');
+    // It is the part that gives way on a narrow phone, not the bell or the avatar.
+    expect(name.className).toContain('truncate');
+    expect(name.className).toContain('min-w-0');
+    expect(screen.getByRole('button', { name: 'ENSCON Trip' })).toContainElement(name);
+  });
+
+  it('FE-MOB-DASH-TW-002: a spotlight without a cover draws a scene instead of an empty gradient', () => {
+    mocks.dash = buildDash({ spotlight: buildTrip({ id: 7, title: '🌺 沖繩跨年親子行 2026→2027', start_date: iso(71), end_date: iso(76) }) });
+    const { container } = render(<MDashboard />);
+
+    const card = screen.getByTestId('m-spotlight-nocover');
+    // Shorter than the 300px photo frame: the card is as tall as its content.
+    expect(card.className).not.toContain('h-[300px]');
+    expect(card.querySelector('svg[data-motif="sea"]')).toBeInTheDocument();
+    expect(container.querySelector('[style*="linear-gradient"]')).not.toBeInTheDocument();
+    expect(screen.getByText('dashboard.hero.badgeNext')).toBeInTheDocument();
+  });
+
+  it('FE-MOB-DASH-TW-003: the spotlight title wraps to two lines before it is cut', () => {
+    mocks.dash = buildDash({ spotlight: buildTrip({ title: '🌺 沖繩跨年親子行 2026→2027 一家四口第一次出國' }) });
+    render(<MDashboard />);
+
+    const title = screen.getByText('🌺 沖繩跨年親子行 2026→2027 一家四口第一次出國');
+    expect(title.className).toContain('line-clamp-2');
+    expect(title.className).not.toContain('truncate');
+  });
+
+  it('FE-MOB-DASH-TW-004: the title on a cover photo also gets two lines', () => {
+    mocks.dash = buildDash({ spotlight: buildTrip({ title: 'Long Japan trip name', cover_image: '/uploads/covers/x.jpg' }) });
+    render(<MDashboard />);
+
+    expect(screen.getByText('Long Japan trip name').className).toContain('line-clamp-2');
+  });
+
+  it('FE-MOB-DASH-TW-005: "add cover" opens the edit sheet for that trip without opening the trip', () => {
+    const navigate = vi.fn();
+    const setEditingTrip = vi.fn();
+    const setShowForm = vi.fn();
+    const trip = buildTrip({ id: 31 });
+    mocks.dash = buildDash({ navigate, setEditingTrip, setShowForm, spotlight: trip });
+    render(<MDashboard />);
+
+    const cta = screen.getByRole('button', { name: 'twHome.addCover' });
+    fireEvent.keyDown(cta, { key: 'Enter' });
+    fireEvent.click(cta);
+
+    expect(setEditingTrip).toHaveBeenCalledWith(trip);
+    expect(setShowForm).toHaveBeenCalledWith(true);
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('FE-MOB-DASH-TW-006: no "add cover" once there is a cover, on an archived trip, or without the permission', () => {
+    mocks.dash = buildDash({ spotlight: buildTrip({ cover_image: '/uploads/covers/x.jpg' }) });
+    const { unmount } = render(<MDashboard />);
+    expect(screen.queryByRole('button', { name: 'twHome.addCover' })).not.toBeInTheDocument();
+    unmount();
+
+    mocks.dash = buildDash({ spotlight: buildTrip({ is_archived: 1 }) });
+    const second = render(<MDashboard />);
+    expect(screen.queryByRole('button', { name: 'twHome.addCover' })).not.toBeInTheDocument();
+    second.unmount();
+
+    // Cover upload limited to owners, and this member does not own the trip.
+    usePermissionsStore.setState({ permissions: { trip_cover_upload: 'trip_owner' } });
+    mocks.dash = buildDash({ spotlight: buildTrip({ user_id: 99, is_owner: 0 }) });
+    render(<MDashboard />);
+    expect(screen.queryByRole('button', { name: 'twHome.addCover' })).not.toBeInTheDocument();
+    // The drawn cover itself still shows.
+    expect(screen.getByTestId('m-spotlight-nocover')).toBeInTheDocument();
+  });
+
+  it('FE-MOB-DASH-TW-007: grid and list cards without a photo get the drawn cover too', () => {
+    mocks.dash = buildDash({ gridTrips: [buildTrip({ id: 41, title: 'Tokyo food run' })] });
+    const { container, unmount } = render(<MDashboard />);
+    expect(container.querySelector('svg[data-motif="city"]')).toBeInTheDocument();
+    unmount();
+
+    mocks.dash = buildDash({ viewMode: 'list', gridTrips: [buildTrip({ id: 42, title: 'Hokkaido snow' })] });
+    const list = render(<MDashboard />);
+    expect(list.container.querySelector('svg[data-motif="mountain"]')).toBeInTheDocument();
+    expect(screen.getByText('Hokkaido snow').className).toContain('line-clamp-2');
   });
 });

@@ -126,9 +126,12 @@ export default function Navbar({ tripTitle, tripId, onBack, showBack, onShare }:
           </button>
         )}
 
-        <Link to="/dashboard" className="flex items-center transition-colors flex-shrink-0">
-          <img src={dark ? '/icons/icon-white.svg' : '/icons/icon-dark.svg'} alt={appName} className="sm:hidden" style={{ height: 22, width: 22 }} />
-          <img src={dark ? '/logo-light.svg' : '/logo-dark.svg'} alt={appName} className="hidden sm:block" style={{ height: 28 }} />
+        {/* Mark + the product name as live text (useAppName: ENSCON 旅程 / ENSCON Trip
+            by language). The old wordmark SVG had 旅程 baked in for every language.
+            The name may truncate; the mark and the back button never shrink. */}
+        <Link to="/dashboard" aria-label={appName} className="flex min-w-0 items-center gap-2 transition-colors">
+          <img src={dark ? '/icons/icon-white.svg' : '/icons/icon-dark.svg'} alt="" className="flex-shrink-0 rounded-[7px]" style={{ height: 28, width: 28 }} />
+          <span data-testid="navbar-app-name" className="truncate text-[1.0625rem] font-extrabold tracking-[-.01em] text-content">{appName}</span>
         </Link>
 
         {tripTitle && (

@@ -615,4 +615,15 @@ describe('Navbar layout (#1983)', () => {
       expect(screen.getByRole('link', { name: new RegExp(`Addon ${i}`, 'i') })).toBeInTheDocument();
     }
   });
+
+  it('FE-COMP-NAVBAR-TW-001: the bar names the product in live text, not a wordmark image', () => {
+    render(<Navbar />);
+
+    const name = screen.getByTestId('navbar-app-name');
+    expect(name).toHaveTextContent('ENSCON Trip');
+    expect(name.className).toContain('truncate');
+    expect(screen.getByRole('link', { name: 'ENSCON Trip' })).toContainElement(name);
+    // The old logo-*.svg had 旅程 drawn into it for every language.
+    expect(document.querySelector('img[src$="/logo-dark.svg"], img[src$="/logo-light.svg"]')).not.toBeInTheDocument();
+  });
 });

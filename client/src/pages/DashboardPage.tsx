@@ -18,7 +18,7 @@ import {
 import {
   Plus, Edit2, Trash2, Archive, ArchiveRestore, Copy, ArrowRight, MapPin,
   Plane, Hotel, Utensils, Clock, RefreshCw, ArrowRightLeft, Calendar,
-  LayoutGrid, List, Ticket, X, CalendarPlus, ParkingSquare, LogIn, LogOut,
+  LayoutGrid, List, Ticket, X, CalendarPlus, ParkingSquare, LogIn, LogOut, ImagePlus,
 } from 'lucide-react'
 import { IcsSubscribeModal } from '../components/Planner/IcsSubscribeModal'
 import CollectionsWidget from '../components/Dashboard/CollectionsWidget'
@@ -33,19 +33,9 @@ import { convertDistance, getDistanceUnitLabel } from '../utils/units'
 import { useSettingsStore } from '../store/settingsStore'
 import { useAddonStore } from '../store/addonStore'
 import { normalizeAppearance } from '@trek/shared'
+import TripCoverArt from '../components/shared/TripCoverArt'
+import { useCanDo } from '../store/permissionsStore'
 import '../styles/dashboard.css'
-
-const GRADIENTS = [
-  'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-  'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-  'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-  'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-  'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-  'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)',
-  'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
-  'linear-gradient(135deg, #96fbc4 0%, #f9f586 100%)',
-]
-function tripGradient(id: number): string { return GRADIENTS[id % GRADIENTS.length] }
 
 // Day + short month for the boarding pass / cards, plus the year — but only
 // when it isn't the current year (this year's trips stay clutter-free), e.g.
@@ -321,7 +311,11 @@ function BoardingPassHero({ trip, bundle, locale, onOpen, onEdit, onCopy, onArch
   onEdit: () => void; onCopy: () => void; onArchive: () => void; onDelete: () => void
 }): React.ReactElement {
   const { t } = useTranslation()
+  const can = useCanDo()
   const heroPlugins = usePluginStore(s => s.plugins).filter(p => p.type === 'widget' && p.slot === 'hero')
+  // No photo yet: say so where it shows, for whoever may set one. The edit
+  // dialog it opens is where a cover is uploaded or picked.
+  const offerCover = !trip.cover_image && !trip.is_archived && can('trip_cover_upload', trip)
   const stop = (e: React.MouseEvent, fn: () => void) => { e.stopPropagation(); fn() }
   const status = getTripStatus(trip)
   const archiveLabel = trip.is_archived ? t('dashboard.restore') : t('dashboard.archive')
@@ -425,7 +419,7 @@ function BoardingPassHero({ trip, bundle, locale, onOpen, onEdit, onCopy, onArch
     >
       {trip.cover_image
         ? <img className="bg" src={trip.cover_image} alt={trip.title} />
-        : <div className="bg" style={{ background: tripGradient(trip.id) }} />}
+        : <TripCoverArt tripId={trip.id} title={trip.title} description={trip.description} tone="deep" />}
       <div className="scrim" />
       <div className="hero-content">
         <div className="hero-top">
@@ -434,6 +428,12 @@ function BoardingPassHero({ trip, bundle, locale, onOpen, onEdit, onCopy, onArch
             {badge}
           </div>
           <div className="hero-tools">
+            {offerCover && (
+              <button type="button" className="hero-tool hero-tool-cover" title={t('twHome.addCoverHint')} onClick={(e) => stop(e, onEdit)}>
+                <ImagePlus size={17} strokeWidth={2.2} />
+                <span>{t('twHome.addCover')}</span>
+              </button>
+            )}
             <button type="button" className="hero-tool" aria-label={t('common.edit')} title={t('common.edit')} onClick={(e) => stop(e, onEdit)}><Edit2 size={17} strokeWidth={2.2} /></button>
             <button type="button" className="hero-tool" aria-label={t('dashboard.aria.duplicate')} title={t('dashboard.aria.duplicate')} onClick={(e) => stop(e, onCopy)}><Copy size={17} strokeWidth={2.2} /></button>
             <button type="button" className="hero-tool" aria-label={archiveLabel} title={archiveLabel} onClick={(e) => stop(e, onArchive)}>{trip.is_archived ? <ArchiveRestore size={17} strokeWidth={2.2} /> : <Archive size={17} strokeWidth={2.2} />}</button>
@@ -607,7 +607,7 @@ function TripCard({ trip, locale, badges, onOpen, onEdit, onCopy, onArchive, onD
       <div className="trip-cover">
         {trip.cover_image
           ? <img src={trip.cover_image} alt={trip.title} />
-          : <div style={{ width: '100%', height: '100%', background: tripGradient(trip.id) }} />}
+          : <TripCoverArt tripId={trip.id} title={trip.title} description={trip.description} tone="deep" />}
         <div className={`trip-status ${statusClass}`}><span className="indicator" /> {statusLabel}</div>
         <div className="trip-actions">
           <button type="button" className="trip-action-btn" aria-label={t('common.edit')} title={t('common.edit')} onClick={(e) => stop(e, onEdit)}><Edit2 size={17} strokeWidth={2.2} /></button>

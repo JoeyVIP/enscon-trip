@@ -1,0 +1,121 @@
+/*
+ * TripCoverArt — the illustration a trip shows until it has a cover photo,
+ * plus the ink/chip/button colours of the phone spotlight card drawn on it.
+ *
+ * Brand colours (ENSCON): #02539C deep blue, #B3CBE1 mist blue, #F2F6FA paper.
+ * These are brand literals on purpose (like the logo tile); they live here as
+ * custom properties so `.dark` can swap the whole set in one place.
+ */
+
+/* soft: light sky, dark ink — the phone spotlight with no cover */
+.tca-soft {
+  --tca-sky-a: #F2F6FA;
+  --tca-sky-b: #DCE8F3;
+  --tca-sun: #FFFFFF;
+  --tca-halo: #FFFFFF;
+  --tca-cloud: rgba(255, 255, 255, .9);
+  --tca-far: #B3CBE1;
+  --tca-mid: #7FA8D4;
+  --tca-near: #02539C;
+  --tca-snow: #F2F6FA;
+  --tca-win: rgba(242, 246, 250, .75);
+  --tca-route: #02539C;
+  --tca-pin: #02539C;
+
+  --tca-ink: #0E141B;
+  --tca-ink-2: #02539C;
+  --tca-chip-bg: rgba(2, 83, 156, .1);
+  --tca-chip-fg: #02539C;
+  --tca-badge-bg: #02539C;
+  --tca-badge-fg: #FFFFFF;
+  --tca-btn-bg: rgba(255, 255, 255, .72);
+  --tca-btn-br: rgba(2, 83, 156, .16);
+  --tca-btn-fg: #02539C;
+  --tca-cta-bg: #FFFFFF;
+  --tca-cta-fg: #02539C;
+}
+.dark .tca-soft {
+  --tca-sky-a: #0B1828;
+  --tca-sky-b: #0F2742;
+  --tca-sun: #B3CBE1;
+  --tca-halo: #B3CBE1;
+  --tca-cloud: rgba(179, 203, 225, .16);
+  --tca-far: #173A60;
+  --tca-mid: #1E5089;
+  --tca-near: #2B6CB0;
+  --tca-snow: #B3CBE1;
+  --tca-win: rgba(179, 203, 225, .35);
+  --tca-route: #B3CBE1;
+  --tca-pin: #B3CBE1;
+
+  --tca-ink: #F2F6FA;
+  --tca-ink-2: #B3CBE1;
+  --tca-chip-bg: rgba(179, 203, 225, .16);
+  --tca-chip-fg: #DCE8F3;
+  --tca-badge-bg: #B3CBE1;
+  --tca-badge-fg: #0B1828;
+  --tca-btn-bg: rgba(255, 255, 255, .1);
+  --tca-btn-br: rgba(255, 255, 255, .18);
+  --tca-btn-fg: #F2F6FA;
+  --tca-cta-bg: #F2F6FA;
+  --tca-cta-fg: #02539C;
+}
+
+/* deep: navy sky under white text and glass buttons — desktop hero, trip cards */
+.tca-deep {
+  --tca-sky-a: #0A3D70;
+  --tca-sky-b: #02539C;
+  --tca-sun: #B3CBE1;
+  --tca-halo: #B3CBE1;
+  --tca-cloud: rgba(242, 246, 250, .22);
+  --tca-far: #3F7DBC;
+  --tca-mid: #1F63A5;
+  --tca-near: #0A3D70;
+  --tca-snow: #F2F6FA;
+  --tca-win: rgba(179, 203, 225, .55);
+  --tca-route: #F2F6FA;
+  --tca-pin: #F2F6FA;
+}
+.dark .tca-deep {
+  --tca-sky-a: #071C33;
+  --tca-sky-b: #0B3A6B;
+  --tca-sun: #B3CBE1;
+  --tca-halo: #B3CBE1;
+  --tca-cloud: rgba(179, 203, 225, .14);
+  --tca-far: #1F5288;
+  --tca-mid: #164273;
+  --tca-near: #0B2A4D;
+  --tca-snow: #B3CBE1;
+  --tca-win: rgba(179, 203, 225, .4);
+  --tca-route: #B3CBE1;
+  --tca-pin: #B3CBE1;
+}
+
+.tca-sky { background: linear-gradient(180deg, var(--tca-sky-a) 0%, var(--tca-sky-b) 100%); }
+.tca .tca-sun { fill: var(--tca-sun); }
+.tca .tca-halo { fill: var(--tca-halo); opacity: .35; }
+.tca .tca-cloud { fill: var(--tca-cloud); }
+.tca .tca-far { fill: var(--tca-far); }
+.tca .tca-mid { fill: var(--tca-mid); }
+.tca .tca-near { fill: var(--tca-near); }
+.tca .tca-snow { fill: var(--tca-snow); }
+.tca .tca-win { fill: var(--tca-win); }
+.tca .tca-route { fill: none; stroke: var(--tca-route); opacity: .55; }
+.tca .tca-pin { fill: var(--tca-pin); }
+
+/* The phone spotlight's own UI on the soft sky. */
+.tca-soft.tca-card { color: var(--tca-ink); }
+.tca-soft .tca-title { color: var(--tca-ink); }
+.tca-soft .tca-chip { background: var(--tca-chip-bg); color: var(--tca-chip-fg); }
+.tca-soft .tca-badge { background: var(--tca-badge-bg); color: var(--tca-badge-fg); }
+.tca-soft .tca-track { background: var(--tca-chip-bg); }
+.tca-soft .tca-fill { background: var(--tca-badge-bg); }
+.tca-soft .tca-btn {
+  background: var(--tca-btn-bg); color: var(--tca-btn-fg);
+  border: 1px solid var(--tca-btn-br);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+}
+.tca-soft .tca-cta {
+  background: var(--tca-cta-bg); color: var(--tca-cta-fg);
+  box-shadow: 0 6px 16px -8px rgba(2, 83, 156, .55);
+}
