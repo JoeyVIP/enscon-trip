@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { HttpException, type ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { TextImportController } from '../../../../src/nest/text-import/text-import.controller';
+import { TEXT_IMPORT_LLM_RL_MAX, TEXT_IMPORT_RULES_RL_MAX, TextImportController } from '../../../../src/nest/text-import/text-import.controller';
 import { TextImportService } from '../../../../src/nest/text-import/text-import.service';
 import { textImportRequestSchema } from '../../../../src/nest/text-import/text-import.dto';
 import { MAX_TEXT_CHARS } from '../../../../src/nest/text-import/rules';
@@ -54,11 +54,43 @@ describe('TextImportController', () => {
     expect(await status(c.importText(user, '5', { text: '   ' }))).toBe(400);
   });
 
-  it('每位使用者每小時 10 次，第 11 次 429；別人不受影響', async () => {
+  it('只跑規則的解析：每人每小時 120 次，第 121 次 429；別人不受影響', async () => {
+    expect(TEXT_IMPORT_RULES_RL_MAX).toBe(120);
     const c = new TextImportController(makeService(), new RateLimitService());
-    for (let i = 0; i < 10; i++) expect(await status(c.importText(user, '5', { text: '12/31 取車' }))).toBe(200);
+    for (let i = 0; i < 120; i++) expect(await status(c.importText(user, '5', { text: '12/31 取車' }))).toBe(200);
     expect(await status(c.importText(user, '5', { text: '12/31 取車' }))).toBe(429);
     expect(await status(c.importText({ ...user, id: 8 } as User, '5', { text: '12/31 取車' }))).toBe(200);
+  });
+
+  it('規則夠用時不扣 AI 額度：有金鑰也能連續解析超過 10 次，且沒呼叫 AI', async () => {
+    const spy = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('should not be called'));
+    const c = new TextImportController(makeService('sk-test'), new RateLimitService());
+    for (let i = 0; i < 15; i++) expect(await status(c.importText(user, '5', { text: '12/31 取車' }))).toBe(200);
+    expect(spy).not.toHaveBeenCalled();
+    spy.mockRestore();
+  });
+
+  it('AI 呼叫每人每小時 10 次：第 11 次按「AI 再解析」429；自動後備改回規則結果、不再呼叫 AI；別人不受影響', async () => {
+    expect(TEXT_IMPORT_LLM_RL_MAX).toBe(10);
+    const spy = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('net'));
+    const c = new TextImportController(makeService('sk-test'), new RateLimitService());
+    for (let i = 0; i < 10; i++) expect(await status(c.importText(user, '5', { text: '12/31 取車', useLlm: true }))).toBe(200);
+    expect(spy).toHaveBeenCalledTimes(10);
+    expect(await status(c.importText(user, '5', { text: '12/31 取車', useLlm: true }))).toBe(429);
+    const auto = (await c.importText(user, '5', { text: '隨便聊聊' })) as { source: string; unassigned: unknown[] };
+    expect(auto.source).toBe('rules');
+    expect(auto.unassigned).toHaveLength(1);
+    expect(spy).toHaveBeenCalledTimes(10);
+    expect(await status(c.importText({ ...user, id: 8 } as User, '5', { text: '12/31 取車', useLlm: true }))).toBe(200);
+    expect(spy).toHaveBeenCalledTimes(11);
+    spy.mockRestore();
+  });
+
+  it('沒金鑰時按 AI 回 501，不扣 AI 額度', async () => {
+    const rl = new RateLimitService();
+    const c = new TextImportController(makeService(), rl);
+    for (let i = 0; i < 12; i++) expect(await status(c.importText(user, '5', { text: '12/31 取車', useLlm: true }))).toBe(501);
+    expect(rl.check('text_import_llm', String(user.id), TEXT_IMPORT_LLM_RL_MAX, 60 * 60 * 1000, Date.now())).toBe(true);
   });
 
   it('有 key 且規則不足時走 LLM；LLM 失敗退回規則結果', async () => {
