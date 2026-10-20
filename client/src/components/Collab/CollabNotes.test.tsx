@@ -1978,3 +1978,61 @@ describe('CollabNotes details', () => {
     expect(within(full).queryAllByRole('link')).toHaveLength(0);
   });
 });
+
+// Taiwan fork: a tap on a note reads it first; the edit form is one deliberate tap further.
+describe('CollabNotes read-first', () => {
+  function serveOne(over: Record<string, unknown> = {}) {
+    server.use(
+      http.get('/api/trips/1/collab/notes', () =>
+        HttpResponse.json({
+          notes: [{
+            id: 7, trip_id: 1, user_id: 1, author_username: 'testuser', author_avatar: null,
+            title: 'Read Me', content: '**Ferry** at 9', category: null, color: '#3b82f6', files: [], attachments: [],
+            created_at: '2025-06-01T10:00:00.000Z', updated_at: '2025-06-01T10:00:00.000Z',
+            ...over,
+          }],
+        })
+      ),
+      http.post('/api/auth/resource-token', () => HttpResponse.json({ token: 'test-token' })),
+    );
+  }
+
+  it('FE-COMP-NOTES-058: clicking the card opens the reader, not the edit form', async () => {
+    const user = userEvent.setup();
+    serveOne();
+    render(<CollabNotes {...defaultProps} />);
+    await screen.findByText('Read Me');
+
+    await user.click(screen.getByTestId('note-card-7'));
+
+    await waitFor(() => expect(screen.getAllByText('Read Me').length).toBeGreaterThan(1));
+    expect(screen.queryByDisplayValue('Read Me')).not.toBeInTheDocument();
+  });
+
+  it('FE-COMP-NOTES-059: the reader still hands an editor over to the edit form', async () => {
+    const user = userEvent.setup();
+    serveOne();
+    render(<CollabNotes {...defaultProps} />);
+    await user.click(await screen.findByText('Read Me'));
+    await waitFor(() => expect(screen.getAllByText('Read Me').length).toBeGreaterThan(1));
+
+    const editButtons = screen.getAllByTitle('Edit');
+    await user.click(editButtons[editButtons.length - 1]);
+
+    expect(await screen.findByDisplayValue('Read Me')).toBeInTheDocument();
+  });
+
+  it('FE-COMP-NOTES-060: the card buttons keep their own job and do not also open the reader', async () => {
+    const user = userEvent.setup();
+    serveOne({
+      content: '',
+      attachments: [{ id: 1, filename: 'doc.pdf', original_name: 'document.pdf', mime_type: 'application/pdf', url: '/api/trips/1/files/1/download' }],
+    });
+    render(<CollabNotes {...defaultProps} />);
+    await screen.findByText('Read Me');
+
+    await user.click(screen.getByTitle('Edit'));
+    expect(await screen.findByDisplayValue('Read Me')).toBeInTheDocument();
+    expect(screen.getAllByText('Read Me')).toHaveLength(1);
+  });
+});

@@ -10,7 +10,7 @@ import { useDocSyncOfferStore } from '../../../../src/store/docSyncOfferStore'
 import type { MTripShellApi, TripPlanner } from '../../../../src/mobile/screens/trip/MTripShell'
 import type { Day, PackingItem, TodoItem } from '../../../../src/types'
 
-// FE-MOB-SHELL-001 to FE-MOB-SHELL-068
+// FE-MOB-SHELL-001 to FE-MOB-SHELL-071
 
 const mocks = vi.hoisted(() => ({ planner: {} as TripPlanner }))
 
@@ -848,6 +848,41 @@ describe('MTripShell', () => {
       expect(badges[1].className).not.toContain('uppercase')
       // Neutral, both: the active day chip right below is already the filled pill.
       expect(badges[0].className).not.toContain('bg-m-act')
+    })
+  })
+
+  // Taiwan fork: first-time users could not tell the costs icon from the rest.
+  describe('dock captions', () => {
+    it('FE-MOB-SHELL-069: every seat shows a short caption under its icon, More included', () => {
+      renderShell()
+      const nav = screen.getByRole('navigation')
+      const captions = within(nav).getAllByRole('button').map(b => b.querySelector('span')?.textContent)
+      expect(captions).toEqual([
+        'twNav.dock.plan', 'twNav.dock.transports', 'twNav.dock.bookings', 'twNav.dock.budget', 'twNav.dock.lists',
+        'mobileTrip.more',
+      ])
+      // The caption is decoration: the accessible name is still the full tab name.
+      expect(dockLabels()).toEqual(['Plan', 'Transport', 'Bookings', 'Budget', 'Lists', 'mobileTrip.more'])
+      for (const span of within(nav).getAllByRole('button').map(b => b.querySelector('span')!)) {
+        expect(span).toHaveAttribute('aria-hidden', 'true')
+      }
+    })
+
+    it('FE-MOB-SHELL-070: the drive gets its caption in its second seat', () => {
+      renderShell({ TRIP_TABS: RT_TABS } as Partial<TripPlanner>)
+      const seat = screen.getByRole('button', { name: 'Road trip' })
+      expect(seat).toHaveTextContent('twNav.dock.roadtrip')
+    })
+
+    it('FE-MOB-SHELL-071: a seat never shrinks under the old 42px circle and keeps the active fill', () => {
+      renderShell()
+      for (const seat of within(screen.getByRole('navigation')).getAllByRole('button')) {
+        expect(seat.className).toContain('min-w-[42px]')
+        expect(seat.className).toContain('h-[54px]')
+        expect(seat.className).toContain('flex-col')
+      }
+      expect(screen.getByRole('button', { name: 'Plan' }).className).toContain('bg-m-act')
+      expect(screen.getByRole('button', { name: 'Transport' }).className).not.toContain('bg-m-act')
     })
   })
 })

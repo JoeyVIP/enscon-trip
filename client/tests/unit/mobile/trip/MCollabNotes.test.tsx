@@ -10,7 +10,7 @@ import { resetAllStores } from '../../../helpers/store'
 import { server } from '../../../helpers/msw/server'
 import { act, fireEvent, render, screen, waitFor, within } from '../../../helpers/render'
 
-// FE-MOB-CNOTE-001 to FE-MOB-CNOTE-033
+// FE-MOB-CNOTE-001 to FE-MOB-CNOTE-036
 
 // react-markdown ships as ESM-only chunks that jsdom chokes on; the note cards
 // only care that the raw text reaches the renderer.
@@ -99,6 +99,19 @@ async function renderNotes(planner: TripPlanner = buildPlanner()) {
   const view = render(<MCollabNotes planner={planner} />)
   await waitFor(() => expect(screen.queryByText('common.loading')).not.toBeInTheDocument())
   return { ...view, planner }
+}
+
+/**
+ * A tap on a card always opens the reader first (Taiwan fork); an editor gets to
+ * the form through the reader's Edit button. Waits for the reader to finish its
+ * exit so its copy of the note is not mistaken for the form's.
+ */
+async function openEditor(title: string) {
+  fireEvent.click(screen.getByText(title))
+  const viewer = screen.getByRole('dialog', { name: title })
+  fireEvent.click(within(viewer).getByRole('button', { name: /collab\.notes\.edit/ }))
+  await waitFor(() => expect(screen.queryByRole('dialog', { name: title })).not.toBeInTheDocument())
+  expect(screen.getByRole('dialog', { name: 'collab.notes.edit' })).toBeInTheDocument()
 }
 
 function fileInput(): HTMLInputElement {
@@ -314,7 +327,7 @@ describe('MCollabNotes', () => {
     serveWrites()
     await renderNotes()
 
-    fireEvent.click(screen.getByText('Visa'))
+    await openEditor('Visa')
     expect(screen.getByRole('dialog', { name: 'collab.notes.edit' })).toBeInTheDocument()
     const title = screen.getByPlaceholderText('collab.notes.titlePlaceholder')
     expect(title).toHaveValue('Visa')
@@ -334,7 +347,7 @@ describe('MCollabNotes', () => {
     serveWrites({ updateFails: true })
     const { planner } = await renderNotes()
 
-    fireEvent.click(screen.getByText('Visa'))
+    await openEditor('Visa')
     fireEvent.change(screen.getByPlaceholderText('collab.notes.titlePlaceholder'), { target: { value: 'Nope' } })
     fireEvent.click(screen.getByRole('button', { name: 'collab.notes.save' }))
 
@@ -347,7 +360,7 @@ describe('MCollabNotes', () => {
     serveWrites()
     await renderNotes()
 
-    fireEvent.click(screen.getByText('Visa'))
+    await openEditor('Visa')
     fireEvent.click(screen.getByRole('button', { name: 'collab.notes.cancel' }))
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
     expect(updatedBodies).toEqual([])
@@ -361,7 +374,7 @@ describe('MCollabNotes', () => {
     serveWrites()
     await renderNotes()
 
-    fireEvent.click(screen.getByText('Visa'))
+    await openEditor('Visa')
     fireEvent.change(fileInput(), {
       target: { files: [new File(['a'], 'passport.pdf'), new File(['b'], 'a-really-long-attachment-name.pdf')] },
     })
@@ -385,7 +398,7 @@ describe('MCollabNotes', () => {
     serveWrites({ uploadFails: true })
     const { planner } = await renderNotes()
 
-    fireEvent.click(screen.getByText('Visa'))
+    await openEditor('Visa')
     fireEvent.change(fileInput(), { target: { files: [new File(['a'], 'x.pdf')] } })
     fireEvent.click(screen.getByRole('button', { name: 'collab.notes.save' }))
 
@@ -401,7 +414,7 @@ describe('MCollabNotes', () => {
     serveWrites()
     await renderNotes()
 
-    fireEvent.click(screen.getByText('Visa'))
+    await openEditor('Visa')
     const chip = screen.getByText('passport.pdf')
     fireEvent.click(within(chip).getByRole('button'))
 
@@ -435,7 +448,7 @@ describe('MCollabNotes', () => {
       HttpResponse.json({ error: 'x' }, { status: 500 })))
     const { planner } = await renderNotes()
 
-    fireEvent.click(screen.getByText('Visa'))
+    await openEditor('Visa')
     fireEvent.click(within(screen.getByText('passport.pdf')).getByRole('button'))
     await waitFor(() => expect(planner.toast.error).toHaveBeenCalledWith('common.error'))
     expect(screen.getByText('passport.pdf')).toBeInTheDocument()
@@ -446,7 +459,7 @@ describe('MCollabNotes', () => {
     const click = vi.spyOn(HTMLInputElement.prototype, 'click').mockImplementation(() => {})
     await renderNotes()
 
-    fireEvent.click(screen.getByText('Visa'))
+    await openEditor('Visa')
     fireEvent.click(screen.getByRole('button', { name: 'collab.notes.attachFiles' }))
     expect(click).toHaveBeenCalledTimes(1)
     click.mockRestore()
@@ -457,7 +470,7 @@ describe('MCollabNotes', () => {
     const can = ((perm: string) => perm !== 'file_upload') as unknown as TripPlanner['can']
     await renderNotes(buildPlanner({ can }))
 
-    fireEvent.click(screen.getByText('Visa'))
+    await openEditor('Visa')
     expect(screen.queryByText('collab.notes.attachFiles')).not.toBeInTheDocument()
     expect(fileInput()).toBeNull()
   })
@@ -551,7 +564,7 @@ describe('MCollabNotes', () => {
     serveWrites()
     await renderNotes()
 
-    fireEvent.click(screen.getByText('Visa'))
+    await openEditor('Visa')
     expect(screen.getByPlaceholderText('collab.notes.websitePlaceholder')).toHaveValue('https://visa.test')
     fireEvent.click(screen.getByRole('button', { name: 'collab.notes.save' }))
 
@@ -565,7 +578,7 @@ describe('MCollabNotes', () => {
     serveWrites()
     await renderNotes()
 
-    fireEvent.click(screen.getByText('Visa'))
+    await openEditor('Visa')
     fireEvent.change(screen.getByPlaceholderText('collab.notes.websitePlaceholder'), { target: { value: '' } })
     fireEvent.click(screen.getByRole('button', { name: 'collab.notes.save' }))
 
@@ -606,5 +619,45 @@ describe('MCollabNotes', () => {
     const links = screen.getAllByRole('link', { name: 'collab.notes.website' })
     expect(links).toHaveLength(1)
     expect(links[0]).toHaveAttribute('href', 'https://visa.test')
+  })
+
+  it('FE-MOB-CNOTE-034: an editor tapping a card gets the reader, not the form', async () => {
+    serveNotes([note(1, { title: 'Visa', content: '**apply** early', category: 'Docs' })])
+    serveWrites()
+    await renderNotes()
+
+    fireEvent.click(screen.getByText('Visa'))
+
+    const viewer = screen.getByRole('dialog', { name: 'Visa' })
+    expect(within(viewer).getByTestId('md')).toHaveTextContent('**apply** early')
+    expect(within(viewer).getByRole('button', { name: /collab\.notes\.edit/ })).toBeInTheDocument()
+    expect(screen.queryByRole('dialog', { name: 'collab.notes.edit' })).not.toBeInTheDocument()
+    expect(screen.queryByPlaceholderText('collab.notes.contentPlaceholder')).not.toBeInTheDocument()
+    expect(updatedBodies).toEqual([])
+  })
+
+  it('FE-MOB-CNOTE-035: the body of the card opens the reader too', async () => {
+    serveNotes([note(1, { title: 'Visa', content: 'apply early' })])
+    await renderNotes()
+
+    fireEvent.click(screen.getByText('apply early'))
+    expect(screen.getByRole('dialog', { name: 'Visa' })).toBeInTheDocument()
+    expect(screen.queryByRole('dialog', { name: 'collab.notes.edit' })).not.toBeInTheDocument()
+  })
+
+  it('FE-MOB-CNOTE-036: the reader Edit button hands over to a prefilled form; read-only members never see it', async () => {
+    serveNotes([note(1, { title: 'Visa', content: 'apply early' })])
+    serveWrites()
+    const { unmount } = await renderNotes()
+
+    await openEditor('Visa')
+    expect(screen.getByPlaceholderText('collab.notes.titlePlaceholder')).toHaveValue('Visa')
+    expect(screen.getByPlaceholderText('collab.notes.contentPlaceholder')).toHaveValue('apply early')
+    unmount()
+
+    await renderNotes(buildPlanner({ can: (() => false) as TripPlanner['can'] }))
+    fireEvent.click(screen.getByText('Visa'))
+    const viewer = screen.getByRole('dialog', { name: 'Visa' })
+    expect(within(viewer).queryByRole('button', { name: /collab\.notes\.edit/ })).not.toBeInTheDocument()
   })
 })

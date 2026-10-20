@@ -41,12 +41,23 @@ export function NoteCard({ note, currentUser, canEdit, onUpdate, onDelete, onEdi
     onDelete(note.id)
   }, [note.id, onDelete])
 
+  // A tap anywhere on the card reads the note (Taiwan fork). The pencil stays the
+  // only way into the edit form, so a stray tap on a phone or tablet can no
+  // longer land in it. The card's own buttons and links keep their job.
+  const handleCardClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if ((e.target as HTMLElement).closest('button, a, input, textarea')) return
+    onView?.(note)
+  }, [note, onView])
+
   return (
     <div
+      data-testid={`note-card-${note.id}`}
+      onClick={handleCardClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
         position: 'relative',
+        cursor: 'pointer',
         borderRadius: 12,
         overflow: 'hidden',
         border: `1px solid ${note.pinned ? color + '40' : color + '25'}`,

@@ -3,7 +3,7 @@ import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkBreaks from 'remark-breaks'
 import { sanitizedMarkdownPlugins, sanitizedMarkdownComponents } from '../../../../components/shared/markdownSanitize'
-import { Check, ExternalLink, FileText, Paperclip, Pin, PinOff, Plus, StickyNote, Trash2, X } from 'lucide-react'
+import { Check, ExternalLink, FileText, Paperclip, Pencil, Pin, PinOff, Plus, StickyNote, Trash2, X } from 'lucide-react'
 import MDancingTrek from '../../../components/MDancingTrek'
 import { collabApi } from '../../../../api/client'
 import { addListener, removeListener } from '../../../../api/websocket'
@@ -175,7 +175,14 @@ export default function MCollabNotes({ planner }: MCollabNotesProps) {
     }
   }, [tripId, toast, t])
 
-  const openNote = (note: CollabNoteData) => (canEdit ? setFormTarget(note) : setViewingNote(note))
+  // A tap always reads first, for editors too: the form sheet squeezes the body
+  // into a small textarea and invites accidental edits. The viewer carries an
+  // Edit button for whoever may change the note.
+  const openNote = (note: CollabNoteData) => setViewingNote(note)
+  const editFromViewer = (note: CollabNoteData) => {
+    setViewingNote(null)
+    setFormTarget(note)
+  }
 
   if (loading) {
     return (
@@ -274,7 +281,13 @@ export default function MCollabNotes({ planner }: MCollabNotesProps) {
         t={t}
       />
 
-      <NoteViewSheet open={viewingNote !== null} note={viewingNote} onClose={() => setViewingNote(null)} t={t} />
+      <NoteViewSheet
+        open={viewingNote !== null}
+        note={viewingNote}
+        onClose={() => setViewingNote(null)}
+        onEdit={canEdit ? editFromViewer : undefined}
+        t={t}
+      />
 
       <MConfirmSheet
         open={pendingDeleteId !== null}
@@ -305,9 +318,9 @@ function NoteCardRow({ note, color, canEdit, onTap, onTogglePin, onDelete, t }: 
   t: TripPlanner['t']
 }) {
   const initial = (note.username || '?')[0]?.toUpperCase() || '?'
-  // An editor is routed to the form sheet, never to the viewer, so the card is
-  // the only surface where both roles can reach the link (#2222). The field
-  // takes any string, so the href is allow-listed the way the desktop tile is.
+  // The card keeps its own link glyph so the link is one tap away without
+  // opening the note (#2222). The field takes any string, so the href is
+  // allow-listed the way the desktop tile is.
   const websiteHref = safeExternalHref(note.website)
 
   return (
@@ -614,10 +627,12 @@ function NoteFormSheet({ open, target, categories, colorMap, canUploadFiles, onC
   )
 }
 
-function NoteViewSheet({ open, note, onClose, t }: {
+function NoteViewSheet({ open, note, onClose, onEdit, t }: {
   open: boolean
   note: CollabNoteData | null
   onClose: () => void
+  /** Only passed for members who may edit; the viewer then shows an Edit button. */
+  onEdit?: (note: CollabNoteData) => void
   t: TripPlanner['t']
 }) {
   // Snapshot-on-open (same reasoning as MNoteSheet.tsx): the caller nulls
@@ -673,6 +688,18 @@ function NoteViewSheet({ open, note, onClose, t }: {
           </div>
         )}
       </div>
+      {onEdit && snapshot && (
+        <div className="flex flex-none items-center justify-end gap-2 border-t border-[color:var(--m-rowbr)] px-[18px] pb-4 pt-3">
+          <button
+            type="button"
+            onClick={() => onEdit(snapshot)}
+            className="flex min-h-[40px] items-center gap-[6px] rounded-full bg-m-act px-[18px] py-[9px] text-[0.78125rem] font-semibold text-m-actfg"
+          >
+            <Pencil size={14} strokeWidth={2.2} />
+            {t('collab.notes.edit')}
+          </button>
+        </div>
+      )}
     </MSheet>
   )
 }
