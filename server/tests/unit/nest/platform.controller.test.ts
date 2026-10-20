@@ -22,6 +22,7 @@ import {
   SW_CLEAR_SITE_DATA,
 } from '../../../src/nest/platform/platform.routes';
 import { SpaFallbackFilter } from '../../../src/nest/platform/spa-fallback.filter';
+import { inviteFromEntryRequest, inviteLoginUrl } from '../../../src/nest/platform/invite-entry';
 import { StorageNotFoundError, StorageInvalidKeyError } from '../../../src/nest/storage/storage.types';
 import type { StorageService } from '../../../src/nest/storage/storage.service';
 
@@ -703,5 +704,17 @@ describe('SpaFallbackFilter 邀請連結直接送去 LINE 登入', () => {
     new SpaFallbackFilter(g).catch(new NotFoundException('gone'), host({ ...get('/register', { invite: INVITE }), method: 'POST' }, res));
     expect(g.allowsInviteEntry).not.toHaveBeenCalled();
     expect(res.statusCode).toBe(404);
+  });
+});
+
+describe('inviteFromEntryRequest／inviteLoginUrl', () => {
+  const INVITE = '3de66a7c9839d43960db5cb5717ad779';
+  it('只認 GET', () => {
+    expect(inviteFromEntryRequest({ method: 'GET', path: '/register', query: { invite: INVITE }, headers: {} } as never)).toBe(INVITE);
+    expect(inviteFromEntryRequest({ method: 'POST', path: '/register', query: { invite: INVITE }, headers: {} } as never)).toBeNull();
+    expect(inviteFromEntryRequest({ method: 'HEAD', path: '/register', query: { invite: INVITE }, headers: {} } as never)).toBeNull();
+  });
+  it('網址裡的邀請碼會被編碼', () => {
+    expect(inviteLoginUrl('ab-cd_EF12')).toBe('/api/auth/oidc/login?invite=ab-cd_EF12&remember=1');
   });
 });
