@@ -43,6 +43,19 @@ function isSensitiveName(name: string): boolean {
   return SENSITIVE_KEYS.has(lower) || SENSITIVE_SUFFIXES.some((suffix) => lower.endsWith(suffix));
 }
 
+/**
+ * Routes whose request body never goes into the request log, not even redacted:
+ * the paste-text importer (ENSCON Trip, Taiwan localisation) receives a whole
+ * private chat transcript, and /apply carries the stops lifted from it. Matched
+ * case-insensitively because Express routing is, so `/API/.../IMPORT-TEXT` cannot
+ * slip past.
+ */
+const UNLOGGED_BODY_PATHS = /^\/api\/trips\/[^/]+\/import-text(?:\/apply)?\/?$/i;
+
+export function isBodyLoggable(path: string): boolean {
+  return !UNLOGGED_BODY_PATHS.test(path);
+}
+
 /** Deep-redacts every key in `SENSITIVE_KEYS` (case-insensitive) from a request-log value. */
 export function redact(value: unknown): unknown {
   if (!value || typeof value !== 'object') return value;
@@ -329,7 +342,7 @@ export function applyGlobalMiddleware(
         logWarn(`${req.method} ${req.path} ${res.statusCode} ${ms}ms ip=${req.ip}`);
       }
       const q = Object.keys(req.query).length ? ` query=${JSON.stringify(redact(req.query))}` : '';
-      const b = req.body && Object.keys(req.body).length ? ` body=${JSON.stringify(redact(req.body))}` : '';
+      const b = !isBodyLoggable(req.path) ? ' body=[omitted]' : req.body && Object.keys(req.body).length ? ` body=${JSON.stringify(redact(req.body))}` : '';
       logDebug(`${req.method} ${req.path} ${res.statusCode} ${ms}ms ip=${req.ip}${q}${b}`);
     });
     next();

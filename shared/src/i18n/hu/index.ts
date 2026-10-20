@@ -55,6 +55,7 @@ import trip from './trip';
 import trips from './trips';
 import undo from './undo';
 import vacay from './vacay';
+import twImport from './twImport';
 
 const locale = {
   ...common,
@@ -109,6 +110,7 @@ const locale = {
   ...mobileAdmin,
   ...mobileSettings,
   ...mobileCollections,
+  ...twImport,
   ...storage,
   ...dawarich,
   ...docsync,

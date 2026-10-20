@@ -3,6 +3,7 @@ import { ChevronsDownUp, ChevronsUpDown, Download, Undo2, ArrowUpDown, Route as 
 import { DayReorderPopup } from './DayReorderPopup'
 import Tooltip from '../shared/Tooltip'
 import { useToast } from '../shared/Toast'
+import { TextImportButton } from './TextImportModal'
 import { TripExportModal } from './TripExportModal'
 import { isRoutableReservation } from '../../utils/reservationRoutes'
 import type { DayAddControls } from '../../utils/dayAdd'
@@ -31,6 +32,8 @@ interface DayPlanSidebarToolbarProps {
   setUndoHover: (v: boolean) => void
   lastActionLabel: string | null
   canEditDays?: boolean
+  /** 貼上文字排行程會建 place，伺服器另驗 place_edit；沒有就不顯示入口 */
+  canEditPlaces?: boolean
   /**
    * Gates "Subscribe to calendar" in the export dialog only. Defaults to true so
    * a caller that has not wired the permission through keeps today's entries
@@ -52,7 +55,7 @@ export function DayPlanSidebarToolbar({
   allConnectionsShown = false, onToggleAllConnections,
   t, locale, toast,
   expandedDays, setExpandedDays, onUndo, canUndo, undoHover, setUndoHover, lastActionLabel,
-  canEditDays, canManageShare = true, onReorderDays, onAddDay, dayAdd, onDeleteDay, deleteDayQuestion,
+  canEditDays, canEditPlaces, canManageShare = true, onReorderDays, onAddDay, dayAdd, onDeleteDay, deleteDayQuestion,
 }: DayPlanSidebarToolbarProps) {
   const [reorderOpen, setReorderOpen] = useState(false)
   const [exportOpen, setExportOpen] = useState(false)
@@ -81,6 +84,12 @@ export function DayPlanSidebarToolbar({
             {t('dayplan.export')}
           </button>
         </Tooltip>
+        {/* 台灣在地化：貼上 LINE 行程文字，自動拆成每天站點 */}
+        {canEditDays !== false && canEditPlaces !== false && (
+          <TextImportButton tripId={tripId} days={days} t={t}
+            className="flex shrink-0 cursor-pointer items-center gap-[5px] rounded-lg border-0 bg-accent px-2.5 py-[5px] text-[11px] font-medium text-accent-text"
+          />
+        )}
         <TripExportModal
           isOpen={exportOpen}
           onClose={() => setExportOpen(false)}

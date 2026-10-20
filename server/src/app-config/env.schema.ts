@@ -122,6 +122,8 @@ export const envSchema = z.object({
 
   // Integrations
   UNSPLASH_ACCESS_KEY: anyString,
+  // 台灣在地化：貼上文字自動排行程的 LLM 後備金鑰；空＝功能關閉（回 501，規則解析仍可用）
+  TEXT_IMPORT_OPENAI_API_KEY: anyString,
   TRANSIT_API_URL: url,
   NOMINATIM_URL: url,
   // OVERPASS_URL accepts a comma-separated endpoint list and silently drops

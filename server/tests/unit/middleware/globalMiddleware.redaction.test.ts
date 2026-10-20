@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { redact, SENSITIVE_KEYS } from '../../../src/middleware/globalMiddleware';
+import { isBodyLoggable, redact, SENSITIVE_KEYS } from '../../../src/middleware/globalMiddleware';
 
 describe('globalMiddleware request-log redaction', () => {
   it('redacts secretAccessKey (any casing) — storage admin PUT bodies land in the same debug log line', () => {
@@ -85,5 +85,19 @@ describe('globalMiddleware request-log redaction', () => {
     expect(redact(42)).toBe(42);
     expect(redact(null)).toBe(null);
     expect(redact(undefined)).toBe(undefined);
+  });
+});
+
+describe('globalMiddleware request-log body omission', () => {
+  it('never logs the paste-text importer bodies (any casing, trailing slash)', () => {
+    for (const p of ['/api/trips/5/import-text', '/api/trips/5/import-text/apply', '/API/Trips/5/IMPORT-TEXT/', '/api/trips/abc/import-text/apply/']) {
+      expect(isBodyLoggable(p)).toBe(false);
+    }
+  });
+
+  it('keeps logging other bodies', () => {
+    for (const p of ['/api/trips/5/places', '/api/trips/5/import-text-other', '/api/trips/5/places/import/google-list']) {
+      expect(isBodyLoggable(p)).toBe(true);
+    }
   });
 });

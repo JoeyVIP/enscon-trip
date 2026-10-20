@@ -19,6 +19,7 @@ import { ConnRow, HotelConnRow, NoteRow, PlaceRow, PlanScheduleRow, ReorderStack
 import type { RowDrag } from './MPlanTimelineRows'
 import { usePluginDaySchedule } from '../../../../components/Plugins/PluginDaySchedule'
 import { Fragment } from 'react'
+import { TextImportButton } from '../../../../components/Planner/TextImportModal'
 import MDancingTrek from '../../../components/MDancingTrek'
 import type { MPlanTimelineProps } from '../MTripShell'
 import type { MergedItem } from '../../../../utils/dayMerge'
@@ -287,6 +288,11 @@ export default function MPlanTimeline({ planner, shell }: MPlanTimelineProps) {
             <PlanAction icon={Ticket} label={t('mobileTrip.addBookingShort')} onClick={tl.addBooking} />
             <PlanAction icon={TrainFront} label={t('mobileTrip.addTransportShort')} onClick={tl.addTransport} />
             <PlanAction icon={Route} label={t('dayplan.optimize')} onClick={() => void tl.optimize()} />
+            {/* 台灣在地化：貼上文字自動排行程（建 place 另要 place_edit） */}
+            {canEditPlaces && (
+              <TextImportButton tripId={planner.tripId} days={planner.days} t={t}
+                className="flex min-w-0 flex-col items-center justify-center gap-1.5 rounded-[14px] border border-[color:var(--m-rowbr)] bg-[color:var(--m-ic)] px-1 py-2.5 text-[0.75rem] font-medium transition-transform active:scale-[.97]" />
+            )}
             {tl.canExportRoute && (
               <>
                 <PlanAction icon={GoogleMapsIcon} label={t('mobileTrip.googleMaps')} onClick={tl.exportGoogleMaps} />
