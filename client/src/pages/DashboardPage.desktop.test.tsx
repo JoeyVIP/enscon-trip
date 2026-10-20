@@ -9,6 +9,7 @@ import { useAuthStore } from '../store/authStore';
 import { useSettingsStore } from '../store/settingsStore';
 import { useAddonStore } from '../store/addonStore';
 import { usePluginStore } from '../store/pluginStore';
+import { usePermissionsStore } from '../store/permissionsStore';
 import DashboardPage from './DashboardPage';
 
 // FE-PAGE-DESKDASH-001 onwards
@@ -459,6 +460,18 @@ describe('DashboardPage (desktop)', () => {
 
     await waitFor(() => expect(container.querySelector('.hero-trip img.bg')).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: 'Add cover' })).not.toBeInTheDocument();
+  });
+
+  it('FE-PAGE-DESKDASH-TW-004: no "Add cover" for a member who may not change the cover', async () => {
+    // Cover upload limited to owners, and this member does not own the trip.
+    usePermissionsStore.setState({ permissions: { trip_cover_upload: 'trip_owner' } });
+    onlyTrips([{ ...TRIP, user_id: 99, is_owner: 0 }]);
+    const { container } = render(<DashboardPage />);
+
+    await waitFor(() => expect(container.querySelector('.hero-trip [data-testid="trip-cover-art"]')).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'Add cover' })).not.toBeInTheDocument();
+    // Opening the trip is still offered.
+    expect(screen.getByRole('button', { name: 'Open trip: Paris Adventure' })).toBeInTheDocument();
   });
 
   it('FE-PAGE-DESKDASH-TW-003: the hero and the cards carry a visible "Open trip" button', async () => {
