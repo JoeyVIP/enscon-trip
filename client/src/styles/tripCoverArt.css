@@ -37,8 +37,9 @@
 .dark .tca-soft {
   --tca-sky-a: #0B1828;
   --tca-sky-b: #0F2742;
-  --tca-sun: #B3CBE1;
-  --tca-halo: #B3CBE1;
+  /* A dim moon, not a bright disc: the white title runs over it. */
+  --tca-sun: #22466E;
+  --tca-halo: #1A3A5E;
   --tca-cloud: rgba(179, 203, 225, .16);
   --tca-far: #173A60;
   --tca-mid: #1E5089;
@@ -65,8 +66,9 @@
 .tca-deep {
   --tca-sky-a: #0A3D70;
   --tca-sky-b: #02539C;
-  --tca-sun: #B3CBE1;
-  --tca-halo: #B3CBE1;
+  /* Muted so white text crossing the sun stays readable. */
+  --tca-sun: #3F7DBC;
+  --tca-halo: #3F7DBC;
   --tca-cloud: rgba(242, 246, 250, .22);
   --tca-far: #3F7DBC;
   --tca-mid: #1F63A5;
@@ -79,8 +81,8 @@
 .dark .tca-deep {
   --tca-sky-a: #071C33;
   --tca-sky-b: #0B3A6B;
-  --tca-sun: #B3CBE1;
-  --tca-halo: #B3CBE1;
+  --tca-sun: #1F5288;
+  --tca-halo: #1F5288;
   --tca-cloud: rgba(179, 203, 225, .14);
   --tca-far: #1F5288;
   --tca-mid: #164273;
