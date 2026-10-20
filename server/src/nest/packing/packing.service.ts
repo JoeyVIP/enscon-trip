@@ -524,7 +524,18 @@ export class PackingService {
    */
   distributePersonalItems(tripId: string | number, items: { name: string; category?: string; quantity?: number }[]) {
     if (!this.db.get('SELECT id FROM trips WHERE id = ?', tripId)) return null;
-    const members = [...this.tripRosterIds(tripId)].sort((a, b) => a - b);
+    // Real accounts only: a guest (#1362) is a per-trip placeholder that can never
+    // sign in, so a Personal copy owned by one is a row nobody can ever see.
+    const roster = this.tripRosterIds(tripId);
+    const guests = new Set(
+      this.db
+        .all<{ id: number }>(
+          'SELECT id FROM users WHERE COALESCE(is_guest, 0) = 1 AND id IN (SELECT user_id FROM trip_members WHERE trip_id = ?)',
+          tripId,
+        )
+        .map(r => r.id),
+    );
+    const members = [...roster].filter(id => !guests.has(id)).sort((a, b) => a - b);
     const wanted = items.map(i => ({
       name: i.name.trim(),
       category: i.category?.trim() || 'Other',

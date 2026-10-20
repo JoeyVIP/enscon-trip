@@ -21,7 +21,7 @@ const { db } = vi.hoisted(() => {
   tmp.exec('PRAGMA journal_mode = WAL');
   tmp.exec(`CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL,
     email TEXT NOT NULL UNIQUE, role TEXT NOT NULL DEFAULT 'user', password_version INTEGER NOT NULL DEFAULT 0,
-    display_name TEXT, avatar TEXT);`);
+    display_name TEXT, avatar TEXT, is_guest INTEGER NOT NULL DEFAULT 0);`);
   tmp.exec('CREATE TABLE trips (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, title TEXT);');
   tmp.exec('CREATE TABLE trip_members (trip_id INTEGER NOT NULL, user_id INTEGER NOT NULL);');
   tmp.exec(`CREATE TABLE packing_items (
@@ -85,6 +85,7 @@ const MEMBER = 2;
 const ADMIN = 3; // site admin, not on the trip
 const LATE = 4; // joins the trip later
 const OUTSIDER = 5; // never on the trip
+const GUEST = 6; // a per-trip guest placeholder (#1362), cannot sign in
 
 const SHOPPING = [
   { name: 'Sunscreen', category: 'Shopping' },
@@ -115,6 +116,8 @@ describe('Admin packing distribute e2e (real auth + admin guard + real SQL)', ()
     seedUser(db as never, { id: ADMIN, email: 'admin@example.test', role: 'admin' });
     seedUser(db as never, { id: LATE, email: 'late@example.test' });
     seedUser(db as never, { id: OUTSIDER, email: 'outsider@example.test' });
+    seedUser(db as never, { id: GUEST, email: 'guest@example.test' });
+    db.prepare('UPDATE users SET is_guest = 1 WHERE id = ?').run(GUEST);
     app = await build();
     vi.spyOn(app.get(PermissionsService), 'checkPermission').mockReturnValue(true);
     server = app.getHttpServer();
@@ -273,6 +276,14 @@ describe('Admin packing distribute e2e (real auth + admin guard + real SQL)', ()
     const second = await request(server).post(url()).set('Cookie', sessionCookie(ADMIN)).send(body);
     expect(second.body).toMatchObject({ created: 0, skipped: 2 });
     expect(count("SELECT COUNT(*) AS n FROM packing_items WHERE category = 'Other' AND name = 'Umbrella'")).toBe(2);
+  });
+
+  it('skips guest members: they can never sign in to see a Personal item', async () => {
+    db.prepare('INSERT INTO trip_members (trip_id, user_id) VALUES (?, ?)').run(tripId, GUEST);
+    const res = await request(server).post(url()).set('Cookie', sessionCookie(ADMIN)).send({ items: SHOPPING });
+    expect(res.status).toBe(200);
+    expect(res.body.members.map((m: { user_id: number }) => m.user_id)).toEqual([OWNER, MEMBER]);
+    expect(count('SELECT COUNT(*) AS n FROM packing_items WHERE owner_id = ?', GUEST)).toBe(0);
   });
 
   it('404 for a trip that does not exist', async () => {
