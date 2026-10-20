@@ -27,5 +27,7 @@ const twSouvenir: TranslationStrings = {
   'twSouvenir.namePlaceholder': 'e.g. snacks, medicine',
   'twSouvenir.recipientPlaceholder': 'Name or pick a member',
   'twSouvenir.storePlaceholder': 'e.g. Don Quijote, drugstore',
+  'twSouvenir.storeTotals': 'Estimated total per store',
+  'twSouvenir.taxFreeHint': 'Japan tax-free (refund at departure, purchases from 1 Nov 2026): one store, one day, ¥5,000 or more before tax. Totals use your estimated prices; the store has the final say.',
 };
 export default twSouvenir;

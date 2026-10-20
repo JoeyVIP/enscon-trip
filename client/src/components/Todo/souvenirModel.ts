@@ -62,3 +62,21 @@ export function groupSouvenirs(items: TodoItem[], view: SouvenirView, members: S
     return a.label.localeCompare(b.label)
   })
 }
+
+export interface SouvenirStoreTotal { store: string; totalJpy: number; count: number }
+
+// 各店預估合計（單價 × 數量）：給免稅門檻當參考。只算有填店家與價格的品項，
+// 店名去頭尾空白後相同就算同一家；金額大的排前面。不判斷是否達標——
+// 使用者填的多半是含稅標價，門檻是未稅，實際由店家認定。
+export function souvenirStoreTotals(items: TodoItem[]): SouvenirStoreTotal[] {
+  const totals = new Map<string, SouvenirStoreTotal>()
+  for (const i of items) {
+    const store = i.store?.trim()
+    if (!store || i.price_jpy == null) continue
+    const row = totals.get(store) ?? { store, totalJpy: 0, count: 0 }
+    row.totalJpy += i.price_jpy * (i.quantity ?? 1)
+    row.count += 1
+    totals.set(store, row)
+  }
+  return [...totals.values()].sort((a, b) => b.totalJpy - a.totalJpy || a.store.localeCompare(b.store))
+}

@@ -27,5 +27,7 @@ const twSouvenir: TranslationStrings = {
   'twSouvenir.namePlaceholder': '例：零食、藥品',
   'twSouvenir.recipientPlaceholder': '輸入名字或選成員',
   'twSouvenir.storePlaceholder': '例：唐吉訶德、藥妝店',
+  'twSouvenir.storeTotals': '各店預估合計',
+  'twSouvenir.taxFreeHint': '日本免稅（2026/11/1 起改出境退稅）：同一家店、同一天合計滿 5,000 円（未稅）才能辦。這裡用你填的預估價加總，實際以店家為準。',
 };
 export default twSouvenir;

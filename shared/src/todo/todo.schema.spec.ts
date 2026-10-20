@@ -74,6 +74,11 @@ describe('伴手禮欄位', () => {
     expect(todoCreateItemRequestSchema.safeParse({ name: 'X', quantity: 0 }).success).toBe(false);
     expect(todoCreateItemRequestSchema.safeParse({ name: 'X', price_jpy: -1 }).success).toBe(false);
   });
+  it('kind 只接受 souvenir（或 null）、price_jpy 有上限', () => {
+    expect(todoCreateItemRequestSchema.safeParse({ name: 'X', kind: 'other' }).success).toBe(false);
+    expect(todoCreateItemRequestSchema.safeParse({ name: 'X', kind: null }).success).toBe(true);
+    expect(todoCreateItemRequestSchema.safeParse({ name: 'X', price_jpy: 100_000_001 }).success).toBe(false);
+  });
   it('update 可用 null 清掉 recipient／store／price_jpy', () => {
     expect(todoUpdateItemRequestSchema.safeParse({ recipient: null, store: null, price_jpy: null }).success).toBe(true);
   });

@@ -1,7 +1,7 @@
 // 伴手禮純函式測試：分組、進度、拆分
 import { describe, it, expect } from 'vitest'
 import type { TodoItem } from '../../types'
-import { groupSouvenirs, souvenirProgress, splitSouvenirs, SOUVENIR_TEMPLATE_CATEGORY_KEYS } from './souvenirModel'
+import { groupSouvenirs, souvenirProgress, souvenirStoreTotals, splitSouvenirs, SOUVENIR_TEMPLATE_CATEGORY_KEYS } from './souvenirModel'
 
 const item = (o: Partial<TodoItem>): TodoItem => ({
   id: 1, trip_id: 1, name: '零食', category: null, checked: 0, sort_order: 0, due_date: null,
@@ -43,5 +43,19 @@ describe('souvenirModel', () => {
 
   it('範本只有分類，沒有商品或價格', () => {
     expect(SOUVENIR_TEMPLATE_CATEGORY_KEYS).toHaveLength(4)
+  })
+
+  it('souvenirStoreTotals 以單價×數量加總同一家店，沒填店家或價格的不算', () => {
+    const totals = souvenirStoreTotals([
+      item({ id: 1, store: '唐吉訶德', price_jpy: 1200, quantity: 3 }),
+      item({ id: 2, store: ' 唐吉訶德 ', price_jpy: 800 }),
+      item({ id: 3, store: '松本清', price_jpy: 6000 }),
+      item({ id: 4, store: '松本清', price_jpy: null }),
+      item({ id: 5, store: null, price_jpy: 9999 }),
+    ])
+    expect(totals).toEqual([
+      { store: '松本清', totalJpy: 6000, count: 1 },
+      { store: '唐吉訶德', totalJpy: 4400, count: 2 },
+    ])
   })
 })

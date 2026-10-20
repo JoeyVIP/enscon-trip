@@ -20,11 +20,11 @@ export const todoCreateItemRequestSchema = z.object({
   assigned_user_id: z.number().nullable().optional(),
   priority: z.number().optional(),
   // 伴手禮／代購欄位（kind='souvenir' 的品項才會用到，一般待辦留空）
-  kind: z.string().nullable().optional(),
+  kind: z.enum(['souvenir']).nullable().optional(),
   quantity: z.number().int().min(1).max(999).optional(),
   recipient: z.string().max(100).nullable().optional(),
   store: z.string().max(200).nullable().optional(),
-  price_jpy: z.number().int().min(0).nullable().optional(),
+  price_jpy: z.number().int().min(0).max(100_000_000).nullable().optional(),
 });
 export type TodoCreateItemRequest = z.infer<typeof todoCreateItemRequestSchema>;
 
@@ -43,7 +43,7 @@ export const todoUpdateItemRequestSchema = z.object({
   quantity: z.number().int().min(1).max(999).optional(),
   recipient: z.string().max(100).nullable().optional(),
   store: z.string().max(200).nullable().optional(),
-  price_jpy: z.number().int().min(0).nullable().optional(),
+  price_jpy: z.number().int().min(0).max(100_000_000).nullable().optional(),
 });
 export type TodoUpdateItemRequest = z.infer<typeof todoUpdateItemRequestSchema>;
 

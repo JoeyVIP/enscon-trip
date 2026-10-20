@@ -57,4 +57,20 @@ describe('SouvenirPanel', () => {
     expect(posted.every(p => p.kind === 'souvenir')).toBe(true)
     expect(posted.some(p => 'price_jpy' in p)).toBe(false)
   })
+
+  it('有店家與價格時顯示各店預估合計（單價×數量）與免稅提示', () => {
+    const items = [
+      souvenir({ id: 1, name: '餅乾', store: '唐吉訶德', price_jpy: 1200, quantity: 3 }),
+      souvenir({ id: 2, name: '藥膏', store: '唐吉訶德', price_jpy: 800 }),
+    ]
+    render(<SouvenirPanel tripId={1} items={items} members={members} />)
+    const box = screen.getByTestId('souvenir-store-totals')
+    expect(within(box).getByText('¥4,400')).toBeInTheDocument()
+    expect(within(box).getByText(/5,000/)).toBeInTheDocument()
+  })
+
+  it('沒有任何價格時不顯示各店合計', () => {
+    render(<SouvenirPanel tripId={1} items={[souvenir({ id: 1, name: '餅乾', store: '唐吉訶德' })]} members={members} />)
+    expect(screen.queryByTestId('souvenir-store-totals')).toBeNull()
+  })
 })

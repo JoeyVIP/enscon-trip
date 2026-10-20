@@ -5,7 +5,7 @@ import { useToast } from '../shared/Toast'
 import { useTranslation } from '../../i18n'
 import type { TodoItem } from '../../types'
 import {
-  SOUVENIR_KIND, SOUVENIR_TEMPLATE_CATEGORY_KEYS, groupSouvenirs, souvenirProgress,
+  SOUVENIR_KIND, SOUVENIR_TEMPLATE_CATEGORY_KEYS, groupSouvenirs, souvenirProgress, souvenirStoreTotals,
   type SouvenirMember, type SouvenirView,
 } from './souvenirModel'
 
@@ -31,6 +31,8 @@ export default function SouvenirPanel({ tripId, items, members }: { tripId: numb
 
   const groups = useMemo(() => groupSouvenirs(items, view, members), [items, view, members])
   const { bought, total } = souvenirProgress(items)
+  const storeTotals = useMemo(() => souvenirStoreTotals(items), [items])
+  const fmtYen = (n: number) => `¥${n.toLocaleString('ja-JP')}`
   const onError = (err: unknown) => toast.error(err instanceof Error ? err.message : t('common.error'))
 
   const add = () => {
@@ -114,7 +116,7 @@ export default function SouvenirPanel({ tripId, items, members }: { tripId: numb
                   <span className="text-content-muted">{members.find(m => m.id === i.assigned_user_id)?.username}</span>
                 )}
                 {i.store && <span className="text-content-muted">@ {i.store}</span>}
-                {i.price_jpy != null && <span className="text-content-muted">¥{i.price_jpy}</span>}
+                {i.price_jpy != null && <span className="text-content-muted">{fmtYen(i.price_jpy)}</span>}
                 {canEdit && (
                   <>
                     <select className={`${input} ml-auto`} value={i.assigned_user_id ?? ''} aria-label={t('twSouvenir.buyer')}
@@ -130,6 +132,21 @@ export default function SouvenirPanel({ tripId, items, members }: { tripId: numb
           </ul>
         </section>
       ))}
+
+      {storeTotals.length > 0 && (
+        <section data-testid="souvenir-store-totals" className="rounded-xl bg-surface-secondary p-3 text-sm text-content">
+          <div className="mb-2 font-semibold">{t('twSouvenir.storeTotals')}</div>
+          <ul className="m-0 flex list-none flex-col gap-1 p-0">
+            {storeTotals.map(s => (
+              <li key={s.store} className="flex items-center justify-between gap-2">
+                <span>{s.store}</span>
+                <span className="text-content-muted">{fmtYen(s.totalJpy)}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="mb-0 mt-2 text-xs text-content-muted">{t('twSouvenir.taxFreeHint')}</p>
+        </section>
+      )}
     </div>
   )
 }
