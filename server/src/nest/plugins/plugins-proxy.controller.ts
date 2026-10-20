@@ -4,6 +4,7 @@ import { extractToken, verifyJwtAndLoadUser } from '../auth/jwt-verify';
 import { pluginsEnabled } from './kill-switch';
 import { PluginRuntimeService } from './plugin-runtime.service';
 import { Public } from '../auth/public.decorator';
+import { toPrivateCacheControl } from '../../utils/cacheControl';
 
 /**
  * Proxies a plugin's own HTTP routes at /api/plugins/:id/* (#plugins, M2).
@@ -157,7 +158,10 @@ export class PluginsProxyController {
       }
 
       for (const [k, v] of Object.entries(headers)) {
-        if (SAFE_RESPONSE_HEADERS.has(k.toLowerCase())) res.setHeader(k, v);
+        if (!SAFE_RESPONSE_HEADERS.has(k.toLowerCase())) continue;
+        // A plugin may say how long the browser keeps its reply, never that a CDN
+        // may: the reply is for whoever is signed in (or holds the webhook secret).
+        res.setHeader(k, k.toLowerCase() === 'cache-control' ? toPrivateCacheControl(String(v)) : v);
       }
       // Never let a non-redirect reply render as a document at TREK's origin
       // (that would run plugin script at our real origin, outside the sandbox).

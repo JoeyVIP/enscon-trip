@@ -73,7 +73,8 @@ export class JourneyPublicController {
       if (!(await this.storage.exists('journey', name).catch(() => false))) {
         throw new HttpException({ error: 'Not found' }, 404);
       }
-      res.set('Cache-Control', 'public, max-age=86400');
+      // private: a journey photo is somebody's own picture, behind a revocable token.
+      res.set('Cache-Control', 'private, max-age=86400');
       // The storage layer serves it, whichever driver is configured. dev's fix
       // for the absolute-path 404 under the Nest ExpressAdapter does not apply
       // here any more: nothing on this path calls sendFile.

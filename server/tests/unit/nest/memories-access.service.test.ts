@@ -222,6 +222,22 @@ describe('pipeAsset', () => {
     expect(res.set).toHaveBeenCalledWith('Content-Type', 'image/jpeg');
     expect(res.end).toHaveBeenCalled();
   });
+
+  it('MEM-HELPERS-014: an upstream public Cache-Control reaches the client as private', async () => {
+    // Immich/Synology say public about their own origin; through TREK the bytes
+    // are one user's photos, and a CDN in front must not keep them.
+    mockSafeFetch.mockResolvedValue({
+      status: 200,
+      ok: true,
+      headers: { get: (h: string) => (h === 'cache-control' ? 'public, max-age=86400, s-maxage=600' : null) },
+      body: null,
+    });
+    const res = mockResponse();
+
+    await pipeAsset('https://example.com/img.jpg', res, undefined, undefined, 'private, max-age=60');
+
+    expect(res.set).toHaveBeenCalledWith('Cache-Control', 'private, max-age=86400');
+  });
 });
 
 // ── pipeAsset fetch options (#1611) ───────────────────────────────────────────

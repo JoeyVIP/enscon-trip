@@ -123,7 +123,7 @@ describe('serveFresh', () => {
 
     expect(await svc.serveFresh(res as never, key)).toBe(true);
     expect(res.set).toHaveBeenCalledWith('Content-Type', 'image/webp');
-    expect(res.set).toHaveBeenCalledWith('Cache-Control', 'public, max-age=3600');
+    expect(res.set).toHaveBeenCalledWith('Cache-Control', 'private, max-age=3600');
     expect(send).toHaveBeenCalledWith('photos-trek', `${key}.bin`, res);
     send.mockRestore();
   });

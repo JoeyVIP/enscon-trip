@@ -182,7 +182,7 @@ describe('streamPhoto — dispatch', () => {
     await svc.streamPhoto(res as never, 1, id, 'thumbnail');
 
     expect(storage.exists).toHaveBeenCalledWith('journey', 'thumbs/h.jpg');
-    expect(res.set).toHaveBeenCalledWith('Cache-Control', 'public, max-age=86400, immutable');
+    expect(res.set).toHaveBeenCalledWith('Cache-Control', 'private, max-age=86400, immutable');
     expect(res.set).toHaveBeenCalledWith('X-Content-Type-Options', 'nosniff');
     expect(storage.sendToResponse).toHaveBeenCalledWith('journey', 'thumbs/h.jpg', res);
   });
@@ -194,7 +194,7 @@ describe('streamPhoto — dispatch', () => {
 
     await svc.streamPhoto(res as never, 1, id, 'original');
 
-    expect(res.set).toHaveBeenCalledWith('Cache-Control', 'public, max-age=86400');
+    expect(res.set).toHaveBeenCalledWith('Cache-Control', 'private, max-age=86400');
     expect(res.set).toHaveBeenCalledWith('X-Content-Type-Options', 'nosniff');
     expect(storage.sendToResponse).toHaveBeenCalledWith('journey', 'x.jpg', res);
   });

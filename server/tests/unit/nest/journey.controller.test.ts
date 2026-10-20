@@ -526,7 +526,7 @@ describe('JourneyPublicController', () => {
     const s = svc({ validateShareTokenForAsset: vi.fn().mockReturnValue({ ownerId: 5 }) } as Partial<JourneyService>);
     await new JourneyPublicController(s, storageStub).legacyPhoto('tok', 'local', 'photo.jpg', 'original', res);
     expect(storageExists).toHaveBeenCalledWith('journey', 'photo.jpg');
-    expect(set).toHaveBeenCalledWith('Cache-Control', 'public, max-age=86400');
+    expect(set).toHaveBeenCalledWith('Cache-Control', 'private, max-age=86400');
     expect(storageSendToResponse).toHaveBeenCalledWith('journey', 'photo.jpg', res);
   });
 

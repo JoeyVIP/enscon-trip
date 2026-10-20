@@ -330,7 +330,7 @@ describe('MapsController (parity with the legacy /api/maps route)', () => {
       getStream.mockResolvedValue({ stream, stat: { key: 'photos/google/abc.jpg', size: 5, mtimeMs: 0 } });
       const res = makeRes();
       await makeController({ photoBytesKey: async () => 'abc.jpg' }).placePhotoBytes('p1', res);
-      expect(res.set).toHaveBeenCalledWith('Cache-Control', 'public, max-age=2592000, immutable');
+      expect(res.set).toHaveBeenCalledWith('Cache-Control', 'private, max-age=2592000, immutable');
       expect(res.type).toHaveBeenCalledWith('image/jpeg');
       expect(getStream).toHaveBeenCalledWith('photos-google', 'abc.jpg');
       expect(res.body()).toBe('hello');

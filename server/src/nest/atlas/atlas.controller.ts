@@ -82,7 +82,10 @@ export class AtlasController {
     }
     const geo = await this.atlas.regionGeo(list);
     // Cache only a non-empty result, matching the legacy route (the empty
-    // short-circuit above sends no Cache-Control header).
+    // short-circuit above sends no Cache-Control header, so it keeps the
+    // global API default, private no-store). public on purpose: these are the
+    // bundled boundary polygons, the same bytes for every user — nothing in
+    // them says which countries anybody visited.
     res.setHeader('Cache-Control', 'public, max-age=86400');
     return geo;
   }
@@ -101,6 +104,7 @@ export class AtlasController {
     }
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     res.setHeader('Content-Encoding', 'gzip');
+    // public on purpose, like /regions/geo: one bundled file for everybody.
     res.setHeader('Cache-Control', 'public, max-age=86400');
     res.send(gz);
   }

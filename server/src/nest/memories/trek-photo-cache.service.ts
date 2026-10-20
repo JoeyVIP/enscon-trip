@@ -72,7 +72,7 @@ export class TrekPhotoCacheService {
     if (!entry) return false;
 
     res.set('Content-Type', entry.contentType);
-    res.set('Cache-Control', 'public, max-age=3600');
+    res.set('Cache-Control', 'private, max-age=3600');
     try {
       // send() keeps a pre-set Content-Type, so entry.contentType survives the
       // .bin extension.

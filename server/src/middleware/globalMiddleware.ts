@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { readEnv, type AppEnv } from '../app-config';
 import { logDebug, logWarn, logError } from '../nest/audit/audit-log.logger';
+import { API_CACHE_CONTROL, API_VARY, isApiPath } from '../utils/cacheControl';
 
 /**
  * Field names redacted from request-log query/body dumps (case-insensitive —
@@ -134,6 +135,19 @@ export function applyGlobalMiddleware(
       },
     }),
   );
+
+  // No shared cache may keep an API answer (see utils/cacheControl.ts). Set first,
+  // before anything can end the response, so a CORS refusal or a forced-HTTPS
+  // redirect carries it too. A route that really serves the same bytes to everybody
+  // (bundled GeoJSON, wiki assets, brand logos) overwrites Cache-Control itself;
+  // Vary is appended to, so cors and compression still add Origin/Accept-Encoding.
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    if (isApiPath(req.path)) {
+      res.setHeader('Cache-Control', API_CACHE_CONTROL);
+      res.vary(API_VARY);
+    }
+    next();
+  });
 
   const allowedOrigins = http.corsOrigins;
 
