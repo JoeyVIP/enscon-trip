@@ -714,7 +714,7 @@ describe('inviteFromEntryRequest／inviteLoginUrl', () => {
     expect(inviteFromEntryRequest({ method: 'POST', path: '/register', query: { invite: INVITE }, headers: {} } as never)).toBeNull();
     expect(inviteFromEntryRequest({ method: 'HEAD', path: '/register', query: { invite: INVITE }, headers: {} } as never)).toBeNull();
   });
-  it('網址裡的邀請碼會被編碼', () => {
+  it('組出跟 LINE 鈕同形式的登入網址', () => {
     expect(inviteLoginUrl('ab-cd_EF12')).toBe('/api/auth/oidc/login?invite=ab-cd_EF12&remember=1');
   });
 });
