@@ -276,6 +276,8 @@ export function deriveWebauthn(raw: RawEnv) {
 export function deriveIntegrations(raw: RawEnv) {
   return {
     unsplashAccessKey: raw.UNSPLASH_ACCESS_KEY?.trim(),
+    // 貼上文字排行程的 LLM 金鑰；空字串視為未設定（功能關閉）
+    textImportOpenaiKey: raw.TEXT_IMPORT_OPENAI_API_KEY?.trim() || undefined,
     transitApiBase: stripTrailingSlashes(raw.TRANSIT_API_URL || 'https://api.transitous.org'),
     // Trimmed before the default fires: the schema validates the trimmed value and
     // treats a blank one as unset, so a padded or whitespace-only value would

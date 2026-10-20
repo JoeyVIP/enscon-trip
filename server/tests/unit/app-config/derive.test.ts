@@ -226,6 +226,8 @@ describe('derivePlugins', () => {
 describe('deriveIntegrations', () => {
   it('pins unsplash trim, transit base strip + default, nominatim trim + default, overpass timeout', () => {
     expect(deriveIntegrations({ UNSPLASH_ACCESS_KEY: ' key ' }).unsplashAccessKey).toBe('key');
+    expect(deriveIntegrations({ TEXT_IMPORT_OPENAI_API_KEY: ' sk-x ' }).textImportOpenaiKey).toBe('sk-x');
+    expect(deriveIntegrations({ TEXT_IMPORT_OPENAI_API_KEY: '   ' }).textImportOpenaiKey).toBeUndefined();
     expect(deriveIntegrations({}).transitApiBase).toBe('https://api.transitous.org');
     expect(deriveIntegrations({ TRANSIT_API_URL: 'https://t.example//' }).transitApiBase).toBe('https://t.example');
     expect(deriveIntegrations({}).nominatimUrl).toBe('https://nominatim.openstreetmap.org');

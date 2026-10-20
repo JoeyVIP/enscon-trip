@@ -3,6 +3,7 @@ import { ChevronsDownUp, ChevronsUpDown, Download, Undo2, ArrowUpDown, Route as 
 import { DayReorderPopup } from './DayReorderPopup'
 import Tooltip from '../shared/Tooltip'
 import { useToast } from '../shared/Toast'
+import { TextImportButton } from './TextImportModal'
 import { TripExportModal } from './TripExportModal'
 import { isRoutableReservation } from '../../utils/reservationRoutes'
 import type { DayAddControls } from '../../utils/dayAdd'
@@ -81,6 +82,12 @@ export function DayPlanSidebarToolbar({
             {t('dayplan.export')}
           </button>
         </Tooltip>
+        {/* 台灣在地化：貼上 LINE 行程文字，自動拆成每天站點 */}
+        {canEditDays !== false && (
+          <TextImportButton tripId={tripId} days={days} t={t}
+            className="flex shrink-0 cursor-pointer items-center gap-[5px] rounded-lg border-0 bg-accent px-2.5 py-[5px] text-[11px] font-medium text-accent-text"
+          />
+        )}
         <TripExportModal
           isOpen={exportOpen}
           onClose={() => setExportOpen(false)}
