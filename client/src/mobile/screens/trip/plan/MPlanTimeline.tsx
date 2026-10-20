@@ -27,6 +27,7 @@ import type { Assignment } from '../../../../types'
 import type { ComponentType, ReactNode } from 'react'
 import GoogleMapsIcon from '../../../../components/shared/GoogleMapsIcon'
 import { isRtlLanguage } from '../../../../i18n'
+import { OutfitHint } from '../../../../components/Weather/OutfitHint'
 import { useMPlanDaySwipe } from './useMPlanDaySwipe'
 
 /**
@@ -183,6 +184,10 @@ export default function MPlanTimeline({ planner, shell }: MPlanTimelineProps) {
             onOpenStay={openStay}
             stayLabel={stayLabel}
           />
+        )}
+        {/* 天氣旁的「今天穿什麼」小字；沒天氣資料時 OutfitHint 不畫 */}
+        {day && tl.weatherTemp != null && (
+          <OutfitHint weather={tl.weather} className="px-0.5 pb-1.5 pt-1 text-[0.65625rem] text-[color:var(--m-t3,inherit)]" />
         )}
 
         {tl.hotelLegs.top && (
