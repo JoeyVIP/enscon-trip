@@ -60,6 +60,7 @@ export default function MNewTripSheet({ open, trip, onClose, onSave, onCoverUpda
   const coverSearchSeq = useRef(0)
   const canEditTrip = !isEditing || can('trip_edit', trip)
   const canUploadCover = !isEditing || can('trip_cover_upload', trip)
+  const canArchiveTrip = isEditing && can('trip_archive', trip)
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -439,7 +440,7 @@ export default function MNewTripSheet({ open, trip, onClose, onSave, onCoverUpda
           </div>
         )}
 
-        {isEditing && onArchive && (
+        {canArchiveTrip && onArchive && (
           <div className="mt-2 rounded-[14px] bg-[color:var(--m-ic)]">
             <MListRow
               icon={trip?.is_archived ? ArchiveRestore : Archive}

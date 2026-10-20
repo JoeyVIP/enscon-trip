@@ -481,4 +481,44 @@ describe('DashboardPage (desktop)', () => {
     expect(await screen.findByRole('button', { name: 'Open trip: Paris Adventure' })).toBeInTheDocument();
     expect(await screen.findByRole('button', { name: 'Open trip: Kyoto' })).toBeInTheDocument();
   });
+
+  // Server defaults (permissions.service.ts): edit/delete/archive are owner-only;
+  // copy needs trip_create, which everybody has.
+  const OWNER_ONLY = { trip_create: 'everybody', trip_edit: 'trip_owner', trip_delete: 'trip_owner', trip_archive: 'trip_owner' } as const;
+
+  it('FE-PAGE-DESKDASH-TW-005: a member who does not own the trips only gets "Duplicate" on the hero and the cards', async () => {
+    usePermissionsStore.setState({ permissions: { ...OWNER_ONLY } });
+    onlyTrips([
+      { ...TRIP, user_id: 99, is_owner: 0 },
+      buildTrip({ id: 105, title: 'Berlin', start_date: '2027-03-01', end_date: '2027-03-05', user_id: 99, is_owner: 0 } as never),
+    ]);
+    const { container } = render(<DashboardPage />);
+
+    const card = (await screen.findByText('Berlin')).closest('.trip-card') as HTMLElement;
+    const hero = container.querySelector('.hero-trip') as HTMLElement;
+    for (const scope of [hero, card]) {
+      expect(within(scope).getByRole('button', { name: 'Duplicate' })).toBeInTheDocument();
+      expect(within(scope).queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
+      expect(within(scope).queryByRole('button', { name: 'Archive' })).not.toBeInTheDocument();
+      expect(within(scope).queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument();
+    }
+  });
+
+  it('FE-PAGE-DESKDASH-TW-006: the owner still gets edit, duplicate, archive and delete', async () => {
+    usePermissionsStore.setState({ permissions: { ...OWNER_ONLY } });
+    const me = useAuthStore.getState().user!.id;
+    onlyTrips([
+      { ...TRIP, user_id: me },
+      buildTrip({ id: 106, title: 'Berlin', start_date: '2027-03-01', end_date: '2027-03-05', user_id: me }),
+    ]);
+    const { container } = render(<DashboardPage />);
+
+    const card = (await screen.findByText('Berlin')).closest('.trip-card') as HTMLElement;
+    const hero = container.querySelector('.hero-trip') as HTMLElement;
+    for (const scope of [hero, card]) {
+      for (const name of ['Edit', 'Duplicate', 'Archive', 'Delete']) {
+        expect(within(scope).getByRole('button', { name })).toBeInTheDocument();
+      }
+    }
+  });
 });

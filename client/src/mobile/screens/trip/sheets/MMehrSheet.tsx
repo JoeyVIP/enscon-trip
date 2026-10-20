@@ -1,9 +1,10 @@
-import { ChevronRight, FileDown, Settings, Share2 } from 'lucide-react'
+import { ChevronRight, Code, FileDown, Settings, Share2 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import MSheet from '../../../components/MSheet'
 import type { MTripSheetsProps } from '../MTripShell'
 import { dockTabIds } from '../dockTabs'
 import { useTranslation } from '../../../../i18n'
+import { SOURCE_URL } from '../../../../components/Layout/SourceLink'
 
 /** Demo tile tints per legacy tab id; plugins share the files neutral. */
 const TILE_COLORS: Record<string, string> = {
@@ -20,6 +21,8 @@ const TILE_COLORS: Record<string, string> = {
  * "Mehr" dock-overflow sheet: bottom-anchored panel above the dock with a
  * transparent scrim. Grid of the trip sections that did not fit the dock
  * (files/collab/plugins, with short stats) plus the share/export/settings rows.
+ * ENSCON: the last row is the AGPL-3.0 §13 source link — on the trip page the
+ * floating footer link sat on the dock's left edge, so phones get it here.
  */
 export default function MMehrSheet({ planner, shell }: MTripSheetsProps) {
   const { t } = useTranslation()
@@ -99,6 +102,19 @@ export default function MMehrSheet({ planner, shell }: MTripSheetsProps) {
               <ChevronRight size={16} strokeWidth={2} className="flex-none text-m-faint" />
             </button>
           ))}
+          <a
+            href={SOURCE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={shell.closeSheet}
+            className="flex w-full items-center gap-[13px] rounded-[18px] bg-[color:var(--m-ic)] px-4 py-[14px] text-left"
+          >
+            <div className="flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[10px] bg-[color:var(--m-ic)]">
+              <Code size={17} strokeWidth={1.9} />
+            </div>
+            <span className="min-w-0 flex-1 truncate text-[0.875rem] font-semibold">{t('settings.about.sourceCodeLink')} (AGPL-3.0)</span>
+            <ChevronRight size={16} strokeWidth={2} className="flex-none text-m-faint" />
+          </a>
         </div>
       </div>
     </MSheet>
