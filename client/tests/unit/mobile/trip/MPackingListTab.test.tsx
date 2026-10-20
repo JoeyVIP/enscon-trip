@@ -12,7 +12,7 @@ import { buildPlanner } from '../../../helpers/mobileTrip'
 import { resetAllStores, seedStore } from '../../../helpers/store'
 import { act, fireEvent, render, screen, waitFor, within } from '../../../helpers/render'
 
-// FE-MOB-PACKTAB-001 to FE-MOB-PACKTAB-046 (plus 060-062)
+// FE-MOB-PACKTAB-001 to FE-MOB-PACKTAB-046 (plus 060-067)
 
 const ME = 7
 const ANNA = { id: 11, username: 'anna', avatar: null, avatar_url: 'https://cdn.example/anna.png' } as unknown as TripMember
@@ -304,7 +304,7 @@ describe('MPackingListTab', () => {
     await setup()
     expect(screen.queryByText('Diary')).toBeNull()
 
-    fireEvent.click(screen.getByRole('button', { name: 'packing.viewPersonal' }))
+    fireEvent.click(screen.getByRole('button', { name: /^packing\.viewPersonal/ }))
 
     expect(screen.getByText('Diary')).toBeInTheDocument()
     expect(screen.queryByText('Passport')).toBeNull()
@@ -319,7 +319,7 @@ describe('MPackingListTab', () => {
   it('FE-MOB-PACKTAB-020: an empty personal list shows its own hint', async () => {
     await setup({ items: ITEMS.filter(i => !i.is_private) })
 
-    fireEvent.click(screen.getByRole('button', { name: 'packing.viewPersonal' }))
+    fireEvent.click(screen.getByRole('button', { name: /^packing\.viewPersonal/ }))
 
     expect(screen.getByText('packing.personalEmptyHint')).toBeInTheDocument()
   })
@@ -388,7 +388,7 @@ describe('MPackingListTab', () => {
   it('FE-MOB-PACKTAB-026: a category added from the personal view is private', async () => {
     const { planner } = await setup()
     enterEditMode()
-    fireEvent.click(screen.getByRole('button', { name: 'packing.viewPersonal' }))
+    fireEvent.click(screen.getByRole('button', { name: /^packing\.viewPersonal/ }))
 
     fireEvent.click(screen.getByRole('button', { name: 'packing.addCategory' }))
     fireEvent.change(screen.getByPlaceholderText('packing.newCategoryPlaceholder'), { target: { value: 'Books' } })
@@ -709,7 +709,7 @@ describe('MPackingListTab', () => {
     const items = [packItem({ id: 1, name: 'Tent', is_private: 1, owner_id: 21, owner_username: 'owner' })]
     await setup({ items })
 
-    fireEvent.click(screen.getByRole('button', { name: 'packing.viewPersonal' }))
+    fireEvent.click(screen.getByRole('button', { name: /^packing\.viewPersonal/ }))
 
     expect(screen.getByLabelText('packing.takenCareOf:owner')).toBeInTheDocument()
   })
@@ -721,7 +721,7 @@ describe('MPackingListTab', () => {
     })]
     await setup({ items })
 
-    fireEvent.click(screen.getByRole('button', { name: 'packing.viewPersonal' }))
+    fireEvent.click(screen.getByRole('button', { name: /^packing\.viewPersonal/ }))
 
     expect(screen.getByLabelText('packing.sharedWithCount:2')).toBeInTheDocument()
   })
@@ -928,10 +928,29 @@ describe('MPackingListTab', () => {
   it('FE-MOB-PACKTAB-065: the sharing state is an icon on the row, not a sentence', async () => {
     const items = [packItem({ id: 1, name: 'Tent', is_private: 1, owner_id: 21, owner_username: 'owner' })]
     await setup({ items })
-    fireEvent.click(screen.getByRole('button', { name: 'packing.viewPersonal' }))
+    fireEvent.click(screen.getByRole('button', { name: /^packing\.viewPersonal/ }))
 
     // The wording is still reachable — it just does not eat the row any more.
     expect(screen.queryByText('packing.takenCareOf:owner')).not.toBeInTheDocument()
     expect(screen.getByLabelText('packing.takenCareOf:owner')).toBeInTheDocument()
+  })
+
+  it('FE-MOB-PACKTAB-066: the "My list" pill carries its own done/total, apart from the shared list', async () => {
+    const items = [
+      packItem({ id: 1, name: 'Passport', checked: 1 }),
+      packItem({ id: 2, name: 'Visa', category: 'Travel' }),
+      packItem({ id: 3, name: 'Snacks', category: 'Shopping', is_private: 1, owner_id: ME, checked: 1 }),
+      packItem({ id: 4, name: 'Tea', category: 'Shopping', is_private: 1, owner_id: ME }),
+      packItem({ id: 5, name: 'Mochi', category: 'Shopping', is_private: 1, owner_id: ME }),
+    ]
+    await setup({ items })
+    expect(screen.getByRole('button', { name: /^packing\.viewPersonal/ })).toHaveTextContent('packing.viewPersonal1/3')
+    // The shared progress card is untouched by the private rows.
+    expect(screen.getByText('1/2')).toBeInTheDocument()
+  })
+
+  it('FE-MOB-PACKTAB-067: without private rows the "My list" pill shows no count', async () => {
+    await setup({ items: ITEMS.filter(i => !i.is_private) })
+    expect(screen.getByRole('button', { name: /^packing\.viewPersonal/ })).toHaveTextContent(/^packing\.viewPersonal$/)
   })
 })

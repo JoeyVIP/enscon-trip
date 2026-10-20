@@ -125,8 +125,9 @@ function ListsContainer({ tripId, packingItems, todoItems }: { tripId: number; p
   const { t } = useTranslation()
   const isAdmin = useAuthStore(s => s.user?.role === 'admin')
 
+  // Shared list only: "My list" items are counted on their own pill in PackingListPanel.
   const tabs = [
-    { id: 'packing' as const, label: t('todo.subtab.packing'), icon: PackageCheck, count: packingItems.length },
+    { id: 'packing' as const, label: t('todo.subtab.packing'), icon: PackageCheck, count: packingItems.filter(i => !i.is_private).length },
     { id: 'todo' as const, label: t('todo.subtab.todo'), icon: ListTodo, count: todoItems.length },
   ]
 

@@ -104,6 +104,8 @@ export default function MPackingListTab({ planner }: { planner: TripPlanner }) {
   const groups = useMemo(() => groupPackingItems(viewItems, statusFilter, defaultCategory), [viewItems, statusFilter, defaultCategory])
   const progress = packingProgress(viewItems)
   const checkedCount = viewItems.filter(i => i.checked).length
+  // The header badge counts the shared list only, so "My list" shows its own done/total here.
+  const personalProgress = useMemo(() => packingProgress(packingViewItems(items, 'personal')), [items])
 
   const toggleCategory = (cat: string) => setCollapsed(c => ({ ...c, [cat]: !c[cat] }))
 
@@ -433,7 +435,12 @@ export default function MPackingListTab({ planner }: { planner: TripPlanner }) {
       {!trueEmpty && (
         <div className="mt-[10px] flex items-center gap-[6px]">
           <button type="button" onClick={() => setView('common')} className={filterPillCls(view === 'common')}>{t('packing.viewCommon')}</button>
-          <button type="button" onClick={() => setView('personal')} className={filterPillCls(view === 'personal')}>{t('packing.viewPersonal')}</button>
+          <button type="button" onClick={() => setView('personal')} className={filterPillCls(view === 'personal')}>
+            {t('packing.viewPersonal')}
+            {personalProgress.total > 0 && (
+              <span className="ml-1 font-geist opacity-70">{personalProgress.checked}/{personalProgress.total}</span>
+            )}
+          </button>
           <span className="h-4 w-px flex-none bg-[color:var(--m-rowbr)]" />
           <button type="button" onClick={() => setStatusFilter('all')} className={filterPillCls(statusFilter === 'all')}>{t('packing.filterAll')}</button>
           <button type="button" onClick={() => setStatusFilter('open')} className={filterPillCls(statusFilter === 'open')}>{t('packing.filterOpen')}</button>
