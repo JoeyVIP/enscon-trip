@@ -61,15 +61,13 @@ export class SpaFallbackFilter implements ExceptionFilter {
     if (!this.inviteGate) return false;
     const invite = inviteFromEntryRequest(req);
     if (!invite) return false;
-    let allowed = false;
     try {
-      allowed = this.inviteGate.allowsInviteEntry(invite);
+      if (!this.inviteGate.allowsInviteEntry(invite)) return false;
     } catch (err: unknown) {
       // 查設定或資料庫出錯就退回原行為（前端照樣能處理），不要讓邀請連結變成 500。
       this.logger.warn(`invite entry check failed: ${err instanceof Error ? err.message : String(err)}`);
       return false;
     }
-    if (!allowed) return false;
     // 前端讀得到的 cookie（httpOnly: false），跟 inviteStore 同名同屬性：LINE 登入失敗回登入頁時，
     // 「重試」鈕靠它補回邀請碼。
     res.cookie(INVITE_COOKIE, invite, { ...cookieOptions(false, req), httpOnly: false, maxAge: INVITE_COOKIE_MAX_AGE_MS });
