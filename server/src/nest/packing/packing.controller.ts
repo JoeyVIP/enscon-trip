@@ -101,7 +101,8 @@ export class PackingController {
   ) {
     // No scope = the shared list only: a personal list is cleared only when asked for by name.
     const scope = body?.scope === 'personal' ? 'personal' : 'common';
-    const deleted = this.packing.clearChecked(tripId, scope, user.id);
+    // ids = the rows the user confirmed; the server never deletes beyond them.
+    const deleted = this.packing.clearChecked(tripId, scope, user.id, body?.ids);
     for (const item of deleted) {
       this.packing.emitToViewers(tripId, 'packing:deleted', { itemId: Number(item.id) }, item as PackingItemRow, socketId);
     }

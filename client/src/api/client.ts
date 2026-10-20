@@ -525,8 +525,8 @@ export const packingApi = {
   bulkImport: (tripId: number | string, items: { name: string; category?: string; quantity?: number }[]) => apiClient.post(`/trips/${tripId}/packing/import`, { items } satisfies PackingImportRequest).then(r => r.data),
   update: (tripId: number | string, id: number, data: PackingUpdateItemRequest) => apiClient.put(`/trips/${tripId}/packing/${id}`, data).then(r => r.data),
   delete: (tripId: number | string, id: number) => apiClient.delete(`/trips/${tripId}/packing/${id}`).then(r => r.data),
-  /** Deletes the checked rows of one list only: 'common' = shared list, 'personal' = the caller's own private rows. */
-  clearChecked: (tripId: number | string, scope: 'common' | 'personal') => apiClient.post(`/trips/${tripId}/packing/clear-checked`, { scope } satisfies PackingClearCheckedRequest).then(r => r.data as { deleted_ids: number[]; count: number }),
+  /** Deletes the checked rows of one list only: 'common' = shared list, 'personal' = the caller's own private rows; `ids` (the confirmed rows) caps what may go. */
+  clearChecked: (tripId: number | string, scope: 'common' | 'personal', ids?: number[]) => apiClient.post(`/trips/${tripId}/packing/clear-checked`, (ids ? { scope, ids } : { scope }) satisfies PackingClearCheckedRequest).then(r => r.data as { deleted_ids: number[]; count: number }),
   reorder: (tripId: number | string, orderedIds: number[]) => apiClient.put(`/trips/${tripId}/packing/reorder`, { orderedIds } satisfies PackingReorderRequest).then(r => r.data),
   setSharing: (tripId: number | string, id: number, data: PackingSetSharingRequest) => apiClient.put(`/trips/${tripId}/packing/${id}/sharing`, data).then(r => r.data),
   clone: (tripId: number | string, id: number) => apiClient.post(`/trips/${tripId}/packing/${id}/clone`).then(r => r.data),

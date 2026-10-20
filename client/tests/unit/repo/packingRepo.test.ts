@@ -133,7 +133,7 @@ describe('packingRepo.clearChecked', () => {
 
     expect(await packingRepo.clearChecked(1, 'common', [shared.id])).toEqual({ deleted_ids: [shared.id] });
 
-    expect(body).toEqual({ scope: 'common' });
+    expect(body).toEqual({ scope: 'common', ids: [shared.id] });
     expect(await offlineDb.packingItems.get(shared.id)).toBeUndefined();
     expect(await offlineDb.packingItems.get(mine.id)).toBeDefined();
   });

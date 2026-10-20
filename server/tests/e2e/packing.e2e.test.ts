@@ -479,6 +479,26 @@ describe('Packing e2e (real auth guard + real SQL over temp SQLite)', () => {
       expect(remainingIds()).toEqual(before);
     });
 
+    it('PACK-CLEAR-006: with ids, only the confirmed rows go — a row ticked later and ids from another list stay', async () => {
+      const { shared, sharedOpen, mine, theirs } = seedLists();
+      // Confirmed 2 of the 3 shared rows; also slips in my own row and another member's private row.
+      const res = await request(server).post(`/api/trips/${tripId}/packing/clear-checked`).set('Cookie', sessionCookie(1))
+        .send({ scope: 'common', ids: [shared[0], shared[1], mine[0], theirs] });
+      expect(res.status).toBe(200);
+      expect([...res.body.deleted_ids].sort()).toEqual([shared[0], shared[1]].sort());
+      expect(res.body.count).toBe(2);
+      expect(remainingIds()).toEqual([shared[2], sharedOpen, ...mine, theirs]);
+    });
+
+    it('PACK-CLEAR-007: personal scope with another member\'s id deletes nothing of theirs', async () => {
+      const { shared, sharedOpen, mine, theirs } = seedLists();
+      const res = await request(server).post(`/api/trips/${tripId}/packing/clear-checked`).set('Cookie', sessionCookie(1))
+        .send({ scope: 'personal', ids: [theirs, shared[0]] });
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ deleted_ids: [], count: 0 });
+      expect(remainingIds()).toEqual([...shared, sharedOpen, ...mine, theirs]);
+    });
+
     it('PACK-CLEAR-005: nothing checked answers an empty result', async () => {
       insertItem(tripId, 'Rope');
       const res = await request(server).post(`/api/trips/${tripId}/packing/clear-checked`).set('Cookie', sessionCookie(1)).send({});

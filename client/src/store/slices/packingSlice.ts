@@ -63,7 +63,7 @@ export const createPackingSlice = (set: SetState, get: GetState): PackingSlice =
     set(state => ({ packingItems: state.packingItems.filter(item => !ids.includes(item.id)) }))
     try {
       const { deleted_ids } = await packingRepo.clearChecked(tripId, scope, ids)
-      // The server's answer wins: it may have cleared a row ticked elsewhere meanwhile.
+      // The server deletes nothing outside `ids`; dropping its deleted_ids again is a no-op guard.
       set(state => ({ packingItems: state.packingItems.filter(item => !deleted_ids.includes(item.id)) }))
     } catch (err: unknown) {
       set({ packingItems: prev })

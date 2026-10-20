@@ -194,6 +194,10 @@ export type PackingApplyTemplateRequest = z.infer<typeof packingApplyTemplateReq
 export const packingClearCheckedRequestSchema = z
   .object({
     scope: z.enum(['common', 'personal']).optional(),
+    // The rows the caller confirmed. When sent, nothing outside them goes (not
+    // even a row someone else ticked after the confirm dialog opened), so the
+    // count the user agreed to is the most that can be deleted.
+    ids: z.array(z.number().int()).max(5000).optional(),
   })
   .optional();
 export type PackingClearCheckedRequest = z.infer<typeof packingClearCheckedRequestSchema>;

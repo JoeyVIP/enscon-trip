@@ -96,8 +96,9 @@ export const packingRepo = {
   },
 
   /**
-   * "Clear checked" for one list. Online it is one call and the server applies
-   * the same scope; offline it queues a delete for exactly the `ids` the caller
+   * "Clear checked" for one list. Online it is one call: the server applies the
+   * same scope and deletes nothing outside `ids` (what the user confirmed);
+   * offline it queues a delete for exactly the `ids` the caller
    * worked out for that list, so the queue cannot reach the other list either.
    */
   async clearChecked(tripId: number | string, scope: 'common' | 'personal', ids: number[]): Promise<{ deleted_ids: number[] }> {
@@ -105,7 +106,7 @@ export const packingRepo = {
       for (const id of ids) await packingRepo.delete(tripId, id)
       return { deleted_ids: ids }
     }
-    const result = await packingApi.clearChecked(tripId, scope)
+    const result = await packingApi.clearChecked(tripId, scope, ids)
     await offlineDb.packingItems.bulkDelete(result.deleted_ids)
     return { deleted_ids: result.deleted_ids }
   },
