@@ -630,6 +630,8 @@ describe('MCollabNotes', () => {
 
     const viewer = screen.getByRole('dialog', { name: 'Visa' })
     expect(within(viewer).getByTestId('md')).toHaveTextContent('**apply** early')
+    // Reading size, not the card's 12px preview.
+    expect(within(viewer).getByTestId('note-reader-body').className).toContain('text-[0.9375rem]')
     expect(within(viewer).getByRole('button', { name: /collab\.notes\.edit/ })).toBeInTheDocument()
     expect(screen.queryByRole('dialog', { name: 'collab.notes.edit' })).not.toBeInTheDocument()
     expect(screen.queryByPlaceholderText('collab.notes.contentPlaceholder')).not.toBeInTheDocument()

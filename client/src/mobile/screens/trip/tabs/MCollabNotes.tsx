@@ -627,6 +627,19 @@ function NoteFormSheet({ open, target, categories, colorMap, canUploadFiles, onC
   )
 }
 
+/** Typography for the note reader: 15px body, real headings, quotes and list spacing. */
+const NOTE_READER_CLS = [
+  'font-geist text-[0.9375rem] leading-[1.7] text-m-ink',
+  '[&_p]:mb-3 [&_strong]:font-bold [&_a]:underline [&_a]:underline-offset-2',
+  '[&_h1]:mb-2 [&_h1]:mt-4 [&_h1]:text-[1.125rem] [&_h1]:font-bold',
+  '[&_h2]:mb-2 [&_h2]:mt-4 [&_h2]:text-[1.0625rem] [&_h2]:font-bold',
+  '[&_h3]:mb-1 [&_h3]:mt-3 [&_h3]:text-[0.9375rem] [&_h3]:font-bold',
+  '[&>:first-child]:mt-0',
+  '[&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:mb-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mb-1',
+  '[&_blockquote]:mb-3 [&_blockquote]:border-l-[3px] [&_blockquote]:border-[color:var(--m-rowbr)] [&_blockquote]:pl-3 [&_blockquote]:text-m-muted',
+  '[&_code]:rounded [&_code]:bg-[color:var(--m-ic)] [&_code]:px-1',
+].join(' ')
+
 function NoteViewSheet({ open, note, onClose, onEdit, t }: {
   open: boolean
   note: CollabNoteData | null
@@ -655,7 +668,8 @@ function NoteViewSheet({ open, note, onClose, onEdit, t }: {
       />
       <div className="min-h-0 flex-1 overflow-y-auto px-[18px] pb-4 pt-1">
         {snapshot?.content && (
-          <div className="font-geist text-[0.8125rem] leading-[1.6] text-m-ink [&_a]:underline [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mb-2 [&_strong]:font-bold [&_ul]:list-disc [&_ul]:pl-5">
+          // Reading size, not card size: this is where a note is actually read (Taiwan fork).
+          <div data-testid="note-reader-body" className={NOTE_READER_CLS}>
             <Markdown remarkPlugins={[remarkGfm, remarkBreaks]} rehypePlugins={sanitizedMarkdownPlugins} components={sanitizedMarkdownComponents}>{snapshot.content}</Markdown>
           </div>
         )}
