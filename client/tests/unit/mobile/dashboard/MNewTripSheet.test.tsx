@@ -460,6 +460,26 @@ describe('MNewTripSheet', () => {
     expect(screen.queryByText('Archive')).not.toBeInTheDocument();
   });
 
+  it('FE-MOB-NTSH-TW-001: without trip_archive the sheet offers no archive / restore row', () => {
+    usePermissionsStore.setState({ permissions: { trip_archive: 'trip_owner' } });
+    const { unmount } = render(
+      <MNewTripSheet open trip={buildDashTrip({ user_id: 999 })} onClose={() => {}} onSave={() => {}} onArchive={() => {}} />,
+    );
+    expect(screen.queryByText('Archive')).not.toBeInTheDocument();
+    unmount();
+
+    render(
+      <MNewTripSheet open trip={buildDashTrip({ user_id: 999, is_archived: 1 })} onClose={() => {}} onSave={() => {}} onArchive={() => {}} />,
+    );
+    expect(screen.queryByText('Restore')).not.toBeInTheDocument();
+  });
+
+  it('FE-MOB-NTSH-TW-002: the owner keeps the archive row when archiving is owner-only', () => {
+    usePermissionsStore.setState({ permissions: { trip_archive: 'trip_owner' } });
+    render(<MNewTripSheet open trip={buildDashTrip({ user_id: 1 })} onClose={() => {}} onSave={() => {}} onArchive={() => {}} />);
+    expect(screen.getByText('Archive')).toBeInTheDocument();
+  });
+
   it('FE-MOB-NTSH-027: without trip_edit the text fields are read-only', () => {
     usePermissionsStore.setState({ permissions: { trip_edit: 'trip_owner' } });
     render(<MNewTripSheet open trip={buildDashTrip({ user_id: 999 })} onClose={() => {}} onSave={() => {}} />);

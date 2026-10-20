@@ -94,22 +94,29 @@ export default function MDashboard(): React.ReactElement {
 
   // Archived cards swap edit/archive for restore + permanent delete (audit);
   // the grid variant leaves archiving to the edit sheet like the design.
+  // Buttons the viewer has no permission for are left out — the server would
+  // answer 403 anyway (members see copy; owners/admins see everything).
+  // "Edit" opens the edit sheet, which also hosts the cover picker and (grid)
+  // the archive row, so it stays whenever any of the three is allowed.
   const actionsFor = (trip: DashboardTrip, layout: 'grid' | 'list'): CardAction[] => {
+    const canArchive = can('trip_archive', trip)
+    const canEdit = can('trip_edit', trip) || can('trip_cover_upload', trip) || (layout === 'grid' && canArchive)
+    const canDelete = can('trip_delete', trip)
+    const copy: CardAction = { key: 'copy', label: t('dashboard.aria.duplicate'), icon: <Copy size={15} strokeWidth={2.1} />, onClick: () => setCopyTrip(trip) }
+    const del: CardAction = { key: 'delete', label: t('common.delete'), icon: <Trash2 size={15} strokeWidth={2.1} />, onClick: () => setDeleteTrip(trip) }
     if (isArchivedFilter) {
-      return [
-        { key: 'copy', label: t('dashboard.aria.duplicate'), icon: <Copy size={15} strokeWidth={2.1} />, onClick: () => setCopyTrip(trip) },
-        { key: 'restore', label: t('dashboard.restore'), icon: <ArchiveRestore size={15} strokeWidth={2.1} />, onClick: () => handleUnarchive(trip.id) },
-        { key: 'delete', label: t('common.delete'), icon: <Trash2 size={15} strokeWidth={2.1} />, onClick: () => setDeleteTrip(trip) },
-      ]
+      const archived: CardAction[] = [copy]
+      if (canArchive) archived.push({ key: 'restore', label: t('dashboard.restore'), icon: <ArchiveRestore size={15} strokeWidth={2.1} />, onClick: () => handleUnarchive(trip.id) })
+      if (canDelete) archived.push(del)
+      return archived
     }
-    const base: CardAction[] = [
-      { key: 'edit', label: t('common.edit'), icon: <Pencil size={15} strokeWidth={2.1} />, onClick: () => openEdit(trip) },
-      { key: 'copy', label: t('dashboard.aria.duplicate'), icon: <Copy size={15} strokeWidth={2.1} />, onClick: () => setCopyTrip(trip) },
-    ]
-    if (layout === 'list') {
+    const base: CardAction[] = []
+    if (canEdit) base.push({ key: 'edit', label: t('common.edit'), icon: <Pencil size={15} strokeWidth={2.1} />, onClick: () => openEdit(trip) })
+    base.push(copy)
+    if (layout === 'list' && canArchive) {
       base.push({ key: 'archive', label: t('dashboard.archive'), icon: <Archive size={15} strokeWidth={2.1} />, onClick: () => handleArchive(trip.id) })
     }
-    base.push({ key: 'delete', label: t('common.delete'), icon: <Trash2 size={15} strokeWidth={2.1} />, onClick: () => setDeleteTrip(trip) })
+    if (canDelete) base.push(del)
     return base
   }
 

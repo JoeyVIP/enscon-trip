@@ -44,8 +44,14 @@ describe('SourceLink（AGPL-3.0 §13 原始碼連結）', () => {
       expect(screen.getByTestId('source-link')).toBeInTheDocument()
     })
 
-    it('ENSCON-SRC-006: 手機版行程規劃頁沒有全域工具列，維持浮動連結', () => {
+    it('ENSCON-SRC-006: 手機版行程頁不浮出連結（會疊到行程頁導覽列，改放導覽列「更多」）', () => {
       setWidth(390)
+      render(<SourceLink />, { initialEntries: ['/trips/7'] })
+      expect(screen.queryByTestId('source-link')).not.toBeInTheDocument()
+    })
+
+    it('ENSCON-SRC-007: 桌面版行程頁維持浮動連結', () => {
+      setWidth(1280)
       render(<SourceLink />, { initialEntries: ['/trips/7'] })
       expect(screen.getByTestId('source-link')).toBeInTheDocument()
     })

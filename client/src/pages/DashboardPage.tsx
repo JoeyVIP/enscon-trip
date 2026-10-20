@@ -434,10 +434,10 @@ function BoardingPassHero({ trip, bundle, locale, onOpen, onEdit, onCopy, onArch
                 <span>{t('twHome.addCover')}</span>
               </button>
             )}
-            <button type="button" className="hero-tool" aria-label={t('common.edit')} title={t('common.edit')} onClick={(e) => stop(e, onEdit)}><Edit2 size={17} strokeWidth={2.2} /></button>
+            {(can('trip_edit', trip) || can('trip_cover_upload', trip)) && <button type="button" className="hero-tool" aria-label={t('common.edit')} title={t('common.edit')} onClick={(e) => stop(e, onEdit)}><Edit2 size={17} strokeWidth={2.2} /></button>}
             <button type="button" className="hero-tool" aria-label={t('dashboard.aria.duplicate')} title={t('dashboard.aria.duplicate')} onClick={(e) => stop(e, onCopy)}><Copy size={17} strokeWidth={2.2} /></button>
-            <button type="button" className="hero-tool" aria-label={archiveLabel} title={archiveLabel} onClick={(e) => stop(e, onArchive)}>{trip.is_archived ? <ArchiveRestore size={17} strokeWidth={2.2} /> : <Archive size={17} strokeWidth={2.2} />}</button>
-            <button type="button" className="hero-tool" aria-label={t('common.delete')} title={t('common.delete')} onClick={(e) => stop(e, onDelete)}><Trash2 size={17} strokeWidth={2.2} /></button>
+            {can('trip_archive', trip) && <button type="button" className="hero-tool" aria-label={archiveLabel} title={archiveLabel} onClick={(e) => stop(e, onArchive)}>{trip.is_archived ? <ArchiveRestore size={17} strokeWidth={2.2} /> : <Archive size={17} strokeWidth={2.2} />}</button>}
+            {can('trip_delete', trip) && <button type="button" className="hero-tool" aria-label={t('common.delete')} title={t('common.delete')} onClick={(e) => stop(e, onDelete)}><Trash2 size={17} strokeWidth={2.2} /></button>}
           </div>
         </div>
 
@@ -583,6 +583,7 @@ function TripCard({ trip, locale, badges, onOpen, onEdit, onCopy, onArchive, onD
   onEdit: () => void; onCopy: () => void; onArchive: () => void; onDelete: () => void
 }): React.ReactElement {
   const { t } = useTranslation()
+  const can = useCanDo()
   const status = getTripStatus(trip)
   const archiveLabel = trip.is_archived ? t('dashboard.restore') : t('dashboard.archive')
   const start = splitDate(trip.start_date, locale)
@@ -615,10 +616,10 @@ function TripCard({ trip, locale, badges, onOpen, onEdit, onCopy, onArchive, onD
           : <TripCoverArt tripId={trip.id} title={trip.title} description={trip.description} tone="deep" />}
         <div className={`trip-status ${statusClass}`}><span className="indicator" /> {statusLabel}</div>
         <div className="trip-actions">
-          <button type="button" className="trip-action-btn" aria-label={t('common.edit')} title={t('common.edit')} onClick={(e) => stop(e, onEdit)}><Edit2 size={17} strokeWidth={2.2} /></button>
+          {(can('trip_edit', trip) || can('trip_cover_upload', trip)) && <button type="button" className="trip-action-btn" aria-label={t('common.edit')} title={t('common.edit')} onClick={(e) => stop(e, onEdit)}><Edit2 size={17} strokeWidth={2.2} /></button>}
           <button type="button" className="trip-action-btn" aria-label={t('dashboard.aria.duplicate')} title={t('dashboard.aria.duplicate')} onClick={(e) => stop(e, onCopy)}><Copy size={17} strokeWidth={2.2} /></button>
-          <button type="button" className="trip-action-btn" aria-label={archiveLabel} title={archiveLabel} onClick={(e) => stop(e, onArchive)}>{trip.is_archived ? <ArchiveRestore size={17} strokeWidth={2.2} /> : <Archive size={17} strokeWidth={2.2} />}</button>
-          <button type="button" className="trip-action-btn" aria-label={t('common.delete')} title={t('common.delete')} onClick={(e) => stop(e, onDelete)}><Trash2 size={17} strokeWidth={2.2} /></button>
+          {can('trip_archive', trip) && <button type="button" className="trip-action-btn" aria-label={archiveLabel} title={archiveLabel} onClick={(e) => stop(e, onArchive)}>{trip.is_archived ? <ArchiveRestore size={17} strokeWidth={2.2} /> : <Archive size={17} strokeWidth={2.2} />}</button>}
+          {can('trip_delete', trip) && <button type="button" className="trip-action-btn" aria-label={t('common.delete')} title={t('common.delete')} onClick={(e) => stop(e, onDelete)}><Trash2 size={17} strokeWidth={2.2} /></button>}
         </div>
         <div className="trip-cover-content">
           <h3 className="trip-name">{trip.title}</h3>
