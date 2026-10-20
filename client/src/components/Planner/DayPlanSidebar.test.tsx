@@ -3135,7 +3135,9 @@ describe('DayPlanSidebar', () => {
     const day = buildDay({ id: 10, date: '2025-06-01', title: 'Day 1' })
     const a = buildAssignment({ id: 11, day_id: 10, order_index: 0, place })
     render(<DayPlanSidebar {...makeDefaultProps({ days: [day], places: [place], assignments: { '10': [a] } })} />)
-    const chevron = dayHeader('Day 1').querySelector('button') as HTMLElement
+    // The LINE share button now sits before the chevron in the header, so the chevron is the last button.
+    const headerButtons = dayHeader('Day 1').querySelectorAll('button')
+    const chevron = headerButtons[headerButtons.length - 1] as HTMLElement
     await user.click(chevron)
     expect(screen.queryByText('Read only place')).not.toBeInTheDocument()
   })
