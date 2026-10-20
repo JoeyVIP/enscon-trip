@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from '../../i18n'
 import { useTwdRate } from '../../hooks/useTwdRate'
 import { amountToInputString, currencyDecimals } from '../../utils/formatters'
@@ -15,15 +15,34 @@ export function TwdEntry({ currency, onFill }: { currency: string; onFill: (amou
   const [open, setOpen] = useState(false)
   const [twd, setTwd] = useState('')
 
-  if ((fx.status !== 'live' && fx.status !== 'offline') || fx.rate == null) return null
+  const rate = (fx.status === 'live' || fx.status === 'offline') ? fx.rate : null
 
-  const change = (raw: string) => {
-    const clean = raw.replace(',', '.').replace(/[^0-9.]/g, '')
-    setTwd(clean)
+  const fill = (clean: string, r: number) => {
     const n = Number.parseFloat(clean)
     if (!Number.isFinite(n)) { onFill(''); return }
-    const v = fromTwd(n, fx.rate as number, currencyDecimals(currency))
+    const v = fromTwd(n, r, currencyDecimals(currency))
     if (!Number.isNaN(v)) onFill(amountToInputString(v, currency))
+  }
+
+  // 已輸入台幣後才換幣別：用新幣別的匯率重算總額，不讓舊幣別的數字留在新幣別底下。
+  const filledWith = useRef<{ currency: string; rate: number } | null>(null)
+  useEffect(() => {
+    if (rate == null || !twd) return
+    const prev = filledWith.current
+    if (prev && prev.currency === currency && prev.rate === rate) return
+    filledWith.current = { currency, rate }
+    fill(twd, rate)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currency, rate])
+
+  if (rate == null) return null
+
+  // 台幣的小數點是「.」、逗號是千分位：「1,000」是一千，不是 1.000。
+  const change = (raw: string) => {
+    const clean = raw.replace(/,/g, '').replace(/[^0-9.]/g, '')
+    setTwd(clean)
+    filledWith.current = { currency, rate }
+    fill(clean, rate)
   }
 
   return (

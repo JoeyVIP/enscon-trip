@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { render, screen } from '../../../tests/helpers/render'
+import { render, screen, waitFor } from '../../../tests/helpers/render'
 import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { server } from '../../../tests/helpers/msw/server'
@@ -51,6 +51,29 @@ describe('TwdEntry（用台幣輸入）', () => {
     await userEvent.click(await screen.findByRole('button', { name: /TWD/i }))
     await userEvent.type(screen.getByPlaceholderText(/NT\$/), '1000')
     expect(screen.getByTestId('filled').textContent).toBe('5000') // 1000 / 0.2，日圓 0 位小數
+  })
+
+  it('逗號是千分位：輸入 1,000 是一千元', async () => {
+    resetTwdRateCache()
+    server.use(http.get('https://api.frankfurter.dev/v2/rates', () => HttpResponse.json([{ date: '2026-10-19', quote: 'TWD', rate: 0.2 }])))
+    render(<Harness currency="JPY" />)
+    await userEvent.click(await screen.findByRole('button', { name: /TWD/i }))
+    await userEvent.type(screen.getByPlaceholderText(/NT\$/), '1,000')
+    expect(screen.getByTestId('filled').textContent).toBe('5000')
+  })
+
+  it('輸入台幣後換幣別：用新幣別匯率重算', async () => {
+    resetTwdRateCache()
+    server.use(http.get('https://api.frankfurter.dev/v2/rates', ({ request }) => {
+      const base = new URL(request.url).searchParams.get('base')
+      return HttpResponse.json([{ date: '2026-10-19', quote: 'TWD', rate: base === 'USD' ? 32 : 0.2 }])
+    }))
+    const { rerender } = render(<Harness currency="JPY" />)
+    await userEvent.click(await screen.findByRole('button', { name: /TWD/i }))
+    await userEvent.type(screen.getByPlaceholderText(/NT\$/), '320')
+    expect(screen.getByTestId('filled').textContent).toBe('1600')
+    rerender(<Harness currency="USD" />)
+    await waitFor(() => expect(screen.getByTestId('filled').textContent).toBe('10.00'))
   })
 
   it('幣別是台幣時不顯示按鈕', () => {
