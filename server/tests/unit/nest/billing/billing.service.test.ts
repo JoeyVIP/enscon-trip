@@ -74,7 +74,7 @@ function okFetch(id = 'cs_test_1') {
 /** 付款人登入後建一筆結帳，回傳 ref。 */
 async function checkout(userId: number, sessionId = 'cs_test_1') {
   const res = await svc.startCheckout({ id: userId }, TRIP_BILLING_CONSENT_VERSION, undefined, okFetch(sessionId) as unknown as typeof fetch);
-  if (!res.ok) throw new Error('checkout failed');
+  if ('error' in res) throw new Error('checkout failed');
   return res.ref;
 }
 
@@ -152,7 +152,7 @@ describe('BillingService.startCheckout', () => {
     const f = okFetch('cs_test_abc');
     const res = await svc.startCheckout({ id: user.id }, TRIP_BILLING_CONSENT_VERSION, undefined, f as unknown as typeof fetch);
     expect(res.ok).toBe(true);
-    if (!res.ok) return;
+    if ('error' in res) return;
     expect(res.url).toBe('https://checkout.recur.tw/cs_test_abc');
     const sent = JSON.parse((f.mock.calls[0] as unknown as [string, RequestInit])[1].body as string);
     expect(sent).toMatchObject({ product_id: PRODUCT, mode: 'PAYMENT', metadata: { purchase_ref: res.ref, user_id: String(user.id) } });
@@ -367,7 +367,7 @@ describe('優惠碼', () => {
     const res = await svc.startCheckout({ id: user.id }, TRIP_BILLING_CONSENT_VERSION, ' Free100 ', f as unknown as typeof fetch);
     expect(res).toMatchObject({ ok: true, url: null });
     expect(f).not.toHaveBeenCalled();
-    if (!res.ok) return;
+    if ('error' in res) return;
     expect(purchaseRow(res.ref)).toMatchObject({ status: 'fulfilled', amount: 0, promo_code: 'FREE100', invoice_status: 'none' });
     expect(used('FREE100')).toBe(1);
     expect(tripCount()).toBe(1);

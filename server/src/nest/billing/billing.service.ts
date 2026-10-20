@@ -166,7 +166,7 @@ export class BillingService {
       metadata: { source: 'enscon-trip', purchase_ref: ref, user_id: String(user.id) },
       promotionCode: promo?.code,
     }, fetchImpl);
-    if (!res.ok) {
+    if ('status' in res) {
       logWarn(`[billing] Recur checkout failed status=${res.status} user=${user.id}${promo ? ' (with promo code)' : ''}`);
       return { ok: false, status: 502, error: 'recur_error' };
     }

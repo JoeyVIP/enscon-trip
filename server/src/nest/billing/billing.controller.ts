@@ -36,7 +36,7 @@ export class BillingController {
       throw new HttpException({ error: 'Too many attempts. Please try again later.' }, 429);
     }
     const res = await this.billing.startCheckout(user, body.consent_ver, body.promo_code);
-    if (!res.ok) throw new HttpException({ error: res.error }, res.status);
+    if ('error' in res) throw new HttpException({ error: res.error }, res.status);
     return { url: res.url, ref: res.ref };
   }
 
