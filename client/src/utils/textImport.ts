@@ -1,8 +1,9 @@
-import { apiClient, placesApi, assignmentsApi } from '../api/client'
+import { apiClient, placesApi } from '../api/client'
 import { useTripStore } from '../store/tripStore'
 
-// 貼上文字自動排行程：呼叫解析 API、把結果轉成預覽列、逐站建立 place + assignment。
-// 不新增寫入端點：加入行程直接用既有的建立 place 與 assignment API。
+// 貼上文字自動排行程：呼叫解析 API、把結果轉成預覽列、一次送出加入行程。
+// 加入行程走 POST /trips/:id/import-text/apply：伺服器在一個 transaction 裡建 place + assignment，
+// 全成功或全不建，中途失敗不會留下半套站點。
 
 export const TEXT_IMPORT_MAX_CHARS = 6000
 
@@ -44,22 +45,21 @@ export function buildPreviewRows(result: ImportResult, days: { id: number; date?
   return rows
 }
 
-/** 逐站建立；沒座標就不填（之後可用地圖搜尋補）。回傳成功加入的站數。 */
+/** 勾選且已指定日期的站一次送出（伺服器端全有或全無）；沒座標就不填。回傳加入的站數。 */
 export async function addRowsToTrip(tripId: number | string, rows: PreviewRow[]): Promise<number> {
-  let added = 0
-  for (const r of rows) {
-    if (!r.checked || r.dayId == null || !r.name.trim()) continue
-    const { place } = await placesApi.create(tripId, {
+  const stops = rows
+    .filter(r => r.checked && r.dayId != null && r.name.trim())
+    .map(r => ({
+      dayId: r.dayId as number,
       name: r.name.trim(),
-      place_time: /^\d{2}:\d{2}$/.test(r.time) ? r.time : null,
-      notes: r.note || null,
-    })
-    await assignmentsApi.create(tripId, r.dayId, { place_id: place.id })
-    added++
-  }
-  if (added > 0) {
-    await useTripStore.getState().refreshDays(tripId)
-    placesApi.list(tripId).then(d => useTripStore.setState({ places: d.places })).catch(() => {})
-  }
+      ...(/^\d{2}:\d{2}$/.test(r.time) ? { time: r.time } : {}),
+      ...(r.note ? { note: r.note } : {}),
+    }))
+  if (stops.length === 0) return 0
+  const res = await apiClient.post(`/trips/${tripId}/import-text/apply`, { stops })
+  const added = (res.data as { added: number }).added
+  // 已寫入成功；重新整理失敗不算加入失敗（避免使用者以為沒加而重按，造成重複）
+  try { await useTripStore.getState().refreshDays(tripId) } catch { /* 下次載入會補上 */ }
+  placesApi.list(tripId).then(d => useTripStore.setState({ places: d.places })).catch(() => {})
   return added
 }

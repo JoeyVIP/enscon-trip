@@ -19,6 +19,7 @@ const twImport: TranslationStrings = {
   'twImport.adding': 'Adding…',
   'twImport.added': 'Added {n} stops',
   'twImport.error': 'Could not parse or add the text. Please try again.',
+  'twImport.addFailed': 'Could not add the stops. Nothing was changed in your trip, so you can simply try again.',
   'twImport.llmOff': 'AI parsing is not enabled on this server',
   'twImport.rateLimited': 'Too many attempts. Please try again in an hour.',
   'twImport.empty': 'Nothing to import yet',

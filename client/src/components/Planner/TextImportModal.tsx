@@ -62,8 +62,9 @@ export function TextImportModal({ tripId, days, t, onClose, isOpen, onAdded }: P
       setText('')
       setRows(null)
       onClose()
-    } catch (err) {
-      setErrKey(errorKey(err))
+    } catch {
+      // 伺服器端一個 transaction：失敗代表一站都沒加，行程沒被改動，可直接再試
+      setErrKey('twImport.addFailed')
     } finally {
       setBusy(false)
     }
@@ -123,7 +124,7 @@ export function TextImportModal({ tripId, days, t, onClose, isOpen, onAdded }: P
                       onChange={e => patch(r.key, { checked: e.target.checked })} />
                     <input type="time" aria-label={t('twImport.time')} value={r.time} className={inputCls}
                       onChange={e => patch(r.key, { time: e.target.value })} />
-                    <input type="text" aria-label={t('twImport.name')} value={r.name} className={`${inputCls} min-w-0 flex-1`}
+                    <input type="text" aria-label={t('twImport.name')} value={r.name} maxLength={200} className={`${inputCls} min-w-0 flex-1`}
                       onChange={e => patch(r.key, { name: e.target.value })} />
                     {r.dayId == null && (
                       <select aria-label={t('twImport.assignPrompt')} value="" className={inputCls}

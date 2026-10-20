@@ -1,4 +1,4 @@
-// FE-PLANNER-TEXTIMPORT-001 to FE-PLANNER-TEXTIMPORT-006
+// FE-PLANNER-TEXTIMPORT-001 to FE-PLANNER-TEXTIMPORT-007
 import { render, screen, waitFor, within } from '../../../tests/helpers/render'
 import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
@@ -60,22 +60,45 @@ describe('TextImportModal', () => {
     expect(screen.getByRole('button', { name: 'twImport.add:{"n":2}' })).toBeEnabled()
   })
 
-  it('FE-PLANNER-TEXTIMPORT-005: 加入行程會對每個勾選的站建立 place 與 assignment', async () => {
-    const places: Record<string, unknown>[] = []
-    const assigns: string[] = []
+  it('FE-PLANNER-TEXTIMPORT-005: 加入行程一次送出所有勾選的站（伺服器端 transaction），不再逐站呼叫 places／assignments', async () => {
+    const bodies: { stops: Record<string, unknown>[] }[] = []
+    let perStopCalls = 0
     server.use(
-      http.post('/api/trips/1/places', async ({ request }) => {
-        const b = (await request.json()) as Record<string, unknown>
-        places.push(b)
-        return HttpResponse.json({ place: { id: 100 + places.length, ...b } })
+      http.post('/api/trips/1/import-text/apply', async ({ request }) => {
+        bodies.push((await request.json()) as { stops: Record<string, unknown>[] })
+        return HttpResponse.json({ added: 3 })
       }),
-      http.post('/api/trips/1/days/:dayId/assignments', ({ params }) => { assigns.push(String(params.dayId)); return HttpResponse.json({ assignment: { id: 1 } }) }),
+      http.post('/api/trips/1/places', () => { perStopCalls++; return HttpResponse.json({ place: { id: 1 } }) }),
+      http.post('/api/trips/1/days/:dayId/assignments', () => { perStopCalls++; return HttpResponse.json({ assignment: { id: 1 } }) }),
     )
-    await openPreview()
+    const onAdded = vi.fn()
+    server.use(http.post('/api/trips/1/import-text', () => HttpResponse.json(result)))
+    render(<TextImportModal tripId={1} days={days} t={t} isOpen onClose={() => {}} onAdded={onAdded} />)
+    await userEvent.type(screen.getByRole('textbox'), '12/31 取車')
+    await userEvent.click(screen.getByRole('button', { name: 'twImport.parse' }))
+    await screen.findByText('twImport.previewHint')
     await userEvent.click(screen.getByRole('button', { name: 'twImport.add:{"n":3}' }))
-    await waitFor(() => expect(assigns).toEqual(['11', '11', '12']))
-    expect(places[0]).toMatchObject({ name: '取車', place_time: '08:00' })
-    expect(places[0].lat).toBeUndefined()
+    await waitFor(() => expect(onAdded).toHaveBeenCalledWith(3))
+    expect(bodies).toHaveLength(1)
+    expect(bodies[0].stops.map(s => s.dayId)).toEqual([11, 11, 12])
+    expect(bodies[0].stops[0]).toEqual({ dayId: 11, name: '取車', time: '08:00' })
+    expect(bodies[0].stops[1]).not.toHaveProperty('time')
+    expect(bodies[0].stops[0]).not.toHaveProperty('lat')
+    expect(perStopCalls).toBe(0)
+  })
+
+  it('FE-PLANNER-TEXTIMPORT-007: 加入失敗時說明行程沒被改動，預覽保留可再試', async () => {
+    server.use(http.post('/api/trips/1/import-text/apply', () => HttpResponse.json({ error: 'Import failed; nothing was added' }, { status: 500 })))
+    const onClose = vi.fn()
+    server.use(http.post('/api/trips/1/import-text', () => HttpResponse.json(result)))
+    render(<TextImportModal tripId={1} days={days} t={t} isOpen onClose={onClose} />)
+    await userEvent.type(screen.getByRole('textbox'), '12/31 取車')
+    await userEvent.click(screen.getByRole('button', { name: 'twImport.parse' }))
+    await screen.findByText('twImport.previewHint')
+    await userEvent.click(screen.getByRole('button', { name: 'twImport.add:{"n":3}' }))
+    expect(await screen.findByText('twImport.addFailed')).toBeInTheDocument()
+    expect(onClose).not.toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: 'twImport.add:{"n":3}' })).toBeEnabled()
   })
 
   it('FE-PLANNER-TEXTIMPORT-006: 伺服器回 501 時顯示 AI 未開啟', async () => {

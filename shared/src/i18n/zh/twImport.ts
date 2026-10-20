@@ -19,6 +19,7 @@ const twImport: TranslationStrings = {
   'twImport.adding': '加入中…',
   'twImport.added': '已加入 {n} 站',
   'twImport.error': '解析或加入失敗，請稍後再試',
+  'twImport.addFailed': '加入失敗，行程沒有任何改動，可以直接再試一次',
   'twImport.llmOff': '這個伺服器沒有開啟 AI 解析',
   'twImport.rateLimited': '使用次數太多，請一小時後再試',
   'twImport.empty': '還沒有可匯入的內容',

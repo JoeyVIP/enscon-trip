@@ -26,3 +26,19 @@ export const textImportResultSchema = z.object({
 });
 
 export class TextImportRequestDto extends createZodDto(textImportRequestSchema) {}
+
+/**
+ * 加入行程：前端預覽確認後送來的站點。一次請求、一個 DB transaction，全成功或全不建。
+ * 長度上限對齊 places 的 STRING_LIMITS（name 200、notes 2000）。
+ */
+export const TEXT_IMPORT_APPLY_MAX_STOPS = 200;
+export const textImportApplySchema = z.object({
+  stops: z.array(z.object({
+    dayId: z.number().int().positive(),
+    name: z.string().trim().min(1).max(200),
+    time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).optional(),
+    note: z.string().max(2000).optional(),
+  })).min(1).max(TEXT_IMPORT_APPLY_MAX_STOPS),
+});
+
+export class TextImportApplyDto extends createZodDto(textImportApplySchema) {}
