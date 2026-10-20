@@ -460,4 +460,12 @@ describe('DashboardPage (desktop)', () => {
     await waitFor(() => expect(container.querySelector('.hero-trip img.bg')).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: 'Add cover' })).not.toBeInTheDocument();
   });
+
+  it('FE-PAGE-DESKDASH-TW-003: the hero and the cards carry a visible "Open trip" button', async () => {
+    onlyTrips([TRIP, buildTrip({ id: 102, title: 'Kyoto', start_date: '2026-09-01', end_date: '2026-09-05' })]);
+    render(<DashboardPage />);
+
+    expect(await screen.findByRole('button', { name: 'Open trip: Paris Adventure' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Open trip: Kyoto' })).toBeInTheDocument();
+  });
 });

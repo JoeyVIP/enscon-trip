@@ -443,6 +443,11 @@ function BoardingPassHero({ trip, bundle, locale, onOpen, onEdit, onCopy, onArch
 
         <div className="hero-title-block">
           <h2 className="hero-title">{trip.title}</h2>
+          {/* Says out loud that the card opens the trip; first-time visitors didn't read the hero as a button. */}
+          <button type="button" className="hero-open" aria-label={`${t('twHome.openTrip')}: ${trip.title}`} onClick={(e) => stop(e, onOpen)}>
+            {t('twHome.openTrip')}
+            <ArrowRight size={16} strokeWidth={2.4} />
+          </button>
         </div>
 
         <div className="hero-pass-wrap">
@@ -635,6 +640,12 @@ function TripCard({ trip, locale, badges, onOpen, onEdit, onCopy, onArchive, onD
           <div><span className="n mono">{trip.shared_count ?? 0}</span><span className="k">{trip.shared_count === 1 ? t('dashboard.card.buddyOne') : t('dashboard.members')}</span></div>
         </div>
         <TripCardBadges items={badges ?? []} />
+        <div className="trip-open-row">
+          <button type="button" className="trip-open" aria-label={`${t('twHome.openTrip')}: ${trip.title}`} onClick={(e) => stop(e, onOpen)}>
+            {t('twHome.openTrip')}
+            <ArrowRight size={14} strokeWidth={2.4} />
+          </button>
+        </div>
       </div>
     </div>
   )

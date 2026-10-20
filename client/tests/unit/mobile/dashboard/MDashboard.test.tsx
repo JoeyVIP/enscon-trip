@@ -657,4 +657,34 @@ describe('MDashboard', () => {
     expect(list.container.querySelector('svg[data-motif="mountain"]')).toBeInTheDocument();
     expect(screen.getByText('Hokkaido snow').className).toContain('line-clamp-2');
   });
+
+  it('FE-MOB-DASH-TW-008: every card says "open trip" with a real button that opens it', () => {
+    const navigate = vi.fn();
+    mocks.dash = buildDash({
+      navigate,
+      spotlight: buildTrip({ id: 51, title: 'Okinawa' }),
+      gridTrips: [buildTrip({ id: 52, title: 'Seoul', cover_image: '/uploads/covers/s.jpg' })],
+    });
+    const { unmount } = render(<MDashboard />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'twHome.openTrip: Okinawa' }));
+    expect(navigate).toHaveBeenLastCalledWith('/trips/51');
+    fireEvent.click(screen.getByRole('button', { name: 'twHome.openTrip: Seoul' }));
+    expect(navigate).toHaveBeenLastCalledWith('/trips/52');
+    // One navigation per tap: the button doesn't also fire the card underneath.
+    expect(navigate).toHaveBeenCalledTimes(2);
+    unmount();
+
+    // The photo spotlight and the list layout carry it too.
+    mocks.dash = buildDash({
+      navigate,
+      viewMode: 'list',
+      spotlight: buildTrip({ id: 53, title: 'Kyoto', cover_image: '/uploads/covers/k.jpg' }),
+      gridTrips: [buildTrip({ id: 54, title: 'Taipei' })],
+    });
+    render(<MDashboard />);
+    expect(screen.getByRole('button', { name: 'twHome.openTrip: Kyoto' })).toBeInTheDocument();
+    fireEvent.keyDown(screen.getByRole('button', { name: 'twHome.openTrip: Taipei' }), { key: 'Enter' });
+    expect(navigate).toHaveBeenCalledTimes(2);
+  });
 });

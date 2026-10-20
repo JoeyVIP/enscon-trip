@@ -235,6 +235,23 @@
   -webkit-backdrop-filter: none; backdrop-filter: none;
 }
 .trek-dash .hero-tool.hero-tool-cover:hover { background: #FFFFFF; transform: scale(1.03); }
+/* "Open trip" under the hero title and at the foot of each card: the whole card
+   still opens the trip, this just says so (people didn't read the card as a button). */
+.trek-dash .hero-open {
+  margin-top: 12px; display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 16px; border-radius: 999px;
+  background: #F2F6FA; color: #02539C; font-size: 14px; font-weight: 600;
+  box-shadow: 0 6px 18px oklch(0 0 0 / .22); transition: transform .12s, background .15s;
+}
+.trek-dash .hero-open:hover { background: #FFFFFF; transform: translateX(2px); }
+.trek-dash .trip-open-row { display: flex; justify-content: flex-end; margin-top: 14px; }
+.trek-dash .trip-open {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 999px;
+  background: #02539C; color: #FFFFFF; font-size: 13px; font-weight: 600;
+  transition: transform .12s, filter .15s;
+}
+.trek-dash .trip-open:hover { filter: brightness(1.08); transform: translateX(2px); }
 .trek-dash .hero-title-block { align-self: end; padding-bottom: 24px; min-width: 0; }
 .trek-dash .hero-eyebrow {
   display: inline-flex; align-items: center; gap: 10px;

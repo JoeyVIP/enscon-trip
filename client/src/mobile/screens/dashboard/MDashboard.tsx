@@ -195,6 +195,7 @@ export default function MDashboard(): React.ReactElement {
                 key={trip.id}
                 trip={trip}
                 locale={locale}
+                t={t}
                 badge={statusLabel(trip)}
                 pluginBadges={badgesFor(trip.id)}
                 actions={actionsFor(trip, 'grid')}
@@ -442,23 +443,24 @@ function MSpotlightCard({ trip, t, onOpen, actions, onAddCover }: {
             </div>
           )}
           {pills(true)}
+          <div className="mt-[12px] flex flex-wrap items-center gap-2">
+            <OpenTripBtn label={t('twHome.openTrip')} title={trip.title} onOpen={onOpen} tone="soft" />
+            {onAddCover && (
+              <button
+                type="button"
+                onClick={e => { e.stopPropagation(); onAddCover() }}
+                // Enter on the button must not also open the trip through the card's handler.
+                onKeyDown={e => e.stopPropagation()}
+                title={t('twHome.addCoverHint')}
+                className="tca-cta flex items-center gap-[6px] rounded-full px-[13px] py-[8px] text-[0.75rem] font-bold"
+              >
+                <ImagePlus size={14} strokeWidth={2.2} />
+                {t('twHome.addCover')}
+              </button>
+            )}
+          </div>
         </div>
-        <div className="relative mt-1 h-[84px]">
-          <TripCoverScene tripId={trip.id} title={trip.title} description={trip.description} tone="soft" className="absolute inset-0 block h-full w-full" />
-          {onAddCover && (
-            <button
-              type="button"
-              onClick={e => { e.stopPropagation(); onAddCover() }}
-              // Enter on the button must not also open the trip through the card's handler.
-              onKeyDown={e => e.stopPropagation()}
-              title={t('twHome.addCoverHint')}
-              className="tca-cta absolute bottom-[12px] right-[12px] flex items-center gap-[6px] rounded-full px-[13px] py-[8px] text-[0.75rem] font-bold"
-            >
-              <ImagePlus size={14} strokeWidth={2.2} />
-              {t('twHome.addCover')}
-            </button>
-          )}
-        </div>
+        <TripCoverScene tripId={trip.id} title={trip.title} description={trip.description} tone="soft" className="relative mt-1 block h-[72px] w-full" />
       </div>
     )
   }
@@ -484,8 +486,36 @@ function MSpotlightCard({ trip, t, onOpen, actions, onAddCover }: {
           </div>
         )}
         {pills(false)}
+        <div className="mt-[10px] flex justify-end">
+          <OpenTripBtn label={t('twHome.openTrip')} title={trip.title} onOpen={onOpen} tone="photo" />
+        </div>
       </div>
     </div>
+  )
+}
+
+/**
+ * The visible "open trip" on a dashboard card. The whole card stays clickable,
+ * but people landing here for the first time didn't read a photo card as a
+ * button (real feedback), so each card also says what tapping does.
+ */
+function OpenTripBtn({ label, title, onOpen, tone }: {
+  label: string; title: string; onOpen: () => void; tone: 'soft' | 'photo' | 'card'
+}): React.ReactElement {
+  const cls = tone === 'soft' ? 'tca-badge'
+    : tone === 'photo' ? 'bg-white/[.92] text-[#101013]' // theme-lint-disable — fixed on-photo button
+    : 'bg-m-act text-m-actfg'
+  return (
+    <button
+      type="button"
+      aria-label={`${label}: ${title}`}
+      onClick={e => { e.stopPropagation(); onOpen() }}
+      onKeyDown={e => e.stopPropagation()}
+      className={`inline-flex flex-none items-center gap-[6px] rounded-full px-[14px] py-[8px] text-[0.75rem] font-bold ${cls}`}
+    >
+      {label}
+      <ArrowRight size={14} strokeWidth={2.4} />
+    </button>
   )
 }
 
@@ -582,8 +612,10 @@ function CardCoverArt({ trip }: { trip: DashboardTrip }): React.ReactElement | n
   return <TripCoverArt tripId={trip.id} title={trip.title} description={trip.description} tone="deep" />
 }
 
-function MTripGridCard({ trip, locale, badge, pluginBadges, actions, onOpen }: {
-  trip: DashboardTrip; locale: string; badge: string; pluginBadges: TripCardBadge[]
+function MTripGridCard({ trip, locale, t, badge, pluginBadges, actions, onOpen }: {
+  trip: DashboardTrip; locale: string
+  t: (key: string, params?: Record<string, string | number>) => string
+  badge: string; pluginBadges: TripCardBadge[]
   actions: CardAction[]; onOpen: () => void
 }): React.ReactElement {
   return (
@@ -612,6 +644,9 @@ function MTripGridCard({ trip, locale, badge, pluginBadges, actions, onOpen }: {
           </span>
         </div>
         <MTripBadges items={pluginBadges} />
+        <div className="mt-[10px] flex justify-end">
+          <OpenTripBtn label={t('twHome.openTrip')} title={trip.title} onOpen={onOpen} tone="card" />
+        </div>
       </div>
     </div>
   )
@@ -656,6 +691,9 @@ function MTripListCard({ trip, locale, t, badge, pluginBadges, actions, onOpen }
           <ListStat value={trip.shared_count ?? 0} label={trip.shared_count === 1 ? t('dashboard.card.buddyOne') : t('dashboard.members')} />
         </div>
         <MTripBadges items={pluginBadges} />
+        <div className="mt-[12px] flex justify-end">
+          <OpenTripBtn label={t('twHome.openTrip')} title={trip.title} onOpen={onOpen} tone="card" />
+        </div>
       </div>
     </div>
   )

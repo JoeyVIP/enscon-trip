@@ -22,6 +22,7 @@ import { useIsPhone } from './mobile/useIsPhone'
 import { TranslationProvider, useTranslation } from './i18n'
 import { authApi, isAuthPublicPath } from './api/client'
 import { tripRepo } from './repo/tripRepo'
+import { takeFreshLogin, pickLandingTrip, type FreshLogin } from './utils/postLoginLanding'
 import { readStartDestination, tripStartPath, DEFAULT_START_PAGE, DEFAULT_START_TRIP_TAB, SETTINGS_WAIT_MS, START_DESTINATION_ROUTE } from './utils/startDestination'
 import { usePermissionsStore, PermissionLevel } from './store/permissionsStore'
 import { useInAppNotificationListener } from './hooks/useInAppNotificationListener.ts'
@@ -225,6 +226,9 @@ function RootRedirect() {
   // failed request so it can retry, which would otherwise strand a launch that
   // started offline on the spinner.
   const [settingsGaveUp, setSettingsGaveUp] = useState(false)
+  // ENSCON: the "just logged in" mark, read once per mount (a ref, so a re-run
+  // of the effect below — or StrictMode's double run — doesn't lose it).
+  const freshLogin = useRef<FreshLogin | null | undefined>(undefined)
 
   useEffect(() => {
     if (settingsLoaded) return
@@ -247,6 +251,22 @@ function RootRedirect() {
     const { page, tab } = settingsLoaded
       ? { page: settings.start_page ?? DEFAULT_START_PAGE, tab: settings.start_trip_tab ?? DEFAULT_START_TRIP_TAB }
       : (mirrored ?? { page: DEFAULT_START_PAGE, tab: DEFAULT_START_TRIP_TAB })
+    if (freshLogin.current === undefined) freshLogin.current = takeFreshLogin()
+    const fresh = freshLogin.current
+    if (page !== 'active_trip' && fresh) {
+      // ENSCON: straight after login, someone with a single trip (or who just
+      // joined one through an invite) goes into it instead of a dashboard they
+      // didn't know to tap through. Any failure falls back to the dashboard.
+      let cancelled = false
+      tripRepo.list()
+        .then(({ trips }) => {
+          if (cancelled) return
+          const trip = pickLandingTrip(trips, fresh.viaInvite)
+          setTarget(trip ? tripStartPath(trip.id, tab) : '/dashboard')
+        })
+        .catch(() => { if (!cancelled) setTarget('/dashboard') })
+      return () => { cancelled = true }
+    }
     if (page !== 'active_trip') { setTarget('/dashboard'); return }
     let cancelled = false
     // Through the repo, not the api: offline this answers from Dexie instead of

@@ -351,7 +351,8 @@ describe('Navbar styling and menu details', () => {
     render(<Navbar />);
 
     expect(nav().style.background).toBe('rgba(9, 9, 11, 0.95)');
-    expect(document.querySelector('img[src="/logo-light.svg"]')).not.toBeNull();
+    // The mark swaps to its dark-bar variant; the product name next to it is live text.
+    expect(document.querySelector('img[src="/icons/icon-white.svg"]')).not.toBeNull();
 
     Object.defineProperty(window, 'scrollY', { value: 40, configurable: true });
     fireEvent.scroll(window);

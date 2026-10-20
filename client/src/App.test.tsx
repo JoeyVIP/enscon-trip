@@ -191,6 +191,76 @@ describe('RootRedirect — startup destination', () => {
   })
 })
 
+// ── RootRedirect — ENSCON: straight into the trip after login ─────────────────
+
+describe('RootRedirect — fresh login lands in the trip', () => {
+  function stubTrips(trips: unknown[]) {
+    server.use(
+      http.get('/api/trips', ({ request }) => {
+        const url = new URL(request.url)
+        return HttpResponse.json({ trips: url.searchParams.get('archived') ? [] : trips })
+      }),
+    )
+  }
+  const markLogin = (viaInvite: boolean) =>
+    sessionStorage.setItem('enscon_post_login', JSON.stringify({ i: viaInvite ? 1 : 0, t: Date.now() }))
+
+  // The online list writes the trips through to Dexie; keep them out of the other tests.
+  beforeEach(async () => { sessionStorage.clear(); await offlineDb.trips.clear() })
+
+  it('FE-COMP-APP-TW-001: right after login, a user with one trip opens that trip', async () => {
+    seedAuth({ isAuthenticated: true, user: buildUser() })
+    useSettingsStore.setState({ isLoaded: true, settings: buildSettings({ start_page: 'dashboard' }) })
+    stubTrips([buildTrip({ id: 77, title: 'Okinawa' })])
+    markLogin(false)
+
+    renderApp('/')
+    await waitFor(() => expect(screen.getByText('TripPlanner')).toBeInTheDocument())
+    expect(currentPath()).toBe('/trips/77?tab=plan')
+    // Read once: the mark is gone, so the next visit to '/' is the dashboard again.
+    expect(sessionStorage.getItem('enscon_post_login')).toBeNull()
+  })
+
+  it('FE-COMP-APP-TW-002: right after login with several trips, the dashboard', async () => {
+    seedAuth({ isAuthenticated: true, user: buildUser() })
+    useSettingsStore.setState({ isLoaded: true, settings: buildSettings({ start_page: 'dashboard' }) })
+    stubTrips([buildTrip({ id: 1, is_owner: 1 }), buildTrip({ id: 2, is_owner: 1 })])
+    markLogin(false)
+
+    renderApp('/')
+    await waitFor(() => expect(screen.getByText('Dashboard')).toBeInTheDocument())
+  })
+
+  it('FE-COMP-APP-TW-003: after an invite login, the one trip that is not their own', async () => {
+    seedAuth({ isAuthenticated: true, user: buildUser() })
+    useSettingsStore.setState({ isLoaded: true, settings: buildSettings({ start_page: 'dashboard' }) })
+    stubTrips([buildTrip({ id: 1, is_owner: 1 }), buildTrip({ id: 5, is_owner: 0, user_id: 999 })])
+    markLogin(true)
+
+    renderApp('/')
+    await waitFor(() => expect(currentPath()).toBe('/trips/5?tab=plan'))
+  })
+
+  it('FE-COMP-APP-TW-004: without a fresh login, one trip still opens on the dashboard', async () => {
+    seedAuth({ isAuthenticated: true, user: buildUser() })
+    useSettingsStore.setState({ isLoaded: true, settings: buildSettings({ start_page: 'dashboard' }) })
+    stubTrips([buildTrip({ id: 77 })])
+
+    renderApp('/')
+    await waitFor(() => expect(screen.getByText('Dashboard')).toBeInTheDocument())
+  })
+
+  it('FE-COMP-APP-TW-005: the trip list failing falls back to the dashboard', async () => {
+    seedAuth({ isAuthenticated: true, user: buildUser() })
+    useSettingsStore.setState({ isLoaded: true, settings: buildSettings({ start_page: 'dashboard' }) })
+    server.use(http.get('/api/trips', () => HttpResponse.json({ error: 'boom' }, { status: 500 })))
+    markLogin(false)
+
+    renderApp('/')
+    await waitFor(() => expect(screen.getByText('Dashboard')).toBeInTheDocument())
+  })
+})
+
 // ── ProtectedRoute — unauthenticated ──────────────────────────────────────────
 
 describe('ProtectedRoute — unauthenticated', () => {
