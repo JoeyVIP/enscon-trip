@@ -167,6 +167,15 @@ describe('PluginsProxyController', () => {
     expect(res.headers['set-cookie']).toBeUndefined(); // a plugin cannot set cookies
   });
 
+  it('passes a plugin Cache-Control through as private, never public', async () => {
+    const runtime = makeRuntime({
+      invoke: vi.fn(async () => ({ status: 200, headers: { 'Cache-Control': 'public, max-age=300' }, body: 'ok' })),
+    } as never);
+    const res = fakeRes();
+    await new PluginsProxyController(runtime).proxy('p', fakeReq('GET', '/status'), res as never);
+    expect(res.headers['Cache-Control']).toBe('private, max-age=300');
+  });
+
   it('502 when the plugin invoke throws', async () => {
     const runtime = makeRuntime({ invoke: vi.fn(async () => { throw new Error('down'); }) } as never);
     const res = fakeRes();

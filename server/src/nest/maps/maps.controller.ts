@@ -218,8 +218,10 @@ export class MapsController {
     // headers go on before the stream attempt, matching the old createReadStream
     // ordering — an early failure overrides them via emptyPhoto exactly as the
     // old error event did. Cached photos are always JPEG (placePhotoCache
-    // writes `<hash>.jpg`).
-    res.set('Cache-Control', 'public, max-age=2592000, immutable');
+    // writes `<hash>.jpg`). private: the route is behind the session, and the
+    // bytes were fetched with this instance's Places key — a CDN must not hand
+    // them to anybody who asks; the browser still keeps them for a month.
+    res.set('Cache-Control', 'private, max-age=2592000, immutable');
     res.type('image/jpeg');
     let stream: Readable;
     try {
@@ -263,6 +265,7 @@ export class MapsController {
       this.emptyPhoto(res);
       return;
     }
+    // public on purpose: a Wikimedia brand logo is the same for everybody.
     res.set('Cache-Control', 'public, max-age=2592000, immutable');
     res.type(logo.contentType);
     res.send(logo.bytes);

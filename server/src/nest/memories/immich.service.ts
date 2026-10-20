@@ -483,7 +483,8 @@ export class ImmichService {
     const headers: Record<string, string> = { 'x-api-key': creds.immich_api_key };
     let url: string;
     let timeout: number | undefined;
-    let cacheControl = 'public, max-age=86400';
+    // private: a user's own Immich library, never a shared cache's to keep.
+    let cacheControl = 'private, max-age=86400';
 
     if (kind === 'thumbnail') {
       // Immich generates a poster thumbnail for video too.

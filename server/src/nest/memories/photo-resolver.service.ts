@@ -98,7 +98,9 @@ export class PhotoResolverService {
         if (thumbRel) {
           const thumbName = this.storageName(thumbRel);
           if (thumbName && (await this.storage.exists('journey', thumbName).catch(() => false))) {
-            res.set('Cache-Control', 'public, max-age=86400, immutable');
+            // private throughout: these are a user's own photos (served to share
+            // links too, whose tokens can be revoked) — never a CDN's to keep.
+            res.set('Cache-Control', 'private, max-age=86400, immutable');
             res.set('X-Content-Type-Options', 'nosniff');
             await this.storage.sendToResponse('journey', thumbName, res);
             return;
@@ -115,7 +117,7 @@ export class PhotoResolverService {
 
       const name = this.storageName(photo.file_path);
       if (name && (await this.storage.exists('journey', name).catch(() => false))) {
-        res.set('Cache-Control', 'public, max-age=86400');
+        res.set('Cache-Control', 'private, max-age=86400');
         res.set('X-Content-Type-Options', 'nosniff');
         await this.storage.sendToResponse('journey', name, res);
         return;

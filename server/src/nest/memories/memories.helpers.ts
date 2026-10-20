@@ -2,6 +2,7 @@ import { pipeline } from 'node:stream/promises';
 import { Readable } from 'node:stream';
 import { Response } from 'express';
 import { safeFetch, SsrfBlockedError, type SafeFetchOptions } from '../../utils/ssrfGuard';
+import { toPrivateCacheControl } from '../../utils/cacheControl';
 
 /**
  * The shared vocabulary of the memories domain: the ServiceResult envelope, the
@@ -328,7 +329,9 @@ export async function pipeAsset(url: string, response: Response, headers?: Recor
         if (!resp.ok) {
             response.set('Cache-Control', 'no-store, max-age=0');
         } else if (resp.headers.get('cache-control')) {
-            response.set('Cache-Control', resp.headers.get('cache-control') as string);
+            // The upstream's own policy is about its own origin; through us the
+            // bytes are one user's photos, so a `public` from it must not reach a CDN.
+            response.set('Cache-Control', toPrivateCacheControl(resp.headers.get('cache-control') as string));
         } else if (defaultCacheControl) {
             response.set('Cache-Control', defaultCacheControl);
         }

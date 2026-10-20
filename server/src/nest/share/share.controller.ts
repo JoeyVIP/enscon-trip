@@ -106,8 +106,9 @@ export class SharedController {
     }
     // Bytes are stream-piped like the maps handler; headers go on before the
     // stream attempt so an early failure overrides them exactly as the old
-    // createReadStream error event did.
-    res.set('Cache-Control', 'public, max-age=2592000, immutable');
+    // createReadStream error event did. private, not public: the token can be
+    // revoked, and a CDN copy would keep answering for it after it is.
+    res.set('Cache-Control', 'private, max-age=2592000, immutable');
     res.type('image/jpeg');
     let stream: Readable;
     try {
