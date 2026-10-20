@@ -55,13 +55,13 @@ const SPA_ONLY_PARAMS = ['pw', 'redirect', 'oidc_code', 'oidc_error'] as const;
  */
 export function inviteFromEntryRequest(req: Pick<Request, 'method' | 'path' | 'query' | 'headers'>): string | null {
   if (req.method !== 'GET') return null;
-  const pathname = (req.path || '').replace(/(?<!\/)\/+$/, '');
+  const pathname = req.path.replace(/(?<!\/)\/+$/, '');
   if (!INVITE_ENTRY_PATHS.has(pathname)) return null;
-  const query = (req.query ?? {}) as Record<string, unknown>;
+  const query = req.query as Record<string, unknown>;
   if (SPA_ONLY_PARAMS.some((k) => query[k] !== undefined)) return null;
   const invite = query.invite;
   if (typeof invite !== 'string' || !INVITE_TOKEN_RE.test(invite)) return null;
-  const ua = req.headers?.['user-agent'];
+  const ua = req.headers['user-agent'];
   if (typeof ua === 'string' && LINK_PREVIEW_UA_RE.test(ua)) return null;
   return invite;
 }

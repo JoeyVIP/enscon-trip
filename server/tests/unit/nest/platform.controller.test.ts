@@ -674,6 +674,12 @@ describe('SpaFallbackFilter 邀請連結直接送去 LINE 登入', () => {
     new SpaFallbackFilter(g).catch(new NotFoundException(), host(get('/register', { invite: INVITE }), res));
     expect(res.redirect).not.toHaveBeenCalled();
     expect(String(res.body)).toContain('index.html');
+    // 丟的不是 Error 物件也一樣
+    const res2 = inviteRes();
+    const g2 = { allowsInviteEntry: vi.fn(() => { throw 'boom'; }) };
+    new SpaFallbackFilter(g2).catch(new NotFoundException(), host(get('/register', { invite: INVITE }), res2));
+    expect(res2.redirect).not.toHaveBeenCalled();
+    expect(String(res2.body)).toContain('index.html');
   });
 
   it('沒注入 gate（e2e 空模組）或非 production → 原行為', () => {
