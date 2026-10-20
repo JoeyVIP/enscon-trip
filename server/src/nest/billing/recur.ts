@@ -61,13 +61,7 @@ export async function createRecurCheckout(input: RecurCheckoutInput, fetchImpl: 
   } catch {
     return { ok: false, status: 0 };
   }
-  let body: unknown = null;
-  try {
-    body = await res.json();
-  } catch {
-    body = null;
-  }
-  const j = body as { id?: unknown; url?: unknown } | null;
+  const j = (await res.json().catch(() => null)) as { id?: unknown; url?: unknown } | null;
   if (!res.ok || typeof j?.id !== 'string' || typeof j?.url !== 'string' || !j.url.startsWith('https://')) {
     return { ok: false, status: res.status };
   }
