@@ -67,8 +67,11 @@ export function useLogin() {
   // 之後語言載好也不會更新，所以 zh-TW 使用者看到英文。存代碼就會跟著語言變。
   const [oidcErrorCode, setOidcErrorCode] = useState<string>('')
   const oidcErrorSeen = useRef(false)
+  // 同一個坑：邀請連結失效的訊息也是在 effect 的非同步 callback 裡產生，存 i18n key、render 時才翻。
+  const [errorKey, setErrorKey] = useState<string>('')
   const setError = useCallback((msg: string): void => {
     setOidcErrorCode('')
+    setErrorKey('')
     setErrorRaw(msg)
   }, [])
   // Set when the server signals it just issued a Secure cookie over plain HTTP —
@@ -158,9 +161,40 @@ export function useLogin() {
         setInviteValid(true)
       }).catch(() => {
         clearInvite() // 明確失敗：這組邀請碼沒用了
-        setError(t('login.invalidInviteLink'))
+        setError('')
+        setErrorKey('login.invalidInviteLink')
       })
       window.history.replaceState({}, '', window.location.pathname)
+    }
+
+    // ENSCON：抽成函式，LINE 登入最後一步（exchange）失敗時也要載 app config，
+    // 才知道要顯示 LINE 主按鈕（否則 appConfig 一直是 null，畫面變成「請透過 SSO 提供商登入」＋黑色小鈕）。
+    const loadAppConfig = (): void => {
+      const CONFIG_CACHE_KEY = 'trek_app_config_cache'
+      authApi.getAppConfig?.()
+        .then((config: AppConfig) => {
+          try { localStorage.setItem(CONFIG_CACHE_KEY, JSON.stringify(config)) } catch { /* ignore quota errors */ }
+          return { config, fromCache: false }
+        })
+        .catch(() => {
+          try {
+            const raw = localStorage.getItem(CONFIG_CACHE_KEY)
+            return raw ? { config: JSON.parse(raw) as AppConfig, fromCache: true } : { config: null as AppConfig | null, fromCache: false }
+          } catch { return { config: null as AppConfig | null, fromCache: false } }
+        })
+        .then(({ config, fromCache }) => {
+          if (config) {
+            setAppConfig(config)
+            if (!config.has_users) setMode('register')
+            // Skip auto-redirect when config is from cache — network is unreliable
+            // and auto-redirecting to the IdP could loop if the proxy changed.
+            if (!fromCache && !config.password_login && config.oidc_login && config.oidc_configured && config.has_users && !invite && !noRedirect && !oidcErrorSeen.current) {
+              // No switch to consult on this path: OIDC-only always asks for the
+              // remembered lifetime, matching the SSO button on the panel (#1927).
+              window.location.href = '/api/auth/oidc/login?remember=1'
+            }
+          }
+        })
     }
 
     if (oidcCode) {
@@ -179,12 +213,14 @@ export function useLogin() {
           } else {
             oidcErrorSeen.current = true
             setOidcErrorCode('exchange_failed')
+            loadAppConfig()
           }
         })
         .catch(() => {
           window.history.replaceState({}, '', '/login')
           oidcErrorSeen.current = true
           setOidcErrorCode('exchange_failed')
+          loadAppConfig()
         })
         .finally(() => setIsLoading(false))
       return
@@ -200,31 +236,7 @@ export function useLogin() {
       window.history.replaceState({}, '', '/login')
     }
 
-    const CONFIG_CACHE_KEY = 'trek_app_config_cache'
-    authApi.getAppConfig?.()
-      .then((config: AppConfig) => {
-        try { localStorage.setItem(CONFIG_CACHE_KEY, JSON.stringify(config)) } catch { /* ignore quota errors */ }
-        return { config, fromCache: false }
-      })
-      .catch(() => {
-        try {
-          const raw = localStorage.getItem(CONFIG_CACHE_KEY)
-          return raw ? { config: JSON.parse(raw) as AppConfig, fromCache: true } : { config: null as AppConfig | null, fromCache: false }
-        } catch { return { config: null as AppConfig | null, fromCache: false } }
-      })
-      .then(({ config, fromCache }) => {
-        if (config) {
-          setAppConfig(config)
-          if (!config.has_users) setMode('register')
-          // Skip auto-redirect when config is from cache — network is unreliable
-          // and auto-redirecting to the IdP could loop if the proxy changed.
-          if (!fromCache && !config.password_login && config.oidc_login && config.oidc_configured && config.has_users && !invite && !noRedirect && !oidcErrorSeen.current) {
-            // No switch to consult on this path: OIDC-only always asks for the
-            // remembered lifetime, matching the SSO button on the panel (#1927).
-            window.location.href = '/api/auth/oidc/login?remember=1'
-          }
-        }
-      })
+    loadAppConfig()
   }, [navigate, t, noRedirect])
 
   // Language detection chain (runs once on mount, only if user has no saved preference):
@@ -354,7 +366,7 @@ export function useLogin() {
 
   const error = oidcErrorCode
     ? t(OIDC_ERROR_KEYS[oidcErrorCode] || 'twLoginFix.unknown')
-    : errorRaw
+    : errorKey ? t(errorKey) : errorRaw
 
   const showRegisterOption = (appConfig?.password_registration || !appConfig?.has_users || inviteValid) && (appConfig?.setup_complete !== false || !appConfig?.has_users)
 

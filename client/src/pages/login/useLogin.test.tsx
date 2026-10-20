@@ -293,6 +293,17 @@ describe('useLogin — invite links', () => {
     const { result } = renderLogin();
     await waitFor(() => expect(result.current.error).toBe('Invalid or expired invite link'));
   });
+
+  it('FE-LOGIN-HOOK-015b: zh-TW 的邀請連結失效訊息是中文（語言檔比 validateInvite 晚載入也一樣）', async () => {
+    useSettingsStore.getState().setLanguageLocal('zh-TW');
+    setSearch('?invite=expiredINVITE1');
+    server.use(
+      http.get('/api/auth/invite/:token', () => HttpResponse.json({ error: 'gone' }, { status: 410 })),
+    );
+
+    const { result } = renderLogin();
+    await waitFor(() => expect(result.current.error).toBe('邀請連結無效或已過期'));
+  });
 });
 
 describe('useLogin — OIDC callback', () => {
@@ -348,6 +359,21 @@ describe('useLogin — OIDC callback', () => {
 
     const { result } = renderLogin();
     await waitFor(() => expect(result.current.oidcErrorCode).toBe('exchange_failed'));
+  });
+
+  it('FE-LOGIN-HOOK-018b: exchange 失敗後仍載入 app config（才會顯示 LINE 主按鈕），且不自動跳回 LINE', async () => {
+    setSearch('?oidc_code=code-3');
+    server.use(
+      http.get('/api/auth/oidc/exchange', () => HttpResponse.json({ error: 'Invalid or expired code' })),
+      http.get('/api/auth/app-config', () =>
+        HttpResponse.json(buildAppConfig({ password_login: false, oidc_login: true, oidc_configured: true, has_users: true })),
+      ),
+    );
+
+    const { result } = renderLogin();
+    await waitFor(() => expect(result.current.appConfig).not.toBeNull());
+    expect(result.current.oidcErrorCode).toBe('exchange_failed');
+    expect(window.location.href).toBe('http://localhost/login');
   });
 
   it('FE-LOGIN-HOOK-019: reports a generic failure when the exchange request itself fails', async () => {
