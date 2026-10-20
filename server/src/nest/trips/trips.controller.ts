@@ -37,6 +37,7 @@ import { TripCreateDto, TripUpdateDto, TripCopyDto, TripAddMemberDto, TripTransf
 import { UnsplashService } from '../unsplash/unsplash.service';
 import { CalendarService } from '../calendar/calendar.service';
 import { TripReadModelService } from '../trip-read-model/trip-read-model.service';
+import { TripPaymentRequiredError } from '../billing/billing-gate';
 
 export const MAX_COVER_SIZE = 20 * 1024 * 1024;
 // Still needed by the Unsplash cover download (a raw-fs writer until the
@@ -234,7 +235,9 @@ export class TripsController {
       const newTripId = this.trips.copy(id, user.id, title);
       this.audit.writeAudit({ userId: user.id, action: 'trip.copy', ip: getClientIp(req), details: { sourceTripId: Number(id), newTripId, title } });
       return { trip: this.trips.getCopiedTrip(newTripId, user.id) };
-    } catch {
+    } catch (e: unknown) {
+      // ENSCON：收費開啟時沒付款的帳號複製行程＝開新團，原樣回 402（billing-gate.ts）
+      if (e instanceof TripPaymentRequiredError) throw e;
       throw new HttpException({ error: 'Failed to copy trip' }, 500);
     }
   }

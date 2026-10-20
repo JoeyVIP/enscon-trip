@@ -12,6 +12,7 @@ import { AccommodationsService } from '../accommodations/accommodations.service'
 import { TripMembersService } from '../trip-members/trip-members.service';
 import { TripMembershipService } from '../trip-membership/trip-membership.service';
 import { TripsService, NotFoundError, ValidationError, withoutFeedToken } from './trips.service';
+import { TripPaymentRequiredError } from '../billing/billing-gate';
 
 const TRIP_EDIT_ACTION = 'trip_edit';
 const MEMBER_MANAGE_ACTION = 'member_manage';
@@ -156,6 +157,8 @@ export class TripsRpc {
       return this.trips.create(actor, parsed.data as unknown as Parameters<TripsService['create']>[1]).trip;
     } catch (e) {
       if (e instanceof ValidationError) throw new BadParams(e.message);
+      // ENSCON：收費開啟時沒付款的帳號開新團被擋（billing-gate.ts）
+      if (e instanceof TripPaymentRequiredError) throw new ForbiddenResource('opening a new trip needs a purchase');
       throw e;
     }
   }

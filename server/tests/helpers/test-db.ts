@@ -27,6 +27,11 @@ import type { RateLimitService } from '../../src/nest/common/rate-limit.service'
 // Keep in sync with schema.ts + migrations.ts. Intentionally excluded: categories, addons,
 // photo_providers, photo_provider_fields, schema_version (seed/config data, not user data).
 const RESET_TABLES = [
+  // ENSCON 按趟收費：掛在 users／trips 上（SET NULL），先清
+  'billing_events',
+  'billing_purchases',
+  'billing_promo_codes',
+  'billing_free_organizers',
   'school_holiday_periods',
   'school_holiday_regions',
   'school_holiday_countries',

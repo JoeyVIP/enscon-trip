@@ -6,6 +6,7 @@ import { useAuthStore } from '../../store/authStore'
 import { useTranslation } from '../../i18n'
 import { useToast } from '../../components/shared/Toast'
 import { getApiErrorMessage } from '../../types'
+import { isTripPaymentRequired } from '../../api/billing'
 import { localIsoToday } from './dashboardModel'
 import type { TripCreateRequest } from '@trek/shared'
 import {
@@ -124,6 +125,11 @@ export function useDashboard() {
       toast.success(t('dashboard.toast.created'))
       return data
     } catch (err: unknown) {
+      // ENSCON：收費開啟時開新團要先付款 → 帶去收費頁
+      if (isTripPaymentRequired(err)) {
+        navigate('/pricing')
+        throw new Error(t('twBilling.createNeedsPurchase'))
+      }
       throw new Error(getApiErrorMessage(err, t('dashboard.toast.createError')))
     }
   }
@@ -180,7 +186,13 @@ export function useDashboard() {
       const data = await tripsApi.copy(copyTrip.id, { title: `${copyTrip.title} (${t('dashboard.copySuffix')})` })
       setTrips(prev => sortTrips([data.trip, ...prev]))
       toast.success(t('dashboard.toast.copied'))
-    } catch {
+    } catch (err: unknown) {
+      if (isTripPaymentRequired(err)) {
+        toast.error(t('twBilling.createNeedsPurchase'))
+        setCopyTrip(null)
+        navigate('/pricing')
+        return
+      }
       toast.error(t('dashboard.toast.copyError'))
     }
     setCopyTrip(null)

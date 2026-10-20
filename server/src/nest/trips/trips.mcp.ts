@@ -19,6 +19,10 @@ import { TripsService, NotFoundError, ValidationError } from './trips.service';
 import { TodoService } from '../todo/todo.service';
 import { CollabService } from '../collab/collab.service';
 import { AddonsService } from '../addons/addons.service';
+import { TripPaymentRequiredError } from '../billing/billing-gate';
+
+// ENSCON：收費開啟時沒付款的帳號開新團（建立／複製）跟 REST 一樣被擋（billing-gate.ts）
+const TRIP_PAYMENT_MESSAGE = 'Opening a new trip needs a purchase first (see /pricing).';
 
 function parseId(value: string | string[]): number | null {
   const n = Number(Array.isArray(value) ? value[0] : value);
@@ -123,6 +127,7 @@ export class TripsMcp {
       return ok({ trip });
     } catch (err) {
       if (err instanceof ValidationError) return errorResult(err.message);
+      if (err instanceof TripPaymentRequiredError) return errorResult(TRIP_PAYMENT_MESSAGE);
       throw err;
     }
   }
@@ -517,7 +522,8 @@ export class TripsMcp {
       const newTripId = this.trips.copy(tripId, ctx.userId, title);
       const newTrip = this.trips.canAccessTrip(newTripId, ctx.userId);
       return ok({ trip: { id: newTripId, ...newTrip } });
-    } catch {
+    } catch (err) {
+      if (err instanceof TripPaymentRequiredError) return errorResult(TRIP_PAYMENT_MESSAGE);
       return { content: [{ type: 'text' as const, text: 'Failed to copy trip.' }], isError: true };
     }
   }

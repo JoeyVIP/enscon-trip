@@ -177,8 +177,9 @@ apiClient.interceptors.request.use(
 )
 
 export function isAuthPublicPath(pathname: string): boolean {
-  const publicPaths = ['/login', '/register', '/forgot-password', '/reset-password']
-  const publicPrefixes = ['/shared/', '/public/']
+  // ENSCON：收費頁與條款佔位頁未登入也要能看，401 不該把人踢去登入
+  const publicPaths = ['/login', '/register', '/forgot-password', '/reset-password', '/pricing']
+  const publicPrefixes = ['/shared/', '/public/', '/legal/']
   return publicPaths.includes(pathname) || publicPrefixes.some((p) => pathname.startsWith(p))
 }
 

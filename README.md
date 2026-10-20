@@ -363,6 +363,12 @@ based on TREK (https://github.com/liketrek/TREK) by Maurice, licensed under AGPL
 - `OIDC_HIDE_PASSWORD_FORM`／`OIDC_BUTTON_COLOR`：登入頁只留一顆大的 LINE 登入鈕；網址加 `?pw=1` 還是看得到帳密表單（管理員用）
 - 邀請碼（`?invite=`）會記在 localStorage，SSO 連結一律帶上
 - `EXTRA_LINK_URL`／`EXTRA_LINK_LABEL`：行程頁右下角的額外連結按鈕（例如小遊戲）
+- 按趟收費（`/pricing`）：Recur 單次付款，付款後自動開一個空行程給付款人並產生邀請連結（`/billing/success`）。
+  `RECUR_SECRET_KEY`、`RECUR_WEBHOOK_SECRET`、`RECUR_PRODUCT_TRIP_ONCE` 三個都設才開啟，任一個空＝收費頁顯示「即將開放」、webhook 一律拒收；
+  webhook 網址 `POST /api/billing/webhook/recur`。顯示用的 `TRIP_BILLING_PRICE_TWD`（預設 299）、`TRIP_BILLING_SEATS`（10）、
+  `TRIP_BILLING_DAYS_AFTER_RETURN`（30）；條款／隱私網址 `TRIP_BILLING_TERMS_URL`／`TRIP_BILLING_PRIVACY_URL`（空＝連到 App 內佔位頁 `/legal/terms`、`/legal/privacy`）
+  收費開啟時只擋「開新團」（建立、複製行程）：管理員與後台「收費」分頁指定的免費主揪不擋，團員加入一律不收錢，既有行程不受影響。
+  後台「收費」分頁可建優惠碼（折抵 1–100%，100% 不經過 Recur 直接開團；可設次數上限、到期日、停用）。
 - 每一頁左下角放「原始碼」連結（AGPL-3.0 第 13 條）
 - 資料庫裡 `trips.currency` 欄位的預設值仍是 `EUR`（沒有做 migration）；程式寫入時一定會帶幣別，所以只有在 app 以外直接寫入資料庫時才有差
 
