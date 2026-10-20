@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useState, type ComponentType, type ReactNode } from 'react'
 import { CalendarPlus, ChevronRight, FileDown, Share2 } from 'lucide-react'
 import MSheet from '../../../components/MSheet'
 import { IcsSubscribeModal } from '../../../../components/Planner/IcsSubscribeModal'
@@ -6,6 +6,7 @@ import { useTripStore } from '../../../../store/tripStore'
 import { useSettingsStore } from '../../../../store/settingsStore'
 import { useRoadtripSettings } from '../../../../hooks/useRoadtripSettings'
 import { useTranslation } from '../../../../i18n'
+import { LineBubbleIcon, shareTripToLine } from '../../../../components/Planner/LineShareButtons'
 import { INNER_CLS, TileHeader } from './MTripSheetUi'
 import type { MTripSheetsProps } from '../MTripShell'
 import type { LucideIcon } from 'lucide-react'
@@ -146,6 +147,14 @@ export default function MExportSheet({ planner, shell }: MTripSheetsProps) {
             sub={t('dayplan.gpxTooltip')}
             onClick={() => void downloadGpx()}
           />
+          {/* 台灣在地化：分享行程公開連結到 LINE；沒有 share_manage 權限時不顯示 */}
+          <ExportRow
+            icon={LineBubbleIcon}
+            title={t('twLineShare.shareTrip')}
+            sub={canManageShare ? t('twLineShare.shareTripSub') : t('twLineShare.needOwner')}
+            disabled={!canManageShare}
+            onClick={() => { if (planner.trip) void shareTripToLine(planner.tripId, planner.trip, planner.toast, t) }}
+          />
           {canManageShare && (
             <ExportRow
               icon={CalendarPlus}
@@ -169,17 +178,19 @@ export default function MExportSheet({ planner, shell }: MTripSheetsProps) {
   )
 }
 
-function ExportRow({ icon: Icon, title, sub, onClick }: {
-  icon: LucideIcon
+function ExportRow({ icon: Icon, title, sub, onClick, disabled }: {
+  icon: LucideIcon | ComponentType<{ size?: number; strokeWidth?: number }>
   title: ReactNode
   sub: ReactNode
   onClick: () => void
+  disabled?: boolean
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`flex w-full items-center gap-[13px] rounded-[16px] px-3 py-[11px] text-left ${INNER_CLS}`}
+      disabled={disabled}
+      className={`flex w-full disabled:opacity-45 items-center gap-[13px] rounded-[16px] px-3 py-[11px] text-left ${INNER_CLS}`}
     >
       <span className="flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[10px] bg-[color:var(--m-ic)]">
         <Icon size={16} strokeWidth={1.9} />

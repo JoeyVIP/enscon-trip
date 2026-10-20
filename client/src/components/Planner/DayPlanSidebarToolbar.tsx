@@ -3,6 +3,7 @@ import { ChevronsDownUp, ChevronsUpDown, Download, Undo2, ArrowUpDown, Route as 
 import { DayReorderPopup } from './DayReorderPopup'
 import Tooltip from '../shared/Tooltip'
 import { useToast } from '../shared/Toast'
+import { LineTripShareButton } from './LineShareButtons'
 import { TripExportModal } from './TripExportModal'
 import { isRoutableReservation } from '../../utils/reservationRoutes'
 import type { DayAddControls } from '../../utils/dayAdd'
@@ -81,6 +82,8 @@ export function DayPlanSidebarToolbar({
             {t('dayplan.export')}
           </button>
         </Tooltip>
+        {/* 台灣在地化：一鍵把行程公開連結分享到 LINE */}
+        <LineTripShareButton tripId={tripId} trip={trip} canManageShare={canManageShare} t={t} toast={toast} />
         <TripExportModal
           isOpen={exportOpen}
           onClose={() => setExportOpen(false)}

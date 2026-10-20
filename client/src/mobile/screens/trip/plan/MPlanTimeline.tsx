@@ -27,6 +27,7 @@ import type { Assignment } from '../../../../types'
 import type { ComponentType, ReactNode } from 'react'
 import GoogleMapsIcon from '../../../../components/shared/GoogleMapsIcon'
 import { isRtlLanguage } from '../../../../i18n'
+import { LineDayShareButton } from '../../../../components/Planner/LineShareButtons'
 import { useMPlanDaySwipe } from './useMPlanDaySwipe'
 
 /**
@@ -182,6 +183,14 @@ export default function MPlanTimeline({ planner, shell }: MPlanTimelineProps) {
             onOpenDay={() => shell.openSheet('day', { dayId: day.id })}
             onOpenStay={openStay}
             stayLabel={stayLabel}
+            // 台灣在地化：分享今天行程到 LINE（只送站名與時間）
+            lineShare={
+              <LineDayShareButton
+                tripId={planner.tripId} date={day.date} locale={tl.language} title={day.title} t={t}
+                canManageShare={planner.can('share_manage', trip)}
+                stops={tl.rows.flatMap(r => (r.kind === 'place' ? [{ name: r.assignment.place?.name, time: r.assignment.place?.place_time, lat: r.assignment.place?.lat, lng: r.assignment.place?.lng }] : []))}
+              />
+            }
           />
         )}
 
@@ -428,7 +437,7 @@ function EditHeader({ tl, planner, shell }: {
  * the stay chips have a target of their own: tapping a hotel opens that stay,
  * not the day (#2210). Only the weather chip still shares the day pill's target.
  */
-function TimelineHeader({ tl, dayLabel, openLabel, weatherLabel, onOpenDay, onOpenStay, stayLabel }: {
+function TimelineHeader({ tl, dayLabel, openLabel, weatherLabel, onOpenDay, onOpenStay, stayLabel, lineShare }: {
   tl: MPlanTimelineController
   dayLabel: string
   openLabel: string
@@ -437,6 +446,8 @@ function TimelineHeader({ tl, dayLabel, openLabel, weatherLabel, onOpenDay, onOp
   onOpenDay: () => void
   onOpenStay: (chip: HotelChip) => void
   stayLabel: (chip: HotelChip) => string
+  /** LINE 分享小按鈕（靠右，天氣之前） */
+  lineShare?: ReactNode
 }) {
   const WeatherIcon = weatherIconFor(tl.weather?.main)
   return (
@@ -469,13 +480,14 @@ function TimelineHeader({ tl, dayLabel, openLabel, weatherLabel, onOpenDay, onOp
           </button>
         ))}
       </span>
+      <span className="ml-auto flex flex-none items-center">{lineShare}</span>
       {tl.weatherTemp != null && (
         <button
           type="button"
           onClick={onOpenDay}
           aria-label={weatherLabel || openLabel}
           title={tl.weatherPlaceName || undefined}
-          className="ml-auto flex flex-none items-center gap-1 whitespace-nowrap px-1.5 py-1 text-[0.71875rem] font-semibold"
+          className="flex flex-none items-center gap-1 whitespace-nowrap px-1.5 py-1 text-[0.71875rem] font-semibold"
         >
           <WeatherIcon size={13} strokeWidth={2} />
           {tl.weatherTemp}°
