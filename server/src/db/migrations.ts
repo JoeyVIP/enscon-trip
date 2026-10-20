@@ -5285,6 +5285,56 @@ function runMigrations(db: Database.Database): void {
         END
       `);
     },
+
+    /*
+     * ENSCON 旅程按趟收費（Recur 單次付款，付款後自動開團）。只新增兩張表，不動既有的表；可重複執行。
+     *
+     * billing_purchases：一筆結帳一列。ref 是給付款人看的代號（付款完成頁網址用），checkout_id 是
+     * Recur 的結帳 session id，order_id 是 Recur 訂單 id（UNIQUE：同一張訂單只開一團）。
+     * user_id／trip_id 都是 ON DELETE SET NULL：付款紀錄依稅法要留著，刪帳號、刪行程不能連帶刪掉它。
+     * consent_at／consent_ver 是七日解除權排除的「事先同意」紀錄。
+     * invoice_status／invoice_number 只先留欄位：發票這版不開（另有負責人），付款後標成 pending 給開票那端接手。
+     *
+     * billing_events：收過的 Recur 通知，event_id 當主鍵做去重（Recur 重送同一則不會處理兩次）。
+     */
+    () => {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS billing_purchases (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          ref TEXT NOT NULL UNIQUE,
+          user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+          checkout_id TEXT UNIQUE,
+          order_id TEXT UNIQUE,
+          product_id TEXT NOT NULL,
+          livemode INTEGER NOT NULL DEFAULT 0,
+          status TEXT NOT NULL DEFAULT 'pending',
+          seats INTEGER NOT NULL,
+          amount INTEGER,
+          currency TEXT,
+          payer_email TEXT,
+          trip_id INTEGER REFERENCES trips(id) ON DELETE SET NULL,
+          consent_at TEXT NOT NULL,
+          consent_ver TEXT NOT NULL,
+          refunded_amount INTEGER,
+          invoice_status TEXT NOT NULL DEFAULT 'none',
+          invoice_number TEXT,
+          created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+          paid_at TEXT,
+          fulfilled_at TEXT,
+          refunded_at TEXT,
+          updated_at TEXT
+        );
+        CREATE INDEX IF NOT EXISTS idx_billing_purchases_user ON billing_purchases(user_id);
+        CREATE TABLE IF NOT EXISTS billing_events (
+          event_id TEXT PRIMARY KEY,
+          type TEXT NOT NULL,
+          outcome TEXT NOT NULL,
+          purchase_id INTEGER REFERENCES billing_purchases(id) ON DELETE SET NULL,
+          detail TEXT,
+          received_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+        );
+      `);
+    },
   ];
 
   if (currentVersion < migrations.length) {

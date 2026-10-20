@@ -60,6 +60,10 @@ const SharedTripPage = lazyWithRetry(() => import('./pages/SharedTripPage'))
 const JoinTripPage = lazyWithRetry(() => import('./pages/JoinTripPage'))
 const InAppNotificationsPage = lazyWithRetry(() => import('./pages/InAppNotificationsPage.tsx'))
 const OAuthAuthorizePage = lazyWithRetry(() => import('./pages/OAuthAuthorizePage'))
+// ENSCON 旅程按趟收費：收費頁、條款佔位頁（未登入可看）、付款完成頁（要登入）
+const PricingPage = lazyWithRetry(() => import('./pages/PricingPage'))
+const BillingSuccessPage = lazyWithRetry(() => import('./pages/BillingSuccessPage'))
+const LegalPlaceholderPage = lazyWithRetry(() => import('./pages/LegalPlaceholderPage'))
 
 // The ten phone screens are chunks of their own, alongside the desktop pages
 // rather than inside them. Each page used to import its M screen statically and
@@ -406,6 +410,16 @@ export default function App() {
           <Route path="/reset-password" element={<PublicRoute><ResetPasswordPage /></PublicRoute>} />
           {/* OAuth 2.1 consent page — intentionally outside ProtectedRoute */}
           <Route path="/oauth/consent" element={<PublicRoute><OAuthAuthorizePage /></PublicRoute>} />
+          <Route path="/pricing" element={<PublicRoute><PricingPage /></PublicRoute>} />
+          <Route path="/legal/:doc" element={<PublicRoute><LegalPlaceholderPage /></PublicRoute>} />
+          <Route
+            path="/billing/success"
+            element={
+              <ProtectedRoute>
+                <BillingSuccessPage />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/dashboard"
             element={

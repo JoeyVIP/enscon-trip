@@ -50,6 +50,7 @@ export * from './collection/collection-file.schema';
 export * from './trip/trip.schema';
 export * from './trip/day-grid';
 export * from './trip-invite/trip-invite.schema';
+export * from './billing/billing.schema';
 export * from './collab/collab.schema';
 export * from './file/file.schema';
 export * from './journey/journey.schema';

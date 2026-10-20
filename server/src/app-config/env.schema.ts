@@ -99,6 +99,16 @@ export const envSchema = z.object({
   // ENSCON：右下角額外連結浮動按鈕（例如小遊戲），兩個都空就不顯示。
   EXTRA_LINK_URL: anyString,
   EXTRA_LINK_LABEL: anyString,
+  // ENSCON：ENSCON 旅程按趟收費（Recur 單次付款）。三個 RECUR_* 任一個空＝收費關閉，收費頁顯示「即將開放」。
+  // 金鑰的前綴決定環境（sk_test_ 沙箱／sk_live_ 正式，docs.recur.tw/api-reference.md）；貼錯成 pk_ 公開金鑰會在開機時擋下。
+  RECUR_SECRET_KEY: optionalWith((v) => /^sk_(test|live)_/.test(v), 'must be a Recur secret key (sk_test_… or sk_live_…)'),
+  RECUR_WEBHOOK_SECRET: anyString,
+  RECUR_PRODUCT_TRIP_ONCE: anyString,
+  TRIP_BILLING_PRICE_TWD: integer(1, 1_000_000),
+  TRIP_BILLING_SEATS: integer(1, 1000),
+  TRIP_BILLING_DAYS_AFTER_RETURN: integer(0, 3650),
+  TRIP_BILLING_TERMS_URL: anyString,
+  TRIP_BILLING_PRIVACY_URL: anyString,
   OIDC_ADMIN_CLAIM: anyString,
   OIDC_ADMIN_VALUE: anyString,
 

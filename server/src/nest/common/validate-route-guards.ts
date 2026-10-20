@@ -100,6 +100,10 @@ export const PUBLIC_ROUTE_ALLOW_LIST: string[] = [
   'AuthPublicController.register',
   'AuthPublicController.resetPassword',
   'AuthPublicController.verifyMfaLogin',
+  // ENSCON 收費：收費頁在登入前就要看得到（只回價格與開關，不含金鑰）；
+  // Recur 拿不到 session，原始 body 的 HMAC 簽章就是驗證，沒設 secret 時一律拒收。
+  'BillingController.plan',
+  'BillingController.recurWebhook',
   'ConfigController.getConfig',
   // OAuth/OIDC discovery documents + the JSON 404 catchalls that keep
   // /.well-known probes from ever seeing SPA HTML.

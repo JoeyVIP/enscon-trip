@@ -18,6 +18,7 @@ import { SUPPORTED_LANGUAGE_CODES } from '@trek/shared';
 import {
   csvList,
   csvListFiltered,
+  nonNegativeIntOr,
   numberOr,
   parseBool,
   parseDurationMs,
@@ -347,6 +348,32 @@ export function deriveExtraLink(raw: RawEnv) {
   };
 }
 
+// ENSCON：ENSCON 旅程按趟收費（Recur 單次付款，方案 data/enscon-trip/billing-plan-20261020.md）。
+// 金鑰、webhook secret、商品 ID 三個都有才算開啟；任一個空＝收費關閉（收費頁顯示「即將開放」，webhook 一律拒收）。
+// 金鑰只在這裡讀進來，不進任何回應、不進 log。價格、名額、天數只是顯示用，真正收的錢以 Recur 商品為準。
+export const TRIP_BILLING_DEFAULT_PRICE_TWD = 299;
+export const TRIP_BILLING_DEFAULT_SEATS = 10;
+export const TRIP_BILLING_DEFAULT_DAYS_AFTER_RETURN = 30;
+export function deriveBilling(raw: RawEnv) {
+  const secretKey = raw.RECUR_SECRET_KEY?.trim() || '';
+  const webhookSecret = raw.RECUR_WEBHOOK_SECRET?.trim() || '';
+  const productId = raw.RECUR_PRODUCT_TRIP_ONCE?.trim() || '';
+  return {
+    enabled: !!(secretKey && webhookSecret && productId),
+    secretKey,
+    webhookSecret,
+    productId,
+    /** sk_live_ 才是正式；其他（sk_test_）都當沙箱。 */
+    livemode: secretKey.startsWith('sk_live_'),
+    priceTwd: positiveIntOr(raw.TRIP_BILLING_PRICE_TWD, TRIP_BILLING_DEFAULT_PRICE_TWD),
+    seats: positiveIntOr(raw.TRIP_BILLING_SEATS, TRIP_BILLING_DEFAULT_SEATS),
+    daysAfterReturn: nonNegativeIntOr(raw.TRIP_BILLING_DAYS_AFTER_RETURN, TRIP_BILLING_DEFAULT_DAYS_AFTER_RETURN),
+    /** 條款／隱私的正式網址還沒定（docs/legal/README-enscon-trip.md 待補 #16），空的時候連到 App 內的佔位頁。 */
+    termsUrl: raw.TRIP_BILLING_TERMS_URL?.trim() || '/legal/terms',
+    privacyUrl: raw.TRIP_BILLING_PRIVACY_URL?.trim() || '/legal/privacy',
+  };
+}
+
 export function deriveAll(raw: RawEnv) {
   return {
     app: deriveApp(raw),
@@ -367,6 +394,7 @@ export function deriveAll(raw: RawEnv) {
     paths: derivePaths(raw),
     net: deriveNet(raw),
     extraLink: deriveExtraLink(raw),
+    billing: deriveBilling(raw),
   };
 }
 

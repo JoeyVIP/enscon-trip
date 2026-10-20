@@ -18,5 +18,7 @@ import { TripMembershipModule } from '../trip-membership/trip-membership.module'
   imports: [RateLimitModule, PermissionsModule, AuditModule, TripMembershipModule, McpSharedModule, AppConfigModule, RealtimeModule],
   controllers: [TripInviteLinkController, TripInviteController],
   providers: [TripInviteService, TripInviteMcp],
+  // ENSCON：收費開團（BillingModule）付款後要替新行程產生邀請連結、退款時刪掉。
+  exports: [TripInviteService],
 })
 export class TripInviteModule {}
