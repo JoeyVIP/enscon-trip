@@ -19,6 +19,8 @@ import type { UpcomingReservation } from '../../../../src/pages/dashboard/dashbo
 const RATES = [
   { date: '2026-07-01', base: 'EUR', quote: 'USD', rate: 1.1 },
   { date: '2026-07-01', base: 'EUR', quote: 'CHF', rate: 0.95 },
+  { date: '2026-07-01', base: 'TWD', quote: 'JPY', rate: 4.8 },
+  { date: '2026-07-01', base: 'TWD', quote: 'CHF', rate: 0.03 },
 ];
 
 function fxHandler(body: unknown = RATES) {
@@ -126,12 +128,12 @@ describe('MCurrencyWidget', () => {
     render(<MobileDashWidget id="currency" upcoming={[]} />);
 
     expect(screen.getByText('Currency')).toBeInTheDocument();
-    await waitFor(() => expect(screen.getByText('1 EUR = 1.1000 USD')).toBeInTheDocument());
-    // 100 (default amount) * 1.1
-    expect(screen.getByText('110.00')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText('1 TWD = 4.8000 JPY')).toBeInTheDocument());
+    // 100 (default amount) * 4.8
+    expect(screen.getByText('480.00')).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText('From'), { target: { value: '250,5' } });
-    expect(screen.getByText('275.55')).toBeInTheDocument();
+    expect(screen.getByText('1202.40')).toBeInTheDocument();
   });
 
   it('FE-MOB-DWID-009: a non-array response leaves the rate unavailable', async () => {
@@ -165,9 +167,9 @@ describe('MCurrencyWidget', () => {
 
   it('FE-MOB-DWID-012: the native picker writes the chosen currency', async () => {
     render(<MobileDashWidget id="currency" upcoming={[]} />);
-    await waitFor(() => expect(screen.getByText('1 EUR = 1.1000 USD')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('1 TWD = 4.8000 JPY')).toBeInTheDocument());
 
-    fireEvent.change(screen.getByLabelText('USD'), { target: { value: 'CHF' } });
+    fireEvent.change(screen.getByLabelText('JPY'), { target: { value: 'CHF' } });
 
     await waitFor(() => expect(useSettingsStore.getState().settings.dashboard_fx_to).toBe('CHF'));
   });
@@ -367,7 +369,7 @@ describe('legacy settings migration', () => {
     render(<MobileDashWidget id="currency" upcoming={[]} />);
     render(<MobileDashWidget id="timezones" upcoming={[]} />);
 
-    await waitFor(() => expect(screen.getByText('1 EUR = 1.1000 USD')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('1 TWD = 4.8000 JPY')).toBeInTheDocument());
     expect(useSettingsStore.getState().settings.dashboard_fx_from).toBeUndefined();
     expect(useSettingsStore.getState().settings.dashboard_timezones).toBeUndefined();
   });

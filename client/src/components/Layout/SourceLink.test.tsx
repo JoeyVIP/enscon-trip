@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { describe, it, expect, afterEach } from 'vitest'
+import { render, screen } from '../../../tests/helpers/render'
 import SourceLink, { SOURCE_URL, UPSTREAM_URL } from './SourceLink'
 
 describe('SourceLink（AGPL-3.0 §13 原始碼連結）', () => {
@@ -19,5 +19,35 @@ describe('SourceLink（AGPL-3.0 §13 原始碼連結）', () => {
       expect(a).toHaveAttribute('target', '_blank')
       expect(a.getAttribute('rel')).toContain('noopener')
     }
+  })
+
+  describe('手機版不浮在底部工具列上（改放「更多」選單）', () => {
+    const origWidth = window.innerWidth
+    const setWidth = (w: number) => { window.innerWidth = w }
+    afterEach(() => setWidth(origWidth))
+
+    it('ENSCON-SRC-003: 桌面版維持浮動連結', () => {
+      setWidth(1280)
+      render(<SourceLink />, { initialEntries: ['/dashboard'] })
+      expect(screen.getByTestId('source-link')).toBeInTheDocument()
+    })
+
+    it('ENSCON-SRC-004: 登入後的手機版不浮出連結', () => {
+      setWidth(390)
+      render(<SourceLink />, { initialEntries: ['/dashboard'] })
+      expect(screen.queryByTestId('source-link')).not.toBeInTheDocument()
+    })
+
+    it.each(['/login', '/register', '/shared/abc123'])('ENSCON-SRC-005: 手機版 %s 沒有工具列，維持浮動連結', (path) => {
+      setWidth(390)
+      render(<SourceLink />, { initialEntries: [path] })
+      expect(screen.getByTestId('source-link')).toBeInTheDocument()
+    })
+
+    it('ENSCON-SRC-006: 手機版行程規劃頁沒有全域工具列，維持浮動連結', () => {
+      setWidth(390)
+      render(<SourceLink />, { initialEntries: ['/trips/7'] })
+      expect(screen.getByTestId('source-link')).toBeInTheDocument()
+    })
   })
 })

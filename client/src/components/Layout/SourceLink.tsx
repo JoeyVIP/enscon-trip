@@ -3,12 +3,27 @@
  * 所以每一頁（含登入頁、分享頁）都放一個小小的原始碼連結，並註明基於 TREK。
  *
  * 位置在左下角、很小、半透明：不跟底部工具列（置中）和右下角的額外連結（EXTRA_LINK）搶位置。
+ * 登入後的手機版有底部工具列，連結改放在工具列「更多」選單第一格（MBottomNav），這裡不浮出來；
+ * 登入／註冊／分享頁和行程規劃頁（手機版沒有全域工具列）仍維持浮動連結。
  * 網址預設是我們的 fork；要換成別的 fork 時，建置時設 VITE_SOURCE_URL。
  */
+import { useMatch, useLocation } from 'react-router'
+import { useIsPhone } from '../../mobile/useIsPhone'
+import { isAuthPublicPath } from '../../api/client'
+
 export const SOURCE_URL: string = (import.meta.env?.VITE_SOURCE_URL as string | undefined) || 'https://github.com/JoeyVIP/enscon-trip'
 export const UPSTREAM_URL = 'https://github.com/liketrek/TREK'
 
+/** 手機版且有 MBottomNav 的頁面：連結由「更多」選單負責。 */
+export function useSourceLinkInMenu(): boolean {
+  const isPhone = useIsPhone()
+  const { pathname } = useLocation()
+  const inTripPlanner = useMatch('/trips/:id')
+  return isPhone && !isAuthPublicPath(pathname) && !inTripPlanner
+}
+
 export default function SourceLink() {
+  if (useSourceLinkInMenu()) return null
   return (
     <>
       <style>{`

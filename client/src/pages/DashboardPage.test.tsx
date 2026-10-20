@@ -886,7 +886,7 @@ describe('DashboardPage', () => {
 
   describe('FE-PAGE-DASH-034: dashboard widgets persist to settings, not localStorage (#1311)', () => {
     it('reads the timezone widget zones from the settings store', async () => {
-      // A zone that is NOT in the hardcoded default ([home, London, Tokyo]) — its presence
+      // A zone that is NOT in the hardcoded default ([Taipei, home, Tokyo]) — its presence
       // proves the widget reads the stored preference rather than the old localStorage default.
       seedStore(useSettingsStore, { settings: buildSettings({ dashboard_timezones: ['America/New_York'] }), isLoaded: true });
       render(<DashboardPage />);

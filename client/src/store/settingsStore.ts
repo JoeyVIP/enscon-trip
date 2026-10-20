@@ -96,8 +96,9 @@ export const DEFAULT_SETTINGS: Settings = {
   maplibre_style: '',
   mapbox_3d_enabled: true,
   mapbox_quality_mode: false,
-  dashboard_fx_from: 'EUR',
-  dashboard_fx_to: 'USD',
+  // ENSCON：首頁貨幣小工具預設新台幣換日圓（台灣使用者）；使用者自己存過的設定仍優先。
+  dashboard_fx_from: 'TWD',
+  dashboard_fx_to: 'JPY',
   start_page: DEFAULT_START_PAGE,
   start_trip_tab: DEFAULT_START_TRIP_TAB,
   appearance: DEFAULT_APPEARANCE,
