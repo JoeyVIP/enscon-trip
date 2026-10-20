@@ -433,6 +433,80 @@ describe('Packing e2e (real auth guard + real SQL over temp SQLite)', () => {
     expect(saved.body.template).toMatchObject({ name: 'Tpl', categoryCount: 1, itemCount: 1 });
   });
 
+  describe('clear-checked stays inside one list', () => {
+    // Shared: 3 checked + 1 open. Mine (user 1): 2 checked. Another member's private: 1 checked.
+    function seedLists() {
+      db.prepare('INSERT INTO trip_members (trip_id, user_id) VALUES (?, ?)').run(tripId, 2);
+      const shared = ['Tent', 'Stove', 'Map'].map(name => insertItem(tripId, name));
+      const sharedOpen = insertItem(tripId, 'Rope');
+      const mine = ['Snacks', 'Tea'].map(name => insertItem(tripId, name, { is_private: 1, owner_id: 1 }));
+      const theirs = insertItem(tripId, 'Diary', { is_private: 1, owner_id: 2 });
+      for (const id of [...shared, ...mine, theirs]) db.prepare('UPDATE packing_items SET checked = 1 WHERE id = ?').run(id);
+      return { shared, sharedOpen, mine, theirs };
+    }
+    const remainingIds = () => (db.prepare('SELECT id FROM packing_items ORDER BY id').all() as { id: number }[]).map(r => r.id);
+
+    it('PACK-CLEAR-001: scope common deletes the shared checked rows and leaves every personal row', async () => {
+      const { shared, sharedOpen, mine, theirs } = seedLists();
+      const res = await request(server).post(`/api/trips/${tripId}/packing/clear-checked`).set('Cookie', sessionCookie(1)).send({ scope: 'common' });
+      expect(res.status).toBe(200);
+      expect([...res.body.deleted_ids].sort()).toEqual([...shared].sort());
+      expect(res.body.count).toBe(3);
+      expect(remainingIds()).toEqual([sharedOpen, ...mine, theirs]);
+    });
+
+    it('PACK-CLEAR-002: without a scope it clears the shared list only — personal rows survive', async () => {
+      const { shared, sharedOpen, mine, theirs } = seedLists();
+      const res = await request(server).post(`/api/trips/${tripId}/packing/clear-checked`).set('Cookie', sessionCookie(1));
+      expect(res.status).toBe(200);
+      expect([...res.body.deleted_ids].sort()).toEqual([...shared].sort());
+      expect(remainingIds()).toEqual([sharedOpen, ...mine, theirs]);
+    });
+
+    it('PACK-CLEAR-003: scope personal deletes only the caller\'s own checked rows', async () => {
+      const { shared, sharedOpen, mine, theirs } = seedLists();
+      const res = await request(server).post(`/api/trips/${tripId}/packing/clear-checked`).set('Cookie', sessionCookie(1)).send({ scope: 'personal' });
+      expect(res.status).toBe(200);
+      expect([...res.body.deleted_ids].sort()).toEqual([...mine].sort());
+      expect(remainingIds()).toEqual([...shared, sharedOpen, theirs]);
+    });
+
+    it('PACK-CLEAR-004: an unknown scope is a 400 and deletes nothing', async () => {
+      seedLists();
+      const before = remainingIds();
+      const res = await request(server).post(`/api/trips/${tripId}/packing/clear-checked`).set('Cookie', sessionCookie(1)).send({ scope: 'all' });
+      expect(res.status).toBe(400);
+      expect(remainingIds()).toEqual(before);
+    });
+
+    it('PACK-CLEAR-006: with ids, only the confirmed rows go — a row ticked later and ids from another list stay', async () => {
+      const { shared, sharedOpen, mine, theirs } = seedLists();
+      // Confirmed 2 of the 3 shared rows; also slips in my own row and another member's private row.
+      const res = await request(server).post(`/api/trips/${tripId}/packing/clear-checked`).set('Cookie', sessionCookie(1))
+        .send({ scope: 'common', ids: [shared[0], shared[1], mine[0], theirs] });
+      expect(res.status).toBe(200);
+      expect([...res.body.deleted_ids].sort()).toEqual([shared[0], shared[1]].sort());
+      expect(res.body.count).toBe(2);
+      expect(remainingIds()).toEqual([shared[2], sharedOpen, ...mine, theirs]);
+    });
+
+    it('PACK-CLEAR-007: personal scope with another member\'s id deletes nothing of theirs', async () => {
+      const { shared, sharedOpen, mine, theirs } = seedLists();
+      const res = await request(server).post(`/api/trips/${tripId}/packing/clear-checked`).set('Cookie', sessionCookie(1))
+        .send({ scope: 'personal', ids: [theirs, shared[0]] });
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ deleted_ids: [], count: 0 });
+      expect(remainingIds()).toEqual([...shared, sharedOpen, ...mine, theirs]);
+    });
+
+    it('PACK-CLEAR-005: nothing checked answers an empty result', async () => {
+      insertItem(tripId, 'Rope');
+      const res = await request(server).post(`/api/trips/${tripId}/packing/clear-checked`).set('Cookie', sessionCookie(1)).send({});
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ deleted_ids: [], count: 0 });
+    });
+  });
+
   it('category assignees round-trip: PUT replaces, GET groups by category', async () => {
     db.prepare('INSERT INTO trip_members (trip_id, user_id) VALUES (?, ?)').run(tripId, 2);
     const put = await request(server)

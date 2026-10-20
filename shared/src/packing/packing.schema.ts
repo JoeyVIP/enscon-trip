@@ -189,6 +189,19 @@ export const packingApplyTemplateRequestSchema = z
   .optional();
 export type PackingApplyTemplateRequest = z.infer<typeof packingApplyTemplateRequestSchema>;
 
+// "Clear checked" works on one list at a time. A body-less call means the
+// shared list only, so no caller can sweep a personal list by leaving it out.
+export const packingClearCheckedRequestSchema = z
+  .object({
+    scope: z.enum(['common', 'personal']).optional(),
+    // The rows the caller confirmed. When sent, nothing outside them goes (not
+    // even a row someone else ticked after the confirm dialog opened), so the
+    // count the user agreed to is the most that can be deleted.
+    ids: z.array(z.number().int()).max(5000).optional(),
+  })
+  .optional();
+export type PackingClearCheckedRequest = z.infer<typeof packingClearCheckedRequestSchema>;
+
 export const packingTemplateSummarySchema = z.object({
   id: z.number(),
   name: z.string(),

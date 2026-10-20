@@ -13,6 +13,8 @@ export interface PackingSlice {
   addPackingItem: (tripId: number | string, data: Partial<PackingItem> & { name: string }) => Promise<PackingItem>
   updatePackingItem: (tripId: number | string, id: number, data: Partial<PackingItem>) => Promise<PackingItem>
   deletePackingItem: (tripId: number | string, id: number) => Promise<void>
+  /** Clears the checked rows of one list; `ids` = what the caller shows for that list (see packingClearTargets). */
+  clearCheckedPackingItems: (tripId: number | string, scope: 'common' | 'personal', ids: number[]) => Promise<void>
   togglePackingItem: (tripId: number | string, id: number, checked: boolean) => Promise<void>
   reorderPackingItems: (tripId: number | string, orderedIds: number[]) => Promise<void>
   // Three-tier sharing (#858)
@@ -50,6 +52,19 @@ export const createPackingSlice = (set: SetState, get: GetState): PackingSlice =
     set(state => ({ packingItems: state.packingItems.filter(item => item.id !== id) }))
     try {
       await packingRepo.delete(tripId, id)
+    } catch (err: unknown) {
+      set({ packingItems: prev })
+      throw new Error(getApiErrorMessage(err, 'Error deleting item'))
+    }
+  },
+
+  clearCheckedPackingItems: async (tripId, scope, ids) => {
+    const prev = get().packingItems
+    set(state => ({ packingItems: state.packingItems.filter(item => !ids.includes(item.id)) }))
+    try {
+      const { deleted_ids } = await packingRepo.clearChecked(tripId, scope, ids)
+      // The server deletes nothing outside `ids`; dropping its deleted_ids again is a no-op guard.
+      set(state => ({ packingItems: state.packingItems.filter(item => !deleted_ids.includes(item.id)) }))
     } catch (err: unknown) {
       set({ packingItems: prev })
       throw new Error(getApiErrorMessage(err, 'Error deleting item'))

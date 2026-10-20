@@ -12,7 +12,7 @@ import { buildPlanner } from '../../../helpers/mobileTrip'
 import { resetAllStores, seedStore } from '../../../helpers/store'
 import { act, fireEvent, render, screen, waitFor, within } from '../../../helpers/render'
 
-// FE-MOB-PACKTAB-001 to FE-MOB-PACKTAB-046 (plus 060-062)
+// FE-MOB-PACKTAB-001 to FE-MOB-PACKTAB-046 (plus 060-069)
 
 const ME = 7
 const ANNA = { id: 11, username: 'anna', avatar: null, avatar_url: 'https://cdn.example/anna.png' } as unknown as TripMember
@@ -181,7 +181,7 @@ describe('MPackingListTab', () => {
     expect(screen.getByRole('button', { name: 'packing.import' })).toBeInTheDocument()
   })
 
-  it('FE-MOB-PACKTAB-010: clearing checked items deletes each of them after confirmation', async () => {
+  it('FE-MOB-PACKTAB-010: clearing checked items deletes this list\'s checked rows after confirmation', async () => {
     const { planner } = await setup()
     openActions()
 
@@ -190,14 +190,14 @@ describe('MPackingListTab', () => {
     expect(within(dialog).getByText('packing.confirm.clearChecked:2')).toBeInTheDocument()
     fireEvent.click(within(dialog).getByRole('button', { name: 'common.delete' }))
 
-    await waitFor(() => expect(planner.tripActions.deletePackingItem).toHaveBeenCalledTimes(2))
-    expect(planner.tripActions.deletePackingItem).toHaveBeenCalledWith(3, 1)
-    expect(planner.tripActions.deletePackingItem).toHaveBeenCalledWith(3, 4)
+    await waitFor(() => expect(planner.tripActions.clearCheckedPackingItems).toHaveBeenCalledTimes(1))
+    expect(planner.tripActions.clearCheckedPackingItems).toHaveBeenCalledWith(3, 'common', [1, 4])
+    expect(planner.tripActions.deletePackingItem).not.toHaveBeenCalled()
   })
 
   it('FE-MOB-PACKTAB-011: a failed clear surfaces the delete error', async () => {
     const { planner } = await setup()
-    asMock(planner.tripActions.deletePackingItem).mockRejectedValueOnce(new Error('x'))
+    asMock(planner.tripActions.clearCheckedPackingItems).mockRejectedValueOnce(new Error('x'))
     openActions()
 
     fireEvent.click(screen.getByRole('button', { name: 'packing.clearChecked:2' }))
@@ -213,6 +213,7 @@ describe('MPackingListTab', () => {
     fireEvent.click(screen.getByRole('button', { name: 'packing.clearChecked:2' }))
     fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'common.cancel' }))
 
+    expect(planner.tripActions.clearCheckedPackingItems).not.toHaveBeenCalled()
     expect(planner.tripActions.deletePackingItem).not.toHaveBeenCalled()
   })
 
@@ -304,7 +305,7 @@ describe('MPackingListTab', () => {
     await setup()
     expect(screen.queryByText('Diary')).toBeNull()
 
-    fireEvent.click(screen.getByRole('button', { name: 'packing.viewPersonal' }))
+    fireEvent.click(screen.getByRole('button', { name: /^packing\.viewPersonal/ }))
 
     expect(screen.getByText('Diary')).toBeInTheDocument()
     expect(screen.queryByText('Passport')).toBeNull()
@@ -319,7 +320,7 @@ describe('MPackingListTab', () => {
   it('FE-MOB-PACKTAB-020: an empty personal list shows its own hint', async () => {
     await setup({ items: ITEMS.filter(i => !i.is_private) })
 
-    fireEvent.click(screen.getByRole('button', { name: 'packing.viewPersonal' }))
+    fireEvent.click(screen.getByRole('button', { name: /^packing\.viewPersonal/ }))
 
     expect(screen.getByText('packing.personalEmptyHint')).toBeInTheDocument()
   })
@@ -388,7 +389,7 @@ describe('MPackingListTab', () => {
   it('FE-MOB-PACKTAB-026: a category added from the personal view is private', async () => {
     const { planner } = await setup()
     enterEditMode()
-    fireEvent.click(screen.getByRole('button', { name: 'packing.viewPersonal' }))
+    fireEvent.click(screen.getByRole('button', { name: /^packing\.viewPersonal/ }))
 
     fireEvent.click(screen.getByRole('button', { name: 'packing.addCategory' }))
     fireEvent.change(screen.getByPlaceholderText('packing.newCategoryPlaceholder'), { target: { value: 'Books' } })
@@ -709,7 +710,7 @@ describe('MPackingListTab', () => {
     const items = [packItem({ id: 1, name: 'Tent', is_private: 1, owner_id: 21, owner_username: 'owner' })]
     await setup({ items })
 
-    fireEvent.click(screen.getByRole('button', { name: 'packing.viewPersonal' }))
+    fireEvent.click(screen.getByRole('button', { name: /^packing\.viewPersonal/ }))
 
     expect(screen.getByLabelText('packing.takenCareOf:owner')).toBeInTheDocument()
   })
@@ -721,7 +722,7 @@ describe('MPackingListTab', () => {
     })]
     await setup({ items })
 
-    fireEvent.click(screen.getByRole('button', { name: 'packing.viewPersonal' }))
+    fireEvent.click(screen.getByRole('button', { name: /^packing\.viewPersonal/ }))
 
     expect(screen.getByLabelText('packing.sharedWithCount:2')).toBeInTheDocument()
   })
@@ -928,10 +929,65 @@ describe('MPackingListTab', () => {
   it('FE-MOB-PACKTAB-065: the sharing state is an icon on the row, not a sentence', async () => {
     const items = [packItem({ id: 1, name: 'Tent', is_private: 1, owner_id: 21, owner_username: 'owner' })]
     await setup({ items })
-    fireEvent.click(screen.getByRole('button', { name: 'packing.viewPersonal' }))
+    fireEvent.click(screen.getByRole('button', { name: /^packing\.viewPersonal/ }))
 
     // The wording is still reachable — it just does not eat the row any more.
     expect(screen.queryByText('packing.takenCareOf:owner')).not.toBeInTheDocument()
     expect(screen.getByLabelText('packing.takenCareOf:owner')).toBeInTheDocument()
+  })
+
+  it('FE-MOB-PACKTAB-066: the "My list" pill carries its own done/total, apart from the shared list', async () => {
+    const items = [
+      packItem({ id: 1, name: 'Passport', checked: 1 }),
+      packItem({ id: 2, name: 'Visa', category: 'Travel' }),
+      packItem({ id: 3, name: 'Snacks', category: 'Shopping', is_private: 1, owner_id: ME, checked: 1 }),
+      packItem({ id: 4, name: 'Tea', category: 'Shopping', is_private: 1, owner_id: ME }),
+      packItem({ id: 5, name: 'Mochi', category: 'Shopping', is_private: 1, owner_id: ME }),
+    ]
+    await setup({ items })
+    expect(screen.getByRole('button', { name: /^packing\.viewPersonal/ })).toHaveTextContent('packing.viewPersonal1/3')
+    // The shared progress card is untouched by the private rows.
+    expect(screen.getByText('1/2')).toBeInTheDocument()
+  })
+
+  describe('clear checked stays inside one list', () => {
+    // Shared: 3 checked. Mine: 2 checked (a shopping list). Shared with me by Anna: 1 checked.
+    const LISTS = [
+      packItem({ id: 1, name: 'Tent', checked: 1 }),
+      packItem({ id: 2, name: 'Stove', checked: 1 }),
+      packItem({ id: 3, name: 'Map', checked: 1 }),
+      packItem({ id: 11, name: 'Snacks', category: 'Shopping', is_private: 1, owner_id: ME, checked: 1 }),
+      packItem({ id: 12, name: 'Tea', category: 'Shopping', is_private: 1, owner_id: ME, checked: 1 }),
+      packItem({ id: 21, name: 'Charger', category: 'Shopping', is_private: 1, owner_id: ANNA.id, checked: 1 }),
+    ]
+
+    async function clearFromMenu(count: number) {
+      openActions()
+      fireEvent.click(screen.getByRole('button', { name: `packing.clearChecked:${count}` }))
+      const dialog = screen.getByRole('dialog')
+      expect(within(dialog).getByText(`packing.confirm.clearChecked:${count}`)).toBeInTheDocument()
+      fireEvent.click(within(dialog).getByRole('button', { name: 'common.delete' }))
+    }
+
+    it('FE-MOB-PACKTAB-068: clearing on the shared tab leaves the 2 checked "My list" rows', async () => {
+      const { planner } = await setup({ items: LISTS })
+      await clearFromMenu(3)
+      await waitFor(() => expect(planner.tripActions.clearCheckedPackingItems).toHaveBeenCalledWith(3, 'common', [1, 2, 3]))
+      const [, , ids] = asMock(planner.tripActions.clearCheckedPackingItems).mock.calls[0]
+      expect(ids).not.toContain(11)
+      expect(ids).not.toContain(12)
+    })
+
+    it('FE-MOB-PACKTAB-069: clearing on "My list" removes my 2 rows and leaves the shared list and Anna\'s row', async () => {
+      const { planner } = await setup({ items: LISTS })
+      fireEvent.click(screen.getByRole('button', { name: /^packing\.viewPersonal/ }))
+      await clearFromMenu(2)
+      await waitFor(() => expect(planner.tripActions.clearCheckedPackingItems).toHaveBeenCalledWith(3, 'personal', [11, 12]))
+    })
+  })
+
+  it('FE-MOB-PACKTAB-067: without private rows the "My list" pill shows no count', async () => {
+    await setup({ items: ITEMS.filter(i => !i.is_private) })
+    expect(screen.getByRole('button', { name: /^packing\.viewPersonal/ })).toHaveTextContent(/^packing\.viewPersonal$/)
   })
 })

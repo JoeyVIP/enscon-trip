@@ -10,7 +10,7 @@ import { useDocSyncOfferStore } from '../../../../src/store/docSyncOfferStore'
 import type { MTripShellApi, TripPlanner } from '../../../../src/mobile/screens/trip/MTripShell'
 import type { Day, PackingItem, TodoItem } from '../../../../src/types'
 
-// FE-MOB-SHELL-001 to FE-MOB-SHELL-071
+// FE-MOB-SHELL-001 to FE-MOB-SHELL-072
 
 const mocks = vi.hoisted(() => ({ planner: {} as TripPlanner }))
 
@@ -507,6 +507,16 @@ describe('MTripShell', () => {
     fireEvent.click(todoTab)
     expect(shellApi.listsTab).toBe('todo')
     expect(sessionStorage.getItem('trip-lists-subtab-1')).toBe('todo')
+  })
+
+  it('FE-MOB-SHELL-072: the packing badge counts the shared list only, not shared + my list', () => {
+    const shared = Array.from({ length: 24 }, (_, i) => ({ id: i + 1, checked: 0, is_private: 0 }))
+    const mine = Array.from({ length: 11 }, (_, i) => ({ id: 100 + i, checked: 0, is_private: 1, owner_id: 7 }))
+    const packingItems = [...shared, ...mine] as unknown as PackingItem[]
+    renderShell({ activeTab: 'listen', packingItems } as Partial<TripPlanner>)
+    const packingTab = screen.getByRole('button', { name: /todo\.subtab\.packing/ })
+    expect(packingTab).toHaveTextContent('0/24')
+    expect(packingTab).not.toHaveTextContent('35')
   })
 
   it('FE-MOB-SHELL-035: the lists sub-tab is restored from the session', () => {

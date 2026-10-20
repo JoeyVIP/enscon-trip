@@ -75,6 +75,15 @@ export function packingProgress(items: PackingItem[]): PackingProgress {
   return { checked, total, pct: total > 0 ? Math.round((checked / total) * 100) : 0 }
 }
 
+/**
+ * Lists-header badge: the shared list only. "My list" (is_private rows, e.g. a
+ * shopping list handed to each member) shows its own count on its pill, so the
+ * header never adds the two into one total that reads like extra luggage.
+ */
+export function packingBadgeProgress(items: PackingItem[]): PackingProgress {
+  return packingProgress(packingViewItems(items, 'common'))
+}
+
 /** "232 g" under 1000g, "1.2 kg" at/above — matches the demo's `gFmt` (spec 03 §4.4). */
 export function formatWeight(grams: number): string {
   return grams >= 1000 ? `${(grams / 1000).toFixed(1)} kg` : `${Math.round(grams)} g`

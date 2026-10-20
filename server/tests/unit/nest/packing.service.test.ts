@@ -1188,6 +1188,24 @@ describe('packing item object-level authorization', () => {
     expect(svc.deleteItem(trip.id, personal.id, owner.id)).toBeTruthy();
   });
 
+  it('PACK-SVC-109: deleting a Shared item hands back its recipients, so the delete reaches them too', () => {
+    const { trip, shared, owner, friend } = restrictedTrip();
+    const deleted = svc.deleteItem(trip.id, shared.id, owner.id) as any;
+    expect(deleted.recipients.map((r: any) => r.user_id)).toEqual([friend.id]);
+    expect(svc.viewersOf(deleted)).toEqual([owner.id, friend.id]);
+  });
+
+  it('PACK-SVC-110: clearChecked with ids deletes only confirmed rows in scope', () => {
+    const { trip, personal, shared, common, owner } = restrictedTrip();
+    const extra = svc.createItem(trip.id, { name: 'Stove', visibility: 'common' }, owner.id) as any;
+    testDb.prepare('UPDATE packing_items SET checked = 1 WHERE trip_id = ?').run(trip.id);
+    // Confirmed: Tent + a personal row (out of scope for 'common'). Stove was ticked after the dialog.
+    const deleted = svc.clearChecked(trip.id, 'common', owner.id, [common.id, personal.id]);
+    expect(deleted.map(r => r.id)).toEqual([common.id]);
+    const left = (testDb.prepare('SELECT id FROM packing_items WHERE trip_id = ? ORDER BY id').all(trip.id) as { id: number }[]).map(r => r.id);
+    expect(left).toEqual([personal.id, shared.id, extra.id].sort((a, b) => a - b));
+  });
+
   it('PACK-SVC-108: a template captures only the Common list and the actor\'s own items', () => {
     const { trip, intruder } = restrictedTrip();
     const templateId = (svc.saveAsTemplate(trip.id, intruder.id, 'Snapshot') as { id: number }).id;

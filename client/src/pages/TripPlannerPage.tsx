@@ -26,6 +26,7 @@ import BookingImportModal from '../components/Planner/BookingImportModal'
 import AirTrailImportModal from '../components/Planner/AirTrailImportModal'
 // MemoriesPanel moved to Journey addon
 import ApplyTemplateButton from '../components/Packing/ApplyTemplateButton'
+import { packingClearTargets } from '../components/Packing/packingListPanel.helpers'
 import type { ExpensePrefill } from '../components/Budget/CostsPanel'
 import type { BookingExpenseRequest } from '../components/Planner/BookingCostsSection.types'
 import type { BudgetItem } from '../types'
@@ -124,9 +125,11 @@ function ListsContainer({ tripId, packingItems, todoItems }: { tripId: number; p
   const [packingView, setPackingView] = useState<'common' | 'personal'>('common')
   const { t } = useTranslation()
   const isAdmin = useAuthStore(s => s.user?.role === 'admin')
+  const currentUserId = useAuthStore(s => s.user?.id)
 
+  // Shared list only: "My list" items are counted on their own pill in PackingListPanel.
   const tabs = [
-    { id: 'packing' as const, label: t('todo.subtab.packing'), icon: PackageCheck, count: packingItems.length },
+    { id: 'packing' as const, label: t('todo.subtab.packing'), icon: PackageCheck, count: packingItems.filter(i => !i.is_private).length },
     { id: 'todo' as const, label: t('todo.subtab.todo'), icon: ListTodo, count: todoItems.length },
   ]
 
@@ -170,7 +173,8 @@ function ListsContainer({ tripId, packingItems, todoItems }: { tripId: number; p
           </div>
 
           {subTab === 'packing' && (() => {
-            const packingAbgehakt = packingItems.filter(i => i.checked).length
+            // Same rows the clear deletes: this list only (in My list only the viewer's own).
+            const packingAbgehakt = packingClearTargets(packingItems, packingView, currentUserId).length
             const sharedBtnClass = 'inline-flex items-center gap-1.5 px-2.5 sm:px-[14px] py-[7px] sm:py-[9px] hover:opacity-[0.88]'
             const sharedBtnStyle: React.CSSProperties = {
               appearance: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit',

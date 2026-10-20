@@ -12,6 +12,7 @@ import MPlanTimeline from './plan/MPlanTimeline'
 import MMapArea from './map/MMapArea'
 import MPlacesBrowser from './places/MPlacesBrowser'
 import MTripTabPanel from './tabs/MTripTabPanel'
+import { packingBadgeProgress } from './tabs/listsModel'
 import MTripSheets from './sheets/MTripSheets'
 import MTripLoadingSplash from './MTripLoadingSplash'
 import { usePluginDayTints, dayTintBackground } from '../../../components/Plugins/PluginDaySchedule'
@@ -404,7 +405,8 @@ export default function MTripShell({
     else planner.handleSelectDay(dayId, true)
   }
 
-  const packedCount = packingItems.filter(i => i.checked).length
+  // Shared list only — "My list" carries its own count inside the packing tab.
+  const packingBadge = packingBadgeProgress(packingItems)
   const todoOpenCount = todoItems.filter(i => !i.checked).length
 
   // The stage header: the day on screen and what it costs, or the whole drive while
@@ -602,7 +604,7 @@ export default function MTripShell({
         {trTab === 'listen' && (
           <GlassSegment>
             {([
-              { value: 'packing' as const, label: t('todo.subtab.packing'), count: `${packedCount}/${packingItems.length}` },
+              { value: 'packing' as const, label: t('todo.subtab.packing'), count: `${packingBadge.checked}/${packingBadge.total}` },
               { value: 'todo' as const, label: t('todo.subtab.todo'), count: t('mobileTrip.todoOpenCount', { count: todoOpenCount }) },
             ]).map(seg => (
               <button

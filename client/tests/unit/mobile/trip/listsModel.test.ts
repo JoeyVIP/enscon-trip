@@ -9,6 +9,7 @@ import {
   isLastCustomItemInCategory,
   isPackingPlaceholder,
   isTodoOverdue,
+  packingBadgeProgress,
   packingCategoryOrder,
   packingItemWeight,
   packingProgress,
@@ -23,7 +24,7 @@ import { STATUS_COLOR } from '../../../../src/mobile/screens/trip/tabs/tabModel'
 import { PACKING_PLACEHOLDER_NAME } from '../../../../src/components/Packing/packingListPanel.constants';
 import { buildPackingItem, buildTodoItem } from '../../../helpers/factories';
 
-// FE-MOB-LSTM-001 to FE-MOB-LSTM-021
+// FE-MOB-LSTM-001 to FE-MOB-LSTM-022
 
 const TODAY = '2026-07-15';
 
@@ -91,6 +92,15 @@ describe('listsModel — packing', () => {
     ];
     expect(packingProgress(items)).toEqual({ checked: 1, total: 3, pct: 33 });
     expect(packingProgress([])).toEqual({ checked: 0, total: 0, pct: 0 });
+  });
+
+  it('FE-MOB-LSTM-022: packingBadgeProgress counts the shared list only, never shared + my list', () => {
+    const shared = Array.from({ length: 24 }, (_, i) => buildPackingItem({ checked: i < 5 ? 1 : 0, is_private: 0 }));
+    const mine = Array.from({ length: 11 }, () => buildPackingItem({ is_private: 1, owner_id: 7 }));
+    const badge = packingBadgeProgress([...shared, ...mine]);
+    expect(badge).toEqual({ checked: 5, total: 24, pct: 21 });
+    expect(badge.total).not.toBe(35);
+    expect(packingBadgeProgress(mine)).toEqual({ checked: 0, total: 0, pct: 0 });
   });
 
   it('FE-MOB-LSTM-007: formatWeight switches to kilograms at 1000 g', () => {

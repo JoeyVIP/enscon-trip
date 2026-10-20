@@ -10,6 +10,22 @@ export function katColor(kat: string, allCategories?: string[]): string {
   return KAT_COLORS[Math.abs(h) % KAT_COLORS.length]
 }
 
+/**
+ * What "clear checked" may delete from the list on screen: the shared list's
+ * checked rows, or the viewer's own checked private rows — never the other
+ * list, and never a row someone else shared with the viewer. The button and
+ * the confirm dialog count this same array, so the number shown is what goes.
+ */
+export function packingClearTargets<T extends { checked?: number | boolean | null; is_private?: number | boolean | null; owner_id?: number | null }>(
+  items: T[],
+  view: 'common' | 'personal',
+  currentUserId: number | null | undefined,
+): T[] {
+  if (view === 'common') return items.filter(i => !!i.checked && !i.is_private)
+  if (currentUserId == null) return []
+  return items.filter(i => !!i.checked && !!i.is_private && i.owner_id === currentUserId)
+}
+
 /** Weight an item contributes to a total: unit weight times quantity (defaults: 0 g, qty 1). */
 export const itemWeight = (i: { weight_grams?: number | null; quantity?: number | null }): number =>
   (i.weight_grams || 0) * (i.quantity || 1)

@@ -1823,6 +1823,35 @@ describe('TripPlannerPage', () => {
     });
   });
 
+  describe('FE-PAGE-PLANNER-055: Lists packing badge counts the shared list only', () => {
+    it('shows 24 for 24 shared + 11 "My list" items, never the 35 total', async () => {
+      server.use(
+        http.get('/api/addons', () =>
+          HttpResponse.json({ addons: [{ id: 'packing', type: 'packing' }] })
+        )
+      );
+      vi.useFakeTimers();
+      seedTripStore({ id: 42 });
+      const shared = Array.from({ length: 24 }, (_, i) => ({ id: i + 1, trip_id: 42, name: `S${i}`, checked: 0, is_private: 0 }));
+      const mine = Array.from({ length: 11 }, (_, i) => ({ id: 100 + i, trip_id: 42, name: `M${i}`, checked: 0, is_private: 1, owner_id: 1 }));
+      useTripStore.setState({ packingItems: [...shared, ...mine] } as any);
+
+      renderPlannerPage(42);
+      act(() => { vi.runAllTimers(); });
+      vi.useRealTimers();
+
+      fireEvent.click(await screen.findByRole('button', { name: 'Lists' }));
+      await waitFor(() => {
+        expect(screen.getByTestId('packing-list-panel')).toBeInTheDocument();
+      });
+
+      const packingSubtab = screen.getAllByRole('button').find(btn => /^(Packing List|todo\.subtab\.packing)\s*\d+$/.test(btn.textContent ?? ''));
+      expect(packingSubtab).toBeDefined();
+      expect(packingSubtab).toHaveTextContent('24');
+      expect(packingSubtab).not.toHaveTextContent('35');
+    });
+  });
+
   describe('FE-PAGE-PLANNER-052: Road trip mode opens a booking the way the day plan does (#2428)', () => {
     // The rail is mounted only with the addon on and the mode on for this trip; the
     // road-trip hooks then read their own endpoints, answered empty here.
